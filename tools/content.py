@@ -274,27 +274,48 @@ def sentences(text: str) -> list[str]:
     return [s for s in out if len(s) > 40]
 
 
-def states(passage: str | None, answer_terms: set[str]) -> bool:
-    """Does this quotation actually contain the answer?
+# A term appearing on more than this share of pages proves nothing by matching.
+COMMON = 0.15
+# A yes/no answer is not a phrase that can be located in a passage at all. Half
+# the values questions answer "Ja" or "Nej", and "nej" is scattered across the
+# material, so containment would "prove" anything. These are never supported.
+YES_NO = frozenset({"ja", "nej"})
 
-    Numeric answers ("15 år", "1849") leave no lexical terms, so they cannot be
-    checked this way and are not claimed as supported.
+
+def states(passage: str | None, answer_terms: set[str],
+           idf: dict[str, float], floor: float) -> bool:
+    """Does this quotation actually contain the answer, distinctively?
+
+    Overlap alone is not evidence. Half the values questions answer "Ja" or
+    "Nej", and "nej" appears all over the material, so a bare containment test
+    called "Ved folkeafstemningen i 2015 stemte danskerne nej ..." proof that it
+    is illegal to hit your spouse. At least one matched term must therefore be
+    rare enough to mean something.
+
+    Numeric answers ("15 år", "1849") leave no lexical terms at all, so they
+    cannot be checked this way and are never claimed as supported.
     """
-    if not passage or not answer_terms:
+    if not passage or not answer_terms or answer_terms <= YES_NO:
         return False
-    return len(answer_terms & set(terms(passage))) / len(answer_terms) >= 0.5
+    matched = answer_terms & set(terms(passage))
+    if len(matched) / len(answer_terms) < 0.5:
+        return False
+    return any(idf.get(t, 0.0) >= floor for t in matched)
 
 
 def hunt(weights: Counter[str], answer_terms: set[str],
          corpus: list[tuple[int, str, Counter[str]]],
-         idf: dict[str, float]) -> tuple[str, int] | None:
+         idf: dict[str, float], floor: float) -> tuple[str, int] | None:
     """Search every sentence in the material for one that states the answer."""
     if not answer_terms:
         return None  # numeric answers ("15 år") give nothing to search for
     best, found = 0.0, None
     for page, text, counts in corpus:
-        if len(answer_terms & set(counts)) / len(answer_terms) < 0.5:
+        matched = answer_terms & set(counts)
+        if len(matched) / len(answer_terms) < 0.5:
             continue
+        if not any(idf.get(t, 0.0) >= floor for t in matched):
+            continue  # matched only on words too common to prove anything
         score = relevance(weights, counts, idf)
         if score > best:
             best, found = score, (text[:PASSAGE_CAP].strip(), page)
@@ -358,6 +379,8 @@ def locate(entries: list[Entry]) -> None:
     total = len(pages) or 1
     # +1 keeps a term that appears on every page from scoring exactly zero.
     idf = {t: math.log(total / (1 + n)) + 1 for t, n in seen_in.items()}
+    # Anything on more than COMMON of the pages is too ordinary to be evidence.
+    floor = math.log(1 / COMMON) + 1
 
     for entry in entries:
         weights = Counter(terms(entry.q))
@@ -379,15 +402,22 @@ def locate(entries: list[Entry]) -> None:
         entry.page = at + 1  # PDF pages are 1-based, as is the printed material
         entry.passage = best_passage(weights, pages[at], idf)
 
-        if not states(entry.passage, answer_terms):
-            found = hunt(weights, answer_terms, corpus, idf)
+        if not states(entry.passage, answer_terms, idf, floor):
+            found = hunt(weights, answer_terms, corpus, idf, floor)
             if found:
                 entry.passage, entry.page = found
 
-        entry.supports = states(entry.passage, answer_terms)
+        entry.supports = states(entry.passage, answer_terms, idf, floor)
         # The last chapter beginning at or before this page, not the first.
         entry.chapter = max((n for n, (start, _) in enumerate(chapters, 1)
                              if entry.page >= start), default=None)
+
+        # Values questions are not drawn from the læremateriale (SIRI takes 35
+        # from it, 5 on current affairs and 5 on values from a separate basis),
+        # so a page reference for them is invented authority. Drop it unless the
+        # material genuinely does cover the point.
+        if entry.section is Section.VAERDIER and not entry.supports:
+            entry.passage, entry.page, entry.chapter = None, None, None
 
 
 def fetch(force: bool = False) -> int:

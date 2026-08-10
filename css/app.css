@@ -229,6 +229,39 @@ a{ color:var(--parchment); text-underline-offset:3px; }
 
 .fineprint{ margin:30px 0 0; font-size:12px; line-height:1.6; color:var(--parchment-dim); text-align:center; max-width:520px; }
 
+/* ---------- Tinget: principles ---------- */
+.note-box{
+  width:100%; max-width:640px; margin:0 0 28px; padding:16px 20px; border-radius:11px;
+  background:rgba(224,121,60,.07); border:1px solid rgba(224,121,60,.3);
+}
+.note-box p{ margin:0; font-size:14px; line-height:1.65; }
+.note-box p + p{ margin-top:9px; }
+.note-box b{ color:var(--ember); }
+
+.principles{ width:100%; max-width:760px; display:flex; flex-direction:column; gap:11px; }
+.principle{
+  border-radius:12px; overflow:hidden;
+  background:linear-gradient(180deg,rgba(42,62,60,.72),rgba(20,32,34,.72));
+  border:1px solid rgba(231,220,194,.1);
+  animation:rise .45s var(--ease) both; animation-delay:var(--d,0s);
+}
+.principle > button{
+  display:block; width:100%; text-align:left; padding:16px 20px;
+  background:none; border:none; color:inherit; font:inherit; cursor:pointer;
+}
+.principle > button:hover{ background:rgba(231,220,194,.03); }
+.principle h4{
+  font-family:var(--display); font-variation-settings:var(--carved);
+  font-weight:600; font-size:17px; margin:0 0 5px; display:flex; align-items:baseline; gap:9px;
+}
+.principle h4 .n{ font-size:12px; color:var(--ember); letter-spacing:.1em; }
+.principle h4 .count{ margin-left:auto; font-size:11px; color:var(--parchment-dim); letter-spacing:.06em; text-transform:uppercase; }
+.principle .rule{ font-size:14px; line-height:1.6; color:var(--parchment); margin:0; }
+.principle .more{ padding:0 20px 18px; border-top:1px solid rgba(231,220,194,.1); }
+.principle .more p{ font-size:14px; line-height:1.7; color:var(--parchment-dim); margin:14px 0 0; }
+.principle .more .btn{ margin-top:14px; padding:10px 22px; }
+.principle.open h4 .count{ color:var(--ember); }
+
 /* ---------- quiz ---------- */
 .quiz{ max-width:660px; margin:0 auto; }
 .fleet{ display:flex; flex-wrap:wrap; gap:4px; justify-content:center; margin-bottom:22px; max-width:600px; }

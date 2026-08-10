@@ -181,8 +181,9 @@ const MODES = [
   },
   {
     id: 'ting', da: 'Tinget', en: 'The values assembly', accent: '--ingrid',
-    blurb: 'De 5 værdispørgsmål. Du skal have mindst 4 rigtige, ellers dumper du hele prøven uanset resten.',
+    blurb: 'De 5 værdispørgsmål. Du skal have mindst 4 rigtige, ellers dumper du hele prøven uanset resten. Lær principperne først.',
     tag: 'Kræver 4 af 5',
+    teaches: true, ting: true,
     build: () => pick(pool('vaerdier'), RULES.values),
     gate: { need: RULES.valuesPass, of: RULES.values },
   },
@@ -202,7 +203,10 @@ const MODES = [
 ];
 
 /** Each mode keeps its own place, including on the result screen. */
-const sceneFor = (mode) => (mode.id === 'ting' ? 'ting' : mode.exam ? 'alting' : 'hall');
+const sceneFor = (mode) => (mode.ting ? 'ting' : mode.exam ? 'alting' : 'hall');
+
+/** Leaving a values drill returns to Tinget, not to the map. */
+const leave = (mode) => (mode?.ting ? showTing() : (renderPath(), go('viewPath', 'path')));
 
 /**
  * Outdated questions never enter a draw.
@@ -245,7 +249,7 @@ function weighted(list, n) {
 /* ============================================================
    Views
    ============================================================ */
-const VIEWS = ['viewShore', 'viewPath', 'viewQuiz', 'viewResult'];
+const VIEWS = ['viewShore', 'viewPath', 'viewTing', 'viewQuiz', 'viewResult'];
 function go(id, scene) {
   const swap = () => {
     VIEWS.forEach((v) => { $(v).hidden = v !== id; });
@@ -323,6 +327,44 @@ function renderPath() {
         <span class="tag">${m.tag}</span>
       </button>`;
   }).join('');
+}
+
+/* ---------- Tinget ---------- */
+function showTing() {
+  $('hudTitle').textContent = 'Tinget';
+  $('principles').innerHTML = state.principles.map((p, i) => `
+    <div class="principle" data-id="${p.id}" style="--d:${i * 0.05}s">
+      <button type="button" aria-expanded="false">
+        <h4><span class="n">${String(i + 1).padStart(2, '0')}</span>${p.title}
+          <span class="count">${p.questions.length} spørgsmål</span></h4>
+        <p class="rule">${p.rule}</p>
+      </button>
+    </div>`).join('');
+  go('viewTing', 'ting');
+}
+
+function togglePrinciple(el) {
+  const open = el.classList.toggle('open');
+  el.querySelector('button').setAttribute('aria-expanded', String(open));
+  el.querySelector('.more')?.remove();
+  if (!open) return;
+
+  const p = state.principles.find((x) => x.id === el.dataset.id);
+  const more = document.createElement('div');
+  more.className = 'more';
+  more.innerHTML = `<p>${p.detail}</p>
+    <button class="btn primary" type="button" data-practice="${p.id}">
+      Øv ${p.questions.length} spørgsmål</button>`;
+  el.append(more);
+}
+
+/** A drill on one principle, drawn only from the questions it explains. */
+function principleMode(p) {
+  const stock = state.bank.filter((q) => p.questions.includes(q.id) && usable(q));
+  return {
+    id: `princip-${p.id}`, da: p.title, accent: '--ingrid', ting: true,
+    build: () => shuffle(stock, Math.random),
+  };
 }
 
 /* ---------- quiz ---------- */
@@ -553,7 +595,7 @@ function finish() {
   $('hudMeta').textContent = '';
   go('viewResult', sceneFor(mode));
   $('againBtn').onclick = () => start(mode.id, mode);
-  $('backPathBtn').onclick = () => { renderPath(); go('viewPath', 'path'); };
+  $('backPathBtn').onclick = () => leave(mode);
   state.run = null;
 }
 
@@ -567,11 +609,13 @@ async function main() {
   const lines = (t) => t.split('\n').filter(Boolean).map((l) => JSON.parse(l));
   const grab = (p) => fetch(p).then((r) => (r.ok ? r.text() : '')).catch(() => '');
 
-  const [questions, explanations, currency] = await Promise.all([
+  const [questions, explanations, currency, principles] = await Promise.all([
     fetch('./data/questions.jsonl').then((r) => r.text()),
     grab('./data/explanations.jsonl'),
     grab('./data/currency.jsonl'),
+    grab('./data/principles.jsonl'),
   ]);
+  state.principles = principles ? lines(principles) : [];
 
   const why = new Map(explanations ? lines(explanations).map((e) => [e.id, e]) : []);
   const age = new Map(currency ? lines(currency).map((e) => [e.id, e]) : []);
@@ -605,7 +649,12 @@ $('beginBtn').addEventListener('click', begin);
 $('changeGuide').addEventListener('click', () => go('viewShore', 'shore'));
 $('modes').addEventListener('click', (e) => {
   const btn = e.target.closest('.mode');
-  if (btn) start(btn.dataset.id);
+  if (!btn) return;
+  // Tinget teaches before it tests. The values questions barely repeat between
+  // papers (46 unique out of 50 asked), so drilling the old ones trains for a
+  // question that will not be asked. The principles behind them do repeat.
+  if (MODES.find((m) => m.id === btn.dataset.id)?.teaches) return showTing();
+  start(btn.dataset.id);
 });
 $('halls').addEventListener('click', (e) => {
   const btn = e.target.closest('.body:not([disabled])');
@@ -613,9 +662,20 @@ $('halls').addEventListener('click', (e) => {
   const i = Number(btn.dataset.i);
   start(null, hallMode(HALLS[i], i));
 });
+$('principles').addEventListener('click', (e) => {
+  const practice = e.target.closest('[data-practice]');
+  if (practice) {
+    const p = state.principles.find((x) => x.id === practice.dataset.practice);
+    return start(null, principleMode(p));
+  }
+  const card = e.target.closest('.principle');
+  if (card) togglePrinciple(card);
+});
+$('tingTest').addEventListener('click', () => start('ting'));
 $('quizNext').addEventListener('click', next);
-$('quizExit').addEventListener('click', () => { state.run = null; renderPath(); go('viewPath', 'path'); });
-$('hudBack').addEventListener('click', () => { state.run = null; renderPath(); go('viewPath', 'path'); });
+const exitRun = () => { const m = state.run?.mode; state.run = null; leave(m); };
+$('quizExit').addEventListener('click', exitRun);
+$('hudBack').addEventListener('click', exitRun);
 $('soundToggle').addEventListener('click', (e) => {
   state.sound = !state.sound;
   e.target.textContent = state.sound ? 'Lyd til' : 'Lyd fra';
