@@ -252,15 +252,42 @@ ABBREV = re.compile(r"\b(bl|ca|dvs|evt|f|fx|jf|kr|nr|osv|pga|st|mfl|mm|ndr|sdr)\
 PASSAGE_CAP = 340
 
 
+# Layout furniture that must never end up inside a quotation: numbered section
+# headings ("6.15 LIGESTILLING MELLEM KØNNENE"), bare shouted headings
+# ("DOMSTOLENE", "FÆRØERNE"), table-of-contents dot leaders, and page numbers.
+NUMBERED = re.compile(r"^\s*\d+(\.\d+)*\s")
+LEADERS = re.compile(r"\.{4,}")
+
+
+def is_heading(line: str) -> bool:
+    text = line.strip()
+    if not text or LEADERS.search(text) or text.isdigit():
+        return False if not text else True
+    letters = [c for c in text if c.isalpha()]
+    if not letters:
+        return True
+    shouted = sum(c.isupper() for c in letters) / len(letters) > 0.7
+    # A heading is short and either numbered or shouted, and never ends a sentence.
+    return len(text) < 90 and (shouted or bool(NUMBERED.match(text))) and not text.endswith(".")
+
+
 def sentences(text: str) -> list[str]:
     """Split page text into sentences, healing the PDF's hard line wraps.
 
-    The typesetting hyphenates across lines and leaves soft hyphens behind, so
-    "rege\u00ad ring" has to be stitched back into "regering" before anything is
-    quoted from it.
+    Headings are dropped first, while the line structure still exists. Once the
+    lines are joined they are indistinguishable from prose, and quotations end up
+    reading "6.15 LIGESTILLING MELLEM KØNNENE Ligestilling mellem mænd og ...".
+
+    The typesetting also hyphenates across lines and leaves soft hyphens behind,
+    so "rege\u00ad ring" has to be stitched back into "regering" before anything
+    is quoted from it.
     """
-    flat = re.sub(r"\u00ad\s*", "", text)          # soft hyphen plus the wrap after it
-    flat = re.sub(r"(\w)-\s+(\w)", r"\1\2", flat)  # hard hyphen split across lines
+    kept = [ln for ln in text.splitlines() if not is_heading(ln)]
+    flat = re.sub(r"\u00ad\s*", "", "\n".join(kept))  # soft hyphen plus its wrap
+    # Only weld a hyphen that a line break actually split, and never before a
+    # conjunction: Danish suspended hyphens are real writing, so "markeds- og
+    # handelsplads" must not become "markedsog handelsplads".
+    flat = re.sub(r"(\w)-\n\s*(?!(?:og|eller|samt)\b)(\w)", r"\1\2", flat)
     flat = re.sub(r"\s*\n\s*", " ", flat)
     flat = re.sub(r"\s{2,}", " ", flat)
     out, current = [], ""
@@ -318,7 +345,7 @@ def hunt(weights: Counter[str], answer_terms: set[str],
             continue  # matched only on words too common to prove anything
         score = relevance(weights, counts, idf)
         if score > best:
-            best, found = score, (text[:PASSAGE_CAP].strip(), page)
+            best, found = score, (tidy(text[:PASSAGE_CAP]), page)
     return found
 
 
@@ -355,7 +382,17 @@ def best_passage(weights: Counter[str], text: str, idf: dict[str, float]) -> str
 
     if len(passage) > PASSAGE_CAP:
         passage = passage[:PASSAGE_CAP].rsplit(" ", 1)[0] + "..."
-    return passage.strip()
+    return tidy(passage)
+
+
+def tidy(passage: str) -> str:
+    """Last sweep before a quotation is shown to anyone.
+
+    Title-case headings such as "Ribe" or "Grundtvig" sit on their own line and
+    are not shouted, so they survive the heading filter and reappear glued to the
+    sentence beneath them as "Ribe Ribe opstod ...". Collapse the repeat.
+    """
+    return re.sub(r"^(\S+)\s+\1\b", r"\1", passage.strip())
 
 
 def locate(entries: list[Entry]) -> None:
