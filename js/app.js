@@ -39,7 +39,7 @@ function load() {
 function save() {
   try {
     localStorage.setItem(SAVE, JSON.stringify({
-      guide: state.guide, best: state.best, sound: state.sound,
+      guide: state.guide, best: state.best, sound: state.sound, cleared: state.cleared,
     }));
   } catch { /* private mode: run without persistence rather than fail */ }
 }
@@ -104,6 +104,70 @@ const sfx = {
   miss: () => tone(150, 0.22, 'triangle', 0.04),
   done: () => [523, 659, 784].forEach((f, i) => setTimeout(() => tone(f, 0.3), i * 110)),
 };
+
+/* ============================================================
+   The six halls
+
+   The six chapters of the læremateriale, in order, supplying the
+   35 questions of the paper that are drawn from it. You practise
+   as you study: clear a hall and the next opens. Nothing is
+   locked forever, and the tests below stay open from the start,
+   so the gate paces the study without ever barring the door.
+   ============================================================ */
+const HALL_PASS = 0.8;   // the real paper needs 36 of 45, the same ratio
+
+const HALLS = [
+  { numeral: 'I', chapter: 1, accent: '--thor', da: 'Danmarks historie', en: "Denmark's history",
+    topics: ['Vikingetid', 'Middelalder', 'Enevælden', 'De slesvigske krige', 'Verdenskrigene', 'Velfærd og oprør'] },
+  { numeral: 'II', chapter: 2, accent: '--gorm', da: 'Det danske demokrati', en: 'Danish democracy',
+    topics: ['Styreformen', 'Grundloven', 'Folketinget', 'Retssamfundet'] },
+  { numeral: 'III', chapter: 3, accent: '--ingrid', da: 'Den danske økonomi', en: 'The Danish economy',
+    topics: ['Velfærdssamfundet', 'Erhvervslivet', 'Arbejdsmarkedet'] },
+  { numeral: 'IV', chapter: 4, accent: '--freja', da: 'Danmark og omverdenen', en: 'Denmark and the world',
+    topics: ['Danmark i Europa', 'Globalt samarbejde', 'Forsvar og sikkerhed'] },
+  { numeral: 'V', chapter: 5, accent: '--astrid', da: 'Dansk kulturliv', en: 'Danish cultural life',
+    topics: ['Litteratur', 'Billedkunst', 'Musik', 'Arkitektur', 'Scenekunst', 'Film'] },
+  { numeral: 'VI', chapter: 6, accent: '--bjorn', da: 'Temaopslag', en: 'Thematic entries',
+    topics: ['Flaget', 'Kongehuset', 'Rigsfællesskabet', 'Grundtvig', 'Ligestilling', 'Klima'] },
+];
+
+const inChapter = (n) =>
+  state.bank.filter((q) => q.section === 'laeremateriale' && q.chapter === n);
+
+function hallMode(hall, index) {
+  const stock = inChapter(hall.chapter);
+  return {
+    id: `hal-${hall.chapter}`,
+    da: `Hal ${hall.numeral}. ${hall.da}`,
+    accent: hall.accent,
+    hall, index,
+    build: () => weighted(stock, Math.min(12, stock.length)),
+  };
+}
+
+function renderHalls() {
+  const cleared = state.cleared ?? 0;
+  $('halls').innerHTML = HALLS.map((hall, i) => {
+    const shut = i > cleared;
+    const done = i < cleared;
+    const stock = inChapter(hall.chapter).length;
+    const state_ = done ? 'Ryddet' : shut ? 'Låst' : 'Åben';
+    return `<div class="hall ${done ? 'done' : ''} ${shut ? 'shut' : ''}"
+        style="--accent:var(${hall.accent}); --d:${i * 0.06}s">
+        <span class="thread"></span>
+        <span class="node">${done ? '&#10003;' : hall.numeral}</span>
+        <button class="body" type="button" data-i="${i}" ${shut ? 'disabled' : ''}>
+          <span class="names">
+            <span class="da">${hall.da}</span>
+            <span class="en">${hall.en}</span>
+            <span class="state">${state_}</span>
+          </span>
+          <span class="chips">${hall.topics.map((t) => `<span>${t}</span>`).join('')}
+            <span>${stock} spørgsmål</span></span>
+        </button>
+      </div>`;
+  }).join('');
+}
 
 /* ============================================================
    Modes
@@ -223,6 +287,7 @@ function renderPath() {
   $('guideName').textContent = c.name;
   $('pathSub').textContent = c.recommends;
 
+  renderHalls();
   $('modes').innerHTML = MODES.map((m, i) => {
     const best = state.best[m.id];
     return `<button class="mode" type="button" data-id="${m.id}"
@@ -243,8 +308,8 @@ const SHIP = `<svg viewBox="0 0 24 20" fill="none" xmlns="http://www.w3.org/2000
   <rect x="11.5" y="3.2" width="1" height="10.4" fill="currentColor"/>
   <path d="M8.2 4.6c0-.6.5-1 1.1-1h5.4c.6 0 1.1.4 1.1 1l-.7 4.5c-1.6.9-4.6.9-6.2 0Z" fill="currentColor"/></svg>`;
 
-function start(modeId) {
-  const mode = MODES.find((m) => m.id === modeId);
+function start(modeId, override) {
+  const mode = override ?? MODES.find((m) => m.id === modeId);
   const seed = Date.now();
   const questions = mode.build().map((q) => present(q, seed));
   if (!questions.length) return;
@@ -424,6 +489,9 @@ function finish() {
     }
   } else if (mode.gate) {
     passed = score >= mode.gate.need;
+  } else if (mode.hall) {
+    // Decided here, with the other verdicts, so the label below sees it.
+    passed = score / questions.length >= HALL_PASS;
   }
 
   const label = mode.exam
@@ -431,6 +499,10 @@ function finish() {
     : (passed === null ? 'Gennemført' : passed ? 'Bestået' : 'Ikke bestået');
 
   state.best[mode.id] = Math.max(state.best[mode.id] ?? 0, score);
+  // Clearing a hall opens the next one, and only ever forwards.
+  if (mode.hall && passed) {
+    state.cleared = Math.max(state.cleared ?? 0, mode.index + 1);
+  }
   save();
   if (passed !== false) sfx.done();
 
@@ -439,7 +511,11 @@ function finish() {
     <div class="score ${passed === false ? 'fail' : 'pass'}">${score} / ${questions.length}</div>
     <p class="verdict">${label}</p>
     ${gate}
-    ${mode.exam
+    ${mode.hall
+      ? `<p class="note">${passed
+          ? 'Hallen er ryddet. Den næste har åbnet sig.'
+          : `Du skal have ${Math.ceil(questions.length * HALL_PASS)} af ${questions.length} for at rydde hallen. Spørgsmålene blandes hver gang.`}</p>`
+      : mode.exam
       ? `<p class="note">Til den rigtige prøve skal du have ${RULES.pass} af ${RULES.total} rigtige.</p>`
       : `<p class="note">${score === questions.length
           ? 'Fejlfrit. Tag Altinget, når du er klar til hele prøven.'
@@ -451,7 +527,7 @@ function finish() {
 
   $('hudMeta').textContent = '';
   go('viewResult', sceneFor(mode));
-  $('againBtn').onclick = () => start(mode.id);
+  $('againBtn').onclick = () => start(mode.id, mode);
   $('backPathBtn').onclick = () => { renderPath(); go('viewPath', 'path'); };
   state.run = null;
 }
@@ -501,6 +577,12 @@ $('changeGuide').addEventListener('click', () => go('viewShore', 'shore'));
 $('modes').addEventListener('click', (e) => {
   const btn = e.target.closest('.mode');
   if (btn) start(btn.dataset.id);
+});
+$('halls').addEventListener('click', (e) => {
+  const btn = e.target.closest('.body:not([disabled])');
+  if (!btn) return;
+  const i = Number(btn.dataset.i);
+  start(null, hallMode(HALLS[i], i));
 });
 $('quizNext').addEventListener('click', next);
 $('quizExit').addEventListener('click', () => { state.run = null; renderPath(); go('viewPath', 'path'); });
