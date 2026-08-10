@@ -1,0 +1,55 @@
+name: Refresh question bank
+
+# SIRI publishes a new exam roughly twice a year, and replaces the whole
+# læremateriale each August. Checking monthly is generous and cheap.
+on:
+  schedule:
+    - cron: '0 6 1 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      # PDFs are downloaded fresh each run and never committed; the extracted
+      # bank is the artefact. The script exits non-zero if any question fails
+      # to parse, so a regression stops here instead of silently shipping a
+      # smaller bank than last month.
+      - name: Fetch and extract
+        run: |
+          set -o pipefail
+          uv run tools/content.py all | tee summary.txt
+
+      - name: Summarise
+        run: |
+          {
+            echo "Regenerated from the official SIRI papers on danskogproever.dk."
+            echo
+            echo '```'
+            cat summary.txt
+            echo '```'
+            echo
+            echo "Explanations in \`data/explanations.jsonl\` are untouched by this job."
+            echo "Any question listed as ORPHANED above was reworded by SIRI and needs"
+            echo "its explanation re-pointed at the new id."
+          } > body.md
+          cat body.md >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: peter-evans/create-pull-request@v7
+        with:
+          branch: content/refresh
+          title: 'Content: refresh question bank from SIRI'
+          body-path: body.md
+          commit-message: 'content: refresh question bank from danskogproever.dk'
+          add-paths: data/questions.jsonl
+          delete-branch: true

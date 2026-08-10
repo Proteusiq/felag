@@ -1,0 +1,15 @@
+# Source PDFs from danskogproever.dk: 29MB, not ours, and fully regenerable
+# with `uv run tools/content.py fetch`. The extracted bank is committed instead.
+data/raw/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.ruff_cache/
+.pytest_cache/
+
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/
