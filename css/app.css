@@ -241,6 +241,54 @@ a{ color:var(--parchment); text-underline-offset:3px; }
 
 .fineprint{ margin:30px 0 0; font-size:12px; line-height:1.6; color:var(--parchment-dim); text-align:center; max-width:520px; }
 
+/* ---------- Tidslinjen ----------
+   A course sailed from the vikings to now. The line runs down the left, the
+   periods hang off it, and the width of each marker shows how much of the
+   paper that period actually carries. */
+.eras{ position:relative; width:100%; max-width:720px; display:flex; flex-direction:column; }
+.era{
+  position:relative; display:flex; gap:16px; padding:7px 0; align-items:stretch;
+  animation:rise .45s var(--ease) both; animation-delay:var(--d,0s);
+}
+.era .axis{ position:relative; flex:0 0 74px; text-align:right; padding-top:14px; }
+.era .axis b{
+  display:block; font-family:var(--display); font-variation-settings:var(--carved);
+  font-weight:600; font-size:15px; color:var(--parchment); font-variant-numeric:tabular-nums;
+}
+.era .axis span{ display:block; font-size:11px; color:var(--parchment-dim); font-variant-numeric:tabular-nums; }
+.era::before{                                   /* the line itself */
+  content:''; position:absolute; left:88px; top:0; bottom:0; width:2px;
+  background:repeating-linear-gradient(to bottom, rgba(231,220,194,.2) 0 6px, transparent 6px 12px);
+}
+.era:first-child::before{ top:22px; }
+.era:last-child::before{ bottom:auto; height:22px; }
+.era .knot{
+  position:absolute; left:82px; top:18px; width:14px; height:14px; border-radius:50%;
+  background:var(--bg); border:2px solid var(--parchment-dim); z-index:1;
+  transition:border-color .25s ease, box-shadow .25s ease;
+}
+.era:hover .knot{ border-color:var(--ember); box-shadow:0 0 14px -2px var(--ember); }
+.era .body{
+  flex:1; margin-left:20px; text-align:left; color:inherit; font:inherit; cursor:pointer;
+  padding:13px 17px; border-radius:12px;
+  background:linear-gradient(180deg,rgba(42,62,60,.7),rgba(20,32,34,.7));
+  border:1px solid rgba(231,220,194,.09);
+  transition:transform .25s var(--ease), border-color .25s ease;
+}
+.era .body:hover:not(:disabled){ transform:translateX(4px); border-color:var(--ember); }
+.era .body:disabled{ cursor:default; opacity:.45; }
+.era h4{ font-family:var(--display); font-variation-settings:var(--carved); font-weight:600; font-size:16px; margin:0; }
+.era .weight{ display:flex; align-items:center; gap:9px; margin-top:9px; }
+.era .weight i{ height:4px; border-radius:2px; background:var(--ember); opacity:.55; }
+.era .weight span{ font-size:11px; color:var(--parchment-dim); letter-spacing:.05em; text-transform:uppercase; }
+
+@media (max-width:620px){
+  .era .axis{ flex-basis:58px; }
+  .era::before{ left:70px; }
+  .era .knot{ left:64px; }
+  .era .body{ margin-left:14px; padding:11px 13px; }
+}
+
 /* ---------- Tinget: principles ---------- */
 .note-box{
   width:100%; max-width:640px; margin:0 0 28px; padding:16px 20px; border-radius:11px;

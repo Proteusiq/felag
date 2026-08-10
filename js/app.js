@@ -194,6 +194,12 @@ const MODES = [
     build: () => weighted(pool('laeremateriale'), 15),
   },
   {
+    id: 'tid', da: 'Tidslinjen', en: 'The timeline', accent: '--astrid',
+    blurb: 'Danmarks historie fra vikingetiden til i dag, periode for periode. Det største kapitel og det, der fylder mest på prøven.',
+    tag: '12 perioder',
+    teaches: 'time',
+  },
+  {
     id: 'ting', da: 'Tinget', en: 'The values assembly', accent: '--ingrid',
     blurb: 'De 5 værdispørgsmål. Du skal have mindst 4 rigtige, ellers dumper du hele prøven uanset resten. Lær principperne først.',
     tag: 'Kræver 4 af 5',
@@ -219,8 +225,10 @@ const MODES = [
 /** Each mode keeps its own place, including on the result screen. */
 const sceneFor = (mode) => (mode.ting ? 'ting' : mode.exam ? 'alting' : 'hall');
 
-/** Leaving a values drill returns to Tinget, not to the map. */
-const leave = (mode) => (mode?.ting ? showTing() : (renderPath(), go('viewPath', 'path')));
+/** Leaving a drill returns where it was started from, not to the map. */
+const leave = (mode) => mode?.ting ? showTing()
+  : mode?.time ? showTime()
+  : (renderPath(), go('viewPath', 'path'));
 
 /**
  * Outdated questions never enter a draw.
@@ -263,9 +271,11 @@ function weighted(list, n) {
 /* ============================================================
    Views
    ============================================================ */
-const VIEWS = ['viewShore', 'viewPath', 'viewTing', 'viewQuiz', 'viewResult'];
+const VIEWS = ['viewShore', 'viewPath', 'viewTime', 'viewTing', 'viewQuiz', 'viewResult'];
 function go(id, scene) {
   const swap = () => {
+    // The counter and clock belong to a run; nothing else should inherit them.
+    if (id !== 'viewQuiz') $('hudMeta').textContent = '';
     VIEWS.forEach((v) => { $(v).hidden = v !== id; });
     if (scene) scenes.show(scene);
     $('hud').hidden = id === 'viewShore';
@@ -341,6 +351,44 @@ function renderPath() {
         <span class="tag">${m.tag}</span>
       </button>`;
   }).join('');
+}
+
+/* ---------- Tidslinjen ---------- */
+function showTime() {
+  $('hudTitle').textContent = 'Tidslinjen';
+  const most = Math.max(...state.eras.map((e) => e.questions.length), 1);
+
+  $('eras').innerHTML = state.eras.map((era, i) => {
+    const stock = era.questions.filter((id) => usable(byQuestion(id))).length;
+    // An open end means two different things: the last period is still running,
+    // an earlier one simply starts around then and overlaps its neighbours.
+    const span = era.to ? `${era.from}\u2013${era.to}`
+      : i === state.eras.length - 1 ? `${era.from}\u2013` : `fra ${era.from}`;
+    const years = era.to ? `${era.to - era.from} år` : (i === state.eras.length - 1 ? 'til i dag' : '');
+    return `<div class="era" style="--d:${i * 0.05}s">
+        <span class="knot"></span>
+        <span class="axis"><b>${span}</b><span>${years}</span></span>
+        <button class="body" type="button" data-i="${i}" ${stock ? '' : 'disabled'}>
+          <h4>${era.title}</h4>
+          <span class="weight">
+            <i style="width:${Math.round((stock / most) * 100)}px"></i>
+            <span>${stock ? `${stock} spørgsmål` : 'ingen spørgsmål'}</span>
+          </span>
+        </button>
+      </div>`;
+  }).join('');
+  go('viewTime', 'path');
+}
+
+const byQuestion = (id) => state.bank.find((q) => q.id === id) ?? {};
+
+/** A drill on one period of history. */
+function eraMode(era) {
+  const stock = era.questions.map(byQuestion).filter((q) => q.id && usable(q));
+  return {
+    id: `tid-${era.page}`, da: era.title, accent: '--astrid', time: true,
+    build: () => weighted(stock, Math.min(12, stock.length)),
+  };
 }
 
 /* ---------- Tinget ---------- */
@@ -649,13 +697,15 @@ async function main() {
   const lines = (t) => t.split('\n').filter(Boolean).map((l) => JSON.parse(l));
   const grab = (p) => fetch(p).then((r) => (r.ok ? r.text() : '')).catch(() => '');
 
-  const [questions, explanations, currency, principles] = await Promise.all([
+  const [questions, explanations, currency, principles, eras] = await Promise.all([
     fetch('./data/questions.jsonl').then((r) => r.text()),
     grab('./data/explanations.jsonl'),
     grab('./data/currency.jsonl'),
     grab('./data/principles.jsonl'),
+    grab('./data/eras.jsonl'),
   ]);
   state.principles = principles ? lines(principles) : [];
+  state.eras = eras ? lines(eras) : [];
 
   const why = new Map(explanations ? lines(explanations).map((e) => [e.id, e]) : []);
   const age = new Map(currency ? lines(currency).map((e) => [e.id, e]) : []);
@@ -693,7 +743,9 @@ $('modes').addEventListener('click', (e) => {
   // Tinget teaches before it tests. The values questions barely repeat between
   // papers (46 unique out of 50 asked), so drilling the old ones trains for a
   // question that will not be asked. The principles behind them do repeat.
-  if (MODES.find((m) => m.id === btn.dataset.id)?.teaches) return showTing();
+  const teaches = MODES.find((m) => m.id === btn.dataset.id)?.teaches;
+  if (teaches === 'time') return showTime();
+  if (teaches) return showTing();
   start(btn.dataset.id);
 });
 $('halls').addEventListener('click', (e) => {
@@ -712,6 +764,10 @@ $('principles').addEventListener('click', (e) => {
   if (card) togglePrinciple(card);
 });
 $('tingTest').addEventListener('click', () => start('ting'));
+$('eras').addEventListener('click', (e) => {
+  const btn = e.target.closest('.body:not([disabled])');
+  if (btn) start(null, eraMode(state.eras[Number(btn.dataset.i)]));
+});
 $('quizNext').addEventListener('click', next);
 const exitRun = () => { const m = state.run?.mode; state.run = null; leave(m); };
 $('quizExit').addEventListener('click', exitRun);

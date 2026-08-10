@@ -201,6 +201,25 @@ def papers() -> list[Path]:
 # ---------------------------------------------------------------------------
 
 MATERIAL = RAW / "laeremateriale-til-indfoedsretsproeven.pdf"
+ERAS = Path("data/eras.jsonl")
+
+# Chapter 1's section titles carry their own date ranges, so the timeline builds
+# itself from the material rather than from anything invented here. The formats
+# vary: "(ca. 750-1050)", "(fra ca. 1620)", "(1848-64)", "(1990-)".
+ERA_TITLE = re.compile(
+    r"^1\.(\d+)\s+(.+?)\s*\(\s*(?:ca\.\s*|fra\s+ca\.\s*)?"
+    r"(\d{3,4})\s*(?:[-\u2013]\s*(\d{2,4})?)?\s*\)\s*$")
+
+# The titles are set in capitals, so lowercasing them loses the proper nouns.
+KEEP_CAPITAL = {"danmark", "tyskland", "europa", "sverige", "norge", "island",
+                "grønland", "færøerne", "usa", "eu", "nato", "fn"}
+
+
+def sentence_case(shouted: str) -> str:
+    words = [w.capitalize() if w.lower().strip(",.") in KEEP_CAPITAL else w.lower()
+             for w in shouted.split()]
+    return " ".join(words).capitalize() if not words else (
+        " ".join([words[0][:1].upper() + words[0][1:]] + words[1:]))
 
 # Danish function words carry no signal and would swamp the scoring.
 STOPWORDS = frozenset("""
@@ -395,6 +414,39 @@ def tidy(passage: str) -> str:
     return re.sub(r"^(\S+)\s+\1\b", r"\1", passage.strip())
 
 
+def eras() -> list[dict]:
+    """Chapter 1's periods, with the pages each one covers."""
+    if not MATERIAL.exists():
+        return []
+    with pymupdf.open(MATERIAL) as doc:
+        found = []
+        for _, title, page in doc.get_toc():
+            clean = re.sub(r"\s+", " ", title.replace("\t", " ")).strip()
+            match = ERA_TITLE.match(clean)
+            if not match or page <= 0:
+                continue
+            _, name, start, end = match.groups()
+            begins = int(start)
+            if end is None:
+                finishes = None                      # open range: "(1990-)"
+            elif len(end) <= 2:
+                # "1848-64" means 1864, not year 64.
+                finishes = begins - begins % 100 + int(end)
+                if finishes < begins:
+                    finishes += 100
+            else:
+                finishes = int(end)
+            found.append({"title": sentence_case(name), "from": begins,
+                          "to": finishes, "page": page})
+        chapter_end = min((p for _, t, p in doc.get_toc()
+                           if re.match(r"^2\.\s*Kapitel", t.strip()) and p > 0), default=65)
+
+    found.sort(key=lambda e: e["page"])
+    for i, era in enumerate(found):
+        era["until"] = found[i + 1]["page"] - 1 if i + 1 < len(found) else chapter_end - 1
+    return found
+
+
 def locate(entries: list[Entry]) -> None:
     """Attach the supporting passage, its page and its chapter, in place.
 
@@ -551,6 +603,18 @@ def extract() -> int:
 
     entries, rejected = build()
     locate(entries)
+
+    # The timeline is derived, so it is regenerated rather than hand-kept.
+    if periods := eras():
+        for era in periods:
+            era["questions"] = sorted(
+                e.id for e in entries
+                if e.chapter == 1 and e.page and era["page"] <= e.page <= era["until"])
+        ERAS.write_text(
+            "".join(json.dumps(e, ensure_ascii=False, sort_keys=True) + "\n" for e in periods),
+            encoding="utf-8")
+        covered = sum(len(e["questions"]) for e in periods)
+        print(f"\neras: {len(periods)} periods covering {covered} chapter-1 questions")
     BANK.parent.mkdir(parents=True, exist_ok=True)
     BANK.write_text("".join(e.as_json() + "\n" for e in entries), encoding="utf-8")
     report(entries)
