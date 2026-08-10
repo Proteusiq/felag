@@ -496,12 +496,22 @@ function buildWhy(q, right) {
     ? `Kapitel ${q.chapter}, ${CHAPTERS[q.chapter]}${q.page ? `, side ${q.page}` : ''}.`
     : '';
 
-  // Three tiers, in order of how much they teach. A written explanation first.
-  // Failing that, the sentence from the læremateriale that states the answer,
-  // quoted with its page. Restating the answer teaches nothing and is not an
-  // option: the green highlight already said it.
+  // Every values question rests on one of the ten principles, so it can always
+  // be answered with the rule behind it rather than with the bare fact. That
+  // matters more here than anywhere else: these questions barely repeat, so the
+  // principle is the only part worth carrying into the exam.
+  const principle = q.section === 'vaerdier'
+    ? state.principles.find((p) => p.questions.includes(q.id))
+    : null;
+
+  // Tiers, in order of how much they teach. A written explanation first, then
+  // the governing principle, then the sentence from the læremateriale that
+  // states the answer, quoted with its page. Restating the answer teaches
+  // nothing and is not an option: the green highlight already said it.
   const body = q.explain
     ? `<p>${q.explain}</p>`
+    : principle
+    ? `<p><b>${principle.title}.</b> ${principle.rule}</p><p>${principle.detail}</p>`
     : q.supports && q.passage
       ? `<blockquote>${q.passage}</blockquote>
          <p class="cite">Fra <b>Læremateriale til Indfødsretsprøven</b>, side ${q.page}.</p>`
