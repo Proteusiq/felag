@@ -5,7 +5,9 @@ Free training for the Danish citizenship test, **Indfødsretsprøven**.
 *Félag* is Old Norse. It means a fellowship, a joint venture, people who lay
 their wealth together in one pot. The word survives in English as *fellow*.
 Learning should be free, so this is free. No accounts, no advertisements, no
-paywall. If it served you well, there is a MobilePay address, and nothing else.
+paywall. 
+
+> If it served you well, you can buy us coffee, a MobilePay box Félag: 1845MC, or not 🫣.
 
 ## Of the road, and why it was made
 
