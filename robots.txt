@@ -1,0 +1,5 @@
+# Félag is free and meant to be found. Everything here may be indexed.
+User-agent: *
+Allow: /
+
+Sitemap: https://proteusiq.github.io/felag/sitemap.xml

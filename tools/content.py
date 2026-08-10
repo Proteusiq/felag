@@ -107,7 +107,13 @@ class Entry:
     # Filled in by locate(): which of the six chapters, and the page to cite.
     chapter: int | None = None
     page: int | None = None
-    grounded: bool = False
+    # True when the quoted passage demonstrably contains the answer. This is
+    # the honest quality signal: a passage that does not state the answer is
+    # not evidence, so the app shows nothing rather than something misleading.
+    supports: bool = False
+    # A short quotation from the læremateriale that supports the answer, with
+    # the page recorded beside it. Enough to learn from and to check.
+    passage: str | None = None
 
     def as_json(self) -> str:
         record = {
@@ -115,7 +121,8 @@ class Entry:
             "section": str(self.section),
             "chapter": self.chapter,
             "page": self.page,
-            "grounded": self.grounded,
+            "supports": self.supports,
+            "passage": self.passage,
             "q": self.q,
             "options": self.options,
             "answer": self.answer,
@@ -209,10 +216,26 @@ def terms(text: str) -> list[str]:
     return [w for w in WORD.findall(text.lower()) if w not in STOPWORDS]
 
 
-def load_material() -> tuple[list[list[str]], list[tuple[int, str]]]:
-    """Return per-page term lists, and the chapter boundaries from the PDF's own TOC."""
+def relevance(weights: Counter[str], counts: Counter[str], idf: dict[str, float]) -> float:
+    """Sublinear TF-IDF.
+
+    Raw term frequency lets a common word repeated often outweigh a rare and
+    decisive one: "Hvad er den kriminelle lavalder?" matched a page holding
+    "Danmark" fourteen times over the one page in 243 that actually contains
+    "lavalder". Damping tf with a logarithm restores the rare term's authority.
+    """
+    total = 0.0
+    for term, weight in weights.items():
+        tf = counts.get(term, 0)
+        if tf:
+            total += weight * (1 + math.log(tf)) * idf.get(term, 0.0)
+    return total
+
+
+def load_material() -> tuple[list[str], list[tuple[int, str]]]:
+    """Return per-page text, and the chapter boundaries from the PDF's own TOC."""
     with pymupdf.open(MATERIAL) as doc:
-        pages = [terms(page.get_text("text")) for page in doc]
+        pages = [page.get_text("text") for page in doc]
         chapters = sorted(
             (start, title.split("–")[-1].strip())
             for _, title, start in doc.get_toc()
@@ -221,21 +244,114 @@ def load_material() -> tuple[list[list[str]], list[tuple[int, str]]]:
     return pages, chapters
 
 
-def locate(entries: list[Entry]) -> None:
-    """Attach the best-matching page and its chapter to each entry, in place.
+# Danish abbreviations that must not be mistaken for the end of a sentence.
+ABBREV = re.compile(r"\b(bl|ca|dvs|evt|f|fx|jf|kr|nr|osv|pga|st|mfl|mm|ndr|sdr)\.$", re.I)
+PASSAGE_CAP = 340
 
-    Scoring is term frequency weighted by inverse document frequency over pages,
-    so a distinctive word like "stavnsbåndet" outweighs a common one like "dansk".
-    Terms from the correct answer count double, since the answer is what pins a
-    question to one passage rather than a general topic.
+
+def sentences(text: str) -> list[str]:
+    """Split page text into sentences, healing the PDF's hard line wraps.
+
+    The typesetting hyphenates across lines and leaves soft hyphens behind, so
+    "rege\u00ad ring" has to be stitched back into "regering" before anything is
+    quoted from it.
+    """
+    flat = re.sub(r"\u00ad\s*", "", text)          # soft hyphen plus the wrap after it
+    flat = re.sub(r"(\w)-\s+(\w)", r"\1\2", flat)  # hard hyphen split across lines
+    flat = re.sub(r"\s*\n\s*", " ", flat)
+    flat = re.sub(r"\s{2,}", " ", flat)
+    out, current = [], ""
+    for chunk in re.split(r"(?<=[.!?])\s+", flat):
+        current = f"{current} {chunk}".strip() if current else chunk
+        if not ABBREV.search(current):
+            out.append(current)
+            current = ""
+    if current:
+        out.append(current)
+    return [s for s in out if len(s) > 40]
+
+
+def states(passage: str | None, answer_terms: set[str]) -> bool:
+    """Does this quotation actually contain the answer?
+
+    Numeric answers ("15 år", "1849") leave no lexical terms, so they cannot be
+    checked this way and are not claimed as supported.
+    """
+    if not passage or not answer_terms:
+        return False
+    return len(answer_terms & set(terms(passage))) / len(answer_terms) >= 0.5
+
+
+def hunt(weights: Counter[str], answer_terms: set[str],
+         corpus: list[tuple[int, str, Counter[str]]],
+         idf: dict[str, float]) -> tuple[str, int] | None:
+    """Search every sentence in the material for one that states the answer."""
+    if not answer_terms:
+        return None  # numeric answers ("15 år") give nothing to search for
+    best, found = 0.0, None
+    for page, text, counts in corpus:
+        if len(answer_terms & set(counts)) / len(answer_terms) < 0.5:
+            continue
+        score = relevance(weights, counts, idf)
+        if score > best:
+            best, found = score, (text[:PASSAGE_CAP].strip(), page)
+    return found
+
+
+def best_passage(weights: Counter[str], text: str, idf: dict[str, float]) -> str | None:
+    """Pick the sentence on the page that best answers the question.
+
+    Kept to one or two sentences and capped in length: this is a citation of
+    SIRI's material with a page reference beside it, not a copy of it. A
+    neighbouring sentence is joined only when it scores nearly as well, which is
+    what catches an answer split across a sentence boundary.
+    """
+    found = sentences(text)
+    if not found:
+        return None
+
+    scored = []
+    for sentence in found:
+        counts = Counter(terms(sentence))
+        hit = relevance(weights, counts, idf)
+        scored.append(hit / math.sqrt(len(counts) + 1))  # do not reward length alone
+
+    top = max(range(len(scored)), key=scored.__getitem__)
+    if scored[top] <= 0:
+        return None
+
+    passage = found[top]
+    for neighbour in (top + 1, top - 1):
+        if 0 <= neighbour < len(found) and scored[neighbour] > scored[top] * 0.55:
+            pair = (f"{passage} {found[neighbour]}" if neighbour > top
+                    else f"{found[neighbour]} {passage}")
+            if len(pair) <= PASSAGE_CAP:
+                passage = pair
+            break
+
+    if len(passage) > PASSAGE_CAP:
+        passage = passage[:PASSAGE_CAP].rsplit(" ", 1)[0] + "..."
+    return passage.strip()
+
+
+def locate(entries: list[Entry]) -> None:
+    """Attach the supporting passage, its page and its chapter, in place.
+
+    Two stages. First the best page by sublinear TF-IDF, then the best sentence
+    on it. If that sentence does not actually contain the answer, the whole
+    material is searched for one that does, because a quotation that fails to
+    state the answer is worth nothing to a learner.
     """
     if not MATERIAL.exists():
         print("no læremateriale in data/raw; skipping chapter tagging", file=sys.stderr)
         return
 
     pages, chapters = load_material()
-    counts = [Counter(p) for p in pages]
-    seen_in = Counter(t for page in pages for t in set(page))
+    corpus = [(n + 1, text, Counter(terms(text)))
+              for n, page in enumerate(pages) for text in sentences(page)]
+    tokens = [terms(page) for page in pages]
+    counts = [Counter(t) for t in tokens]
+    seen_in = Counter(t for page in tokens for t in set(page))
     total = len(pages) or 1
     # +1 keeps a term that appears on every page from scoring exactly zero.
     idf = {t: math.log(total / (1 + n)) + 1 for t, n in seen_in.items()}
@@ -247,7 +363,7 @@ def locate(entries: list[Entry]) -> None:
 
         best, runner, at = 0.0, 0.0, None
         for index, page in enumerate(counts):
-            score = sum(n * page.get(t, 0) * idf.get(t, 0.0) for t, n in weights.items())
+            score = relevance(weights, page, idf)
             if score > best:
                 best, runner, at = score, best, index
             elif score > runner:
@@ -255,12 +371,20 @@ def locate(entries: list[Entry]) -> None:
 
         if at is None:
             continue
-        entry.page = at + 1  # PDF pages are 1-based, and so is the printed material
-        # The last chapter that begins at or before this page, not the first.
+
+        answer_terms = set(terms(entry.answer))
+        entry.page = at + 1  # PDF pages are 1-based, as is the printed material
+        entry.passage = best_passage(weights, pages[at], idf)
+
+        if not states(entry.passage, answer_terms):
+            found = hunt(weights, answer_terms, corpus, idf)
+            if found:
+                entry.passage, entry.page = found
+
+        entry.supports = states(entry.passage, answer_terms)
+        # The last chapter beginning at or before this page, not the first.
         entry.chapter = max((n for n, (start, _) in enumerate(chapters, 1)
                              if entry.page >= start), default=None)
-        # A weak or ambiguous match is flagged rather than trusted silently.
-        entry.grounded = best > 0 and (runner / best if best else 1) < 0.85
 
 
 def fetch(force: bool = False) -> int:

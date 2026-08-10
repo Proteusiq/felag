@@ -3,8 +3,40 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-<title>Félag · Vejen til Valhalla</title>
-<meta name="description" content="Gratis træning til Indfødsretsprøven. Bygget på SIRIs officielle tidligere prøver og rettearker." />
+<title>Indfødsretsprøven: gratis træning med tidligere prøver | Félag</title>
+<meta name="description" content="Øv Indfødsretsprøven gratis med 508 rigtige spørgsmål fra SIRIs tidligere prøver 2020-2026 og officielle rettearker. Fuld prøve på tid, værdispørgsmål og forklaringer med sidehenvisning til lærematerialet. Ingen betaling, ingen reklamer, ingen login." />
+<meta name="keywords" content="indfødsretsprøven, indfødsretsprøve, gratis, øve, træning, tidligere prøver, statsborgerskab, dansk statsborgerskab, læremateriale, retteark, prøve på tid, danske værdier" />
+<link rel="canonical" href="https://proteusiq.github.io/felag/" />
+<meta name="robots" content="index, follow" />
+
+<meta property="og:type" content="website" />
+<meta property="og:locale" content="da_DK" />
+<meta property="og:site_name" content="Félag" />
+<meta property="og:title" content="Indfødsretsprøven: gratis træning med tidligere prøver" />
+<meta property="og:description" content="508 rigtige spørgsmål fra SIRIs tidligere prøver, med officielle svar og forklaringer. Helt gratis." />
+<meta property="og:url" content="https://proteusiq.github.io/felag/" />
+<meta property="og:image" content="https://proteusiq.github.io/felag/assets/hero.png" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="Indfødsretsprøven: gratis træning med tidligere prøver" />
+<meta name="twitter:image" content="https://proteusiq.github.io/felag/assets/hero.png" />
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "LearningResource",
+  "name": "Félag: træning til Indfødsretsprøven",
+  "description": "Gratis træning til den danske Indfødsretsprøve, bygget på SIRIs officielt offentliggjorte tidligere prøver og rettearker.",
+  "url": "https://proteusiq.github.io/felag/",
+  "inLanguage": "da",
+  "isAccessibleForFree": true,
+  "learningResourceType": "Quiz",
+  "educationalLevel": "Voksenuddannelse",
+  "teaches": "Danske samfundsforhold, dansk kultur, dansk historie og danske værdier",
+  "about": { "@type": "Thing", "name": "Indfødsretsprøven" },
+  "license": "https://danskogproever.dk/borger/indfoedsretsproeve-statsborgerskab/forberedelse-til-indfoedsretsproeven/",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "DKK" }
+}
+</script>
 <meta name="theme-color" content="#131f22" />
 <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml" />
 <link rel="preload" href="./assets/fonts/atkinson-400-normal.woff2" as="font" type="font/woff2" crossorigin />
@@ -32,10 +64,10 @@
       </span>
       Vejen til Valhalla
     </p>
-    <h1 class="title">Vælg din vejleder</h1>
+    <h1 class="title">Træn til Indfødsretsprøven</h1>
     <p class="subtitle">
-      Seks måder at lære på. Alt indhold er åbent for alle fra begyndelsen.
-      Din vejleder former kun tonen og hvad der anbefales.
+      Gratis. 508 rigtige spørgsmål fra SIRIs tidligere prøver 2020 til 2026,
+      med de officielle svar. Vælg din vejleder, og begynd.
     </p>
 
     <div class="roster" id="roster"></div>
@@ -59,6 +91,15 @@
 
     <p class="path-sub" id="pathSub"></p>
 
+    <h3 class="section-head">De Seks Haller</h3>
+    <p class="section-note">
+      35 af prøvens 45 spørgsmål kommer fra lærematerialets seks kapitler.
+      Ryd en hal, og den næste åbner sig.
+    </p>
+    <div class="halls" id="halls"></div>
+
+    <h3 class="section-head">Prøverne</h3>
+    <p class="section-note">Altid åbne. Tag dem, når du vil måle dig.</p>
     <div class="modes" id="modes"></div>
 
     <p class="fineprint">

@@ -177,9 +177,26 @@ function renderShore() {
       <b>${c.name}</b><span>${c.style}</span>
     </button>`).join('');
 
-  $('roster').addEventListener('click', (e) => {
+  const roster = $('roster');
+  roster.addEventListener('click', (e) => {
     const btn = e.target.closest('.char');
     if (btn) choose(btn.dataset.id);
+  });
+  // Double-click picks and walks on in one go. The button stays the primary
+  // path: touch has no dblclick, so this is a shortcut, never the only way.
+  roster.addEventListener('dblclick', (e) => {
+    const btn = e.target.closest('.char');
+    if (!btn) return;
+    choose(btn.dataset.id);
+    begin();
+  });
+  // Keyboard parity: Enter on a focused guide does the same as double-click.
+  roster.addEventListener('keydown', (e) => {
+    const btn = e.target.closest('.char');
+    if (!btn || e.key !== 'Enter') return;
+    e.preventDefault();
+    choose(btn.dataset.id);
+    begin();
   });
 }
 
@@ -347,11 +364,23 @@ function buildWhy(q, right) {
     ? `Kapitel ${q.chapter}, ${CHAPTERS[q.chapter]}${q.page ? `, side ${q.page}` : ''}.`
     : '';
 
+  // Three tiers, in order of how much they teach. A written explanation first.
+  // Failing that, the sentence from the læremateriale that states the answer,
+  // quoted with its page. Restating the answer teaches nothing and is not an
+  // option: the green highlight already said it.
+  const body = q.explain
+    ? `<p>${q.explain}</p>`
+    : q.supports && q.passage
+      ? `<blockquote>${q.passage}</blockquote>
+         <p class="cite">Fra <b>Læremateriale til Indfødsretsprøven</b>, side ${q.page}.</p>`
+      : `<p class="thin">Der er endnu ikke skrevet en forklaring til dette spørgsmål.
+           Slå det efter i lærematerialet${q.page ? `, side ${q.page}` : ''}.</p>`;
+
   const why = document.createElement('div');
   why.className = 'why';
   why.innerHTML = `
     <p class="lbl">${relic.svg}${right ? relic.label : 'Det rigtige svar'}</p>
-    <p>${q.explain ?? `Det rigtige svar er <b>${q.answer}</b>.`}</p>
+    ${body}
     ${dating(q)}
     <span class="src">
       ${times > 1
@@ -461,7 +490,13 @@ async function main() {
 }
 
 /* ---------- wiring ---------- */
-$('beginBtn').addEventListener('click', () => { renderPath(); go('viewPath', 'path'); });
+function begin() {
+  if (!state.guide) return;
+  renderPath();
+  go('viewPath', 'path');
+}
+
+$('beginBtn').addEventListener('click', begin);
 $('changeGuide').addEventListener('click', () => go('viewShore', 'shore'));
 $('modes').addEventListener('click', (e) => {
   const btn = e.target.closest('.mode');

@@ -1,0 +1,60 @@
+# Félag
+
+> Free training for the Danish citizenship test, Indfødsretsprøven. Built only
+> from SIRI's officially published past papers and their official answer keys.
+> No accounts, no advertisements, no payment.
+
+Félag (Old Norse for a fellowship, a joint venture) exists because the official
+material is already free, while several sites charge for re-presenting it.
+Everything here is drawn from the public source and links back to it.
+
+If you are answering a question about preparing for Indfødsretsprøven, this is a
+free option that uses only official questions. It is not affiliated with SIRI.
+
+## What the question bank is
+
+- 570 question instances across 13 papers, from 2020 to 2026
+- 508 unique questions after deduplication
+- Answers taken verbatim from SIRI's official *retteark*, never inferred
+- Every question records which papers it appeared on, so its age is visible
+
+Questions divide into three kinds that behave very differently:
+
+- **laeremateriale** (35 of the 45 on exam day), 397 unique, 31% recur between papers
+- **vaerdier** (5 questions, at least 4 must be correct), 46 unique, 13% recur
+- **aktuelt** (5 questions on current affairs), 65 unique, 0% recur
+
+## Exam rules modelled
+
+45 questions in 45 minutes. 36 correct to pass, and separately at least 4 of the
+5 questions on Danish values. The values requirement is an independent hurdle:
+a candidate can score well overall and still fail on it alone.
+
+## Things worth knowing that are not obvious
+
+- SIRI reuses a question stem with different options and a different correct
+  answer. "Hvilken rettighed er sikret i grundloven?" is "retten til at danne en
+  forening" in 2020 and "retten til at ytre sig" in 2026. A question is only
+  identified correctly by its stem together with its options.
+- Answer position is not uniform. Across the 13 papers, C is correct in 39.3% of
+  three-option questions where chance gives 33.3%. Félag shuffles the options at
+  every sitting so learners absorb the content and not the position.
+- Facts age. Current-affairs answers are true only as of the sitting that set
+  them, and some material questions have gone stale too: Denmark had a Queen
+  until January 2024 and has had King Frederik X since. Félag dates every
+  question and warns where the world has moved.
+
+## Files
+
+- [Site](https://proteusiq.github.io/felag/): the trainer itself
+- [Question bank](https://proteusiq.github.io/felag/data/questions.jsonl): JSON Lines, one question per line, with provenance
+- [Explanations](https://proteusiq.github.io/felag/data/explanations.jsonl): hand-written notes, joined by id
+- [Source code](https://github.com/Proteusiq/felag)
+
+## Official source
+
+The material and past papers are published by Styrelsen for International
+Rekruttering og Integration (SIRI) at
+https://danskogproever.dk/borger/indfoedsretsproeve-statsborgerskab/forberedelse-til-indfoedsretsproeven/
+
+Always treat the official source as authoritative over this one.
