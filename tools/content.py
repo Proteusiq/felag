@@ -49,6 +49,9 @@ ORIGIN = "https://danskogproever.dk"
 RAW = Path("data/raw")
 BANK = Path("data/questions.jsonl")
 EXPLANATIONS = Path("data/explanations.jsonl")
+# Hand-checked currency of time-dependent answers. Never machine-written:
+# deciding that a fact has gone stale is a judgement, not a keyword match.
+CURRENCY = Path("data/currency.jsonl")
 
 SOURCE_PDF = re.compile(r"(indfoedsretsproeven-\d{4}-\d{2}|laeremateriale)")
 HREF = re.compile(r'href="(/media/[^"]+\.pdf)"')
@@ -460,17 +463,18 @@ def report(entries: list[Entry]) -> None:
             print(f"  {section:15} {sum(len(e.seen) for e in chosen):4} asked, "
                   f"{len(chosen):4} unique")
 
-    if not EXPLANATIONS.exists():
-        return
-    # Explanations are keyed by id. If SIRI rewords a stem the id changes and the
-    # explanation detaches silently, so surface it rather than quietly lose it.
-    written = {json.loads(line)["id"]
-               for line in EXPLANATIONS.read_text("utf-8").splitlines() if line.strip()}
     known = {e.id for e in entries}
-    print(f"\nexplanations: {len(written)} written, "
-          f"{len(known - written)} questions uncovered")
-    if orphaned := sorted(written - known):
-        print(f"  ORPHANED (reworded or withdrawn): {orphaned}")
+    # Both hand-written files are keyed by id. If SIRI rewords a stem the id
+    # changes and the note detaches silently, so surface it rather than lose it.
+    for label, path in (("explanations", EXPLANATIONS), ("currency", CURRENCY)):
+        if not path.exists():
+            continue
+        written = {json.loads(line)["id"]
+                   for line in path.read_text("utf-8").splitlines() if line.strip()}
+        print(f"\n{label}: {len(written)} written, "
+              f"{len(known - written)} questions uncovered")
+        if orphaned := sorted(written - known):
+            print(f"  ORPHANED (reworded or withdrawn): {orphaned}")
 
 
 def extract() -> int:

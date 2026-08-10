@@ -90,10 +90,19 @@ Beyond them stand **Tinget**, the five questions on Danish values, and
 > sat in.
 
 > [!WARNING]
-> **Facts age, and the app says so.** A current-affairs answer was true only on
-> the day it was set. Denmark had a Queen until January 2024 and has had King
-> Frederik X since. Every question shows the sitting it came from, and where the
-> world has moved, the panel says what has changed.
+> **Facts age, and the stale ones are thrown out.** A current-affairs answer was
+> true only on the day it was set. *"Hvilket politisk parti er i regering?"*
+> answered Socialdemokratiet in 2020; since 2022 it has been a coalition of
+> Socialdemokratiet, Venstre and Moderaterne. Denmark had a Queen until January
+> 2024 and has had King Frederik X since.
+>
+> Answers that have gone stale are hand-checked against the current material and
+> then **excluded from every draw**, not merely footnoted. Current-affairs
+> questions never repeat between papers, so they are kept out of practice
+> altogether and appear only in the full mock, each labelled with its sitting.
+> Where an answer still holds but rests on something that moves, the panel says
+> so: Venstre became the largest mayoral party at the election of 18 November
+> 2025 with 40 mayors to Socialdemokratiet's 26.
 
 ## The law of the Ting
 

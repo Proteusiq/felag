@@ -132,7 +132,7 @@ const HALLS = [
 ];
 
 const inChapter = (n) =>
-  state.bank.filter((q) => q.section === 'laeremateriale' && q.chapter === n);
+  state.bank.filter((q) => q.section === 'laeremateriale' && q.chapter === n && usable(q));
 
 function hallMode(hall, index) {
   const stock = inChapter(hall.chapter);
@@ -192,7 +192,9 @@ const MODES = [
     tag: '45 spørgsmål',
     build: () => [
       ...pick(pool('laeremateriale'), 35),
-      ...pick(pool('aktuelt'), 5),
+      // Only the freshest current-affairs questions, and even those are
+      // labelled. On the day, these five will be about your own year.
+      ...pick(recent(pool('aktuelt')), 5),
       ...pick(pool('vaerdier'), 5),
     ],
     exam: true,
@@ -202,8 +204,31 @@ const MODES = [
 /** Each mode keeps its own place, including on the result screen. */
 const sceneFor = (mode) => (mode.id === 'ting' ? 'ting' : mode.exam ? 'alting' : 'hall');
 
-const pool = (section) => state.bank.filter((q) => q.section === section);
+/**
+ * Outdated questions never enter a draw.
+ *
+ * A wrong answer presented as current is the worst thing this project can do,
+ * so anything hand-checked and found stale is excluded outright rather than
+ * shown with a caveat. "Hvilket politisk parti er i regering?" answered
+ * Socialdemokratiet in 2020; since 2022 it has been an S, V and M coalition.
+ *
+ * Current-affairs questions never repeat between papers (0 of 65), so drilling
+ * them teaches facts that were true on one afternoon years ago. They are kept
+ * out of practice entirely and appear only in the full mock, where the paper's
+ * shape matters and each is labelled with the sitting it came from.
+ */
+const usable = (q) => q.status !== 'outdated';
+
+const pool = (section) => state.bank.filter((q) => q.section === section && usable(q));
 const pick = (list, n) => shuffle(list, Math.random).slice(0, Math.min(n, list.length));
+
+/** The newest sittings only; older current-affairs answers have moved on. */
+function recent(list) {
+  const latest = (q) => q.seen.map((s) => s.split('#')[0]).sort().at(-1);
+  const newest = list.map(latest).sort().at(-1) ?? '';
+  const cutoff = String(Number(newest.slice(0, 4)) - 1);
+  return list.filter((q) => latest(q) >= cutoff);
+}
 
 /** Frequency-weighted draw: questions SIRI asks often come up more. */
 function weighted(list, n) {
@@ -409,8 +434,8 @@ const sitting = (tag) => {
  */
 function dating(q) {
   const last = q.seen.map((s) => s.split('#')[0]).sort().at(-1);
-  if (q.dated) {
-    return `<div class="caution">${WARN}<span>${q.dated}</span></div>`;
+  if (q.currency || q.dated) {
+    return `<div class="caution">${WARN}<span>${q.currency ?? q.dated}</span></div>`;
   }
   if (q.section === 'aktuelt') {
     return `<div class="caution">${WARN}<span>
@@ -539,21 +564,25 @@ async function main() {
   scenes.mount($('scene'));
   load();
 
-  const [questions, explanations] = await Promise.all([
+  const lines = (t) => t.split('\n').filter(Boolean).map((l) => JSON.parse(l));
+  const grab = (p) => fetch(p).then((r) => (r.ok ? r.text() : '')).catch(() => '');
+
+  const [questions, explanations, currency] = await Promise.all([
     fetch('./data/questions.jsonl').then((r) => r.text()),
-    fetch('./data/explanations.jsonl').then((r) => (r.ok ? r.text() : '')).catch(() => ''),
+    grab('./data/explanations.jsonl'),
+    grab('./data/currency.jsonl'),
   ]);
 
-  const why = new Map(
-    explanations.split('\n').filter(Boolean)
-      .map((l) => JSON.parse(l)).map((e) => [e.id, e]));
+  const why = new Map(explanations ? lines(explanations).map((e) => [e.id, e]) : []);
+  const age = new Map(currency ? lines(currency).map((e) => [e.id, e]) : []);
 
-  state.bank = questions.split('\n').filter(Boolean).map((line) => {
-    const q = JSON.parse(line);
+  state.bank = lines(questions).map((q) => {
     const extra = why.get(q.id);
     // Hand-written fields win over generated ones (a human-checked page
     // citation beats the located guess), but never the identity.
-    return extra ? { ...q, ...extra, id: q.id } : q;
+    const merged = extra ? { ...q, ...extra, id: q.id } : q;
+    const now = age.get(q.id);
+    return now ? { ...merged, status: now.status, currency: now.note } : merged;
   });
 
   renderShore();
