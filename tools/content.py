@@ -32,14 +32,16 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import re
 import sys
+from collections import Counter
 from dataclasses import dataclass, field
 from enum import StrEnum
 from pathlib import Path
 
-import pymupdf
 import httpx
+import pymupdf
 
 PAGE = ("https://danskogproever.dk/borger/indfoedsretsproeve-statsborgerskab"
         "/forberedelse-til-indfoedsretsproeven/")
@@ -102,11 +104,18 @@ class Entry:
     answer: str
     stem: str
     seen: list[str] = field(default_factory=list)
+    # Filled in by locate(): which of the six chapters, and the page to cite.
+    chapter: int | None = None
+    page: int | None = None
+    grounded: bool = False
 
     def as_json(self) -> str:
         record = {
             "id": self.id,
             "section": str(self.section),
+            "chapter": self.chapter,
+            "page": self.page,
+            "grounded": self.grounded,
             "q": self.q,
             "options": self.options,
             "answer": self.answer,
@@ -169,6 +178,89 @@ def parse_key(lines: list[str]) -> dict[int, str]:
 def papers() -> list[Path]:
     return sorted(p for p in RAW.glob("indfoedsretsproeven-*.pdf")
                   if "retteark" not in p.name)
+
+
+# ---------------------------------------------------------------------------
+# Grounding questions in the læremateriale
+#
+# Every question on the paper is answerable from the 243-page material, so each
+# one is matched back to the page it came from. That single step yields three
+# things at once: which of the six chapters a question belongs to, a page to
+# cite, and the passage to write the explanation from. Explanations are then
+# written from the source rather than from memory.
+# ---------------------------------------------------------------------------
+
+MATERIAL = RAW / "laeremateriale-til-indfoedsretsproeven.pdf"
+
+# Danish function words carry no signal and would swamp the scoring.
+STOPWORDS = frozenset("""
+og i at det en den til er som på de med han af for ikke der var mig sig men et
+har om vi min havde ham hun nu over da fra du ha sin dem os op man hans hvor
+eller hvad skal selv her alle vil blev kunne ind når være dog nogle blive
+mange ad bliver hendes været thi jeg denne disse dette efter under mod ved
+samt både også kan må skulle ville hvilket hvilke hvornår hvem hvorfor hvordan
+følgende blandt andet især fx eksempel siden mellem
+""".split())
+
+WORD = re.compile(r"[a-zà-öø-ÿ]{3,}")
+
+
+def terms(text: str) -> list[str]:
+    return [w for w in WORD.findall(text.lower()) if w not in STOPWORDS]
+
+
+def load_material() -> tuple[list[list[str]], list[tuple[int, str]]]:
+    """Return per-page term lists, and the chapter boundaries from the PDF's own TOC."""
+    with pymupdf.open(MATERIAL) as doc:
+        pages = [terms(page.get_text("text")) for page in doc]
+        chapters = sorted(
+            (start, title.split("–")[-1].strip())
+            for _, title, start in doc.get_toc()
+            if start > 0 and re.match(r"^\d+\.\s*Kapitel", title.strip())
+        )
+    return pages, chapters
+
+
+def locate(entries: list[Entry]) -> None:
+    """Attach the best-matching page and its chapter to each entry, in place.
+
+    Scoring is term frequency weighted by inverse document frequency over pages,
+    so a distinctive word like "stavnsbåndet" outweighs a common one like "dansk".
+    Terms from the correct answer count double, since the answer is what pins a
+    question to one passage rather than a general topic.
+    """
+    if not MATERIAL.exists():
+        print("no læremateriale in data/raw; skipping chapter tagging", file=sys.stderr)
+        return
+
+    pages, chapters = load_material()
+    counts = [Counter(p) for p in pages]
+    seen_in = Counter(t for page in pages for t in set(page))
+    total = len(pages) or 1
+    # +1 keeps a term that appears on every page from scoring exactly zero.
+    idf = {t: math.log(total / (1 + n)) + 1 for t, n in seen_in.items()}
+
+    for entry in entries:
+        weights = Counter(terms(entry.q))
+        weights.update(terms(entry.answer))
+        weights.update(terms(entry.answer))  # the answer pins the passage
+
+        best, runner, at = 0.0, 0.0, None
+        for index, page in enumerate(counts):
+            score = sum(n * page.get(t, 0) * idf.get(t, 0.0) for t, n in weights.items())
+            if score > best:
+                best, runner, at = score, best, index
+            elif score > runner:
+                runner = score
+
+        if at is None:
+            continue
+        entry.page = at + 1  # PDF pages are 1-based, and so is the printed material
+        # The last chapter that begins at or before this page, not the first.
+        entry.chapter = max((n for n, (start, _) in enumerate(chapters, 1)
+                             if entry.page >= start), default=None)
+        # A weak or ambiguous match is flagged rather than trusted silently.
+        entry.grounded = best > 0 and (runner / best if best else 1) < 0.85
 
 
 def fetch(force: bool = False) -> int:
@@ -263,6 +355,7 @@ def extract() -> int:
         return 1
 
     entries, rejected = build()
+    locate(entries)
     BANK.parent.mkdir(parents=True, exist_ok=True)
     BANK.write_text("".join(e.as_json() + "\n" for e in entries), encoding="utf-8")
     report(entries)

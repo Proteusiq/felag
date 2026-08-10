@@ -1,5 +1,5 @@
 /* ============================================================
-   Félag — Vejen til Valhalla
+   Félag · Vejen til Valhalla
    Palette shifts with the journey: dawn on the shore, dusk at
    the Ting, night at the Alting. Everything animated here is
    transform/opacity only, so it stays on the compositor.
@@ -21,6 +21,18 @@
   --bjorn:#e0932e;
 
   --ease:cubic-bezier(.2,.8,.3,1);
+
+  /* Type.
+     Fraunces for display: a variable serif whose SOFT and WONK axes give
+     slightly irregular, carved letterforms. Reads as hand-cut rather than
+     costume, and its ø and å are properly drawn rather than bolted on.
+     Atkinson Hyperlegible for everything read closely: it was designed for
+     maximum character distinction, which is not a style preference here.
+     Most people using this are reading Danish as a second language and must
+     tell apart dates, proper nouns and near-identical answer options. */
+  --display:'Fraunces', Georgia, serif;
+  --text:'Atkinson Hyperlegible', system-ui, sans-serif;
+  --carved:'SOFT' 40, 'WONK' 1;
 }
 
 /* time of day: only these four change between scenes */
@@ -37,7 +49,7 @@ html,body{
   margin:0; min-height:100%;
   background:var(--bg);
   color:var(--parchment);
-  font-family:'Work Sans',system-ui,sans-serif;
+  font-family:var(--text);
   overflow-x:hidden;
   transition:background .9s ease;
 }
@@ -59,7 +71,7 @@ a{ color:var(--parchment); text-underline-offset:3px; }
   backdrop-filter:blur(8px);
   border-bottom:1px solid rgba(231,220,194,.1);
 }
-.hud-title{ font-family:'Fraunces',serif; font-weight:600; font-size:15px; }
+.hud-title{ font-family:var(--display); font-weight:600; font-size:15px; }
 .hud-meta{ margin-left:auto; font-size:12px; color:var(--parchment-dim); font-variant-numeric:tabular-nums; }
 .hud-back{ background:none; border:none; color:var(--parchment-dim); font:inherit; font-size:13px; cursor:pointer; padding:4px; }
 .hud-back:hover{ color:var(--parchment); }
@@ -78,7 +90,7 @@ a{ color:var(--parchment); text-underline-offset:3px; }
 .pennant{ display:inline-flex; }
 
 .title{
-  font-family:'Fraunces',serif; font-weight:700;
+  font-family:var(--display); font-weight:700; font-variation-settings:var(--carved);
   font-size:clamp(32px,5.2vw,54px); margin:0 0 8px; text-align:center;
   text-shadow:0 2px 30px rgba(0,0,0,.45);
 }
@@ -107,7 +119,7 @@ a{ color:var(--parchment); text-underline-offset:3px; }
 }
 .char figure{ margin:0; width:100%; aspect-ratio:1/1.08; }
 .char svg{ width:100%; height:100%; filter:drop-shadow(0 8px 12px rgba(0,0,0,.4)); }
-.char b{ font-family:'Fraunces',serif; font-weight:600; font-size:16px; margin-top:8px; }
+.char b{ font-family:var(--display); font-weight:600; font-variation-settings:var(--carved); font-size:16px; margin-top:8px; }
 .char span{ font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); margin-top:2px; }
 
 /* idle life: breathing + blink, desynchronised per character */
@@ -126,8 +138,8 @@ a{ color:var(--parchment); text-underline-offset:3px; }
   padding:20px 24px; display:flex; flex-direction:column; gap:5px;
   transition:border-color .3s ease;
 }
-.banner-name{ font-family:'Fraunces',serif; font-weight:700; font-size:14px; letter-spacing:.05em; text-transform:uppercase; }
-.banner-line{ font-family:'Fraunces',serif; font-style:italic; font-size:19px; line-height:1.4; }
+.banner-name{ font-family:var(--display); font-weight:700; font-size:14px; letter-spacing:.05em; text-transform:uppercase; }
+.banner-line{ font-family:var(--display); font-style:italic; font-size:19px; line-height:1.4; }
 .banner-strength{ font-size:13px; color:var(--parchment-dim); }
 .banner-empty{ margin:auto; font-style:italic; color:var(--parchment-dim); font-size:14px; }
 
@@ -152,7 +164,7 @@ a{ color:var(--parchment); text-underline-offset:3px; }
 .walker svg{ width:100%; height:100%; transform:translateY(7px) scale(1.35); }
 .path-kicker{ margin:0; font-size:12px; letter-spacing:.14em; text-transform:uppercase; color:var(--parchment-dim); }
 .path-kicker span{ color:var(--ember); }
-.path-title{ font-family:'Fraunces',serif; font-weight:700; font-size:clamp(23px,3.4vw,32px); margin:2px 0 0; }
+.path-title{ font-family:var(--display); font-weight:700; font-variation-settings:var(--carved); font-size:clamp(23px,3.4vw,32px); margin:2px 0 0; }
 .path-sub{ max-width:560px; text-align:center; font-size:14px; line-height:1.6; color:var(--parchment-dim); margin:16px 0 34px; }
 
 .modes{ display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px; width:100%; max-width:860px; }
@@ -166,7 +178,7 @@ a{ color:var(--parchment); text-underline-offset:3px; }
 }
 .mode:hover{ transform:translateY(-4px); border-color:var(--accent); }
 .mode:focus-visible{ outline:2px solid var(--ember); outline-offset:3px; }
-.mode h3{ font-family:'Fraunces',serif; font-weight:600; font-size:19px; margin:0 0 2px; }
+.mode h3{ font-family:var(--display); font-weight:600; font-variation-settings:var(--carved); font-size:19px; margin:0 0 2px; }
 .mode .en{ font-size:12px; color:var(--parchment-dim); font-style:italic; }
 .mode p{ font-size:13px; line-height:1.55; color:var(--parchment-dim); margin:10px 0 0; }
 .mode .tag{ display:inline-block; margin-top:12px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); }
@@ -188,7 +200,7 @@ a{ color:var(--parchment); text-underline-offset:3px; }
   background:linear-gradient(180deg,rgba(42,62,60,.8),rgba(20,32,34,.86));
   border:1px solid rgba(231,220,194,.11);
 }
-.q{ font-family:'Fraunces',serif; font-weight:600; font-size:19px; line-height:1.42; margin:0 0 18px; }
+.q{ font-family:var(--display); font-weight:600; font-size:19px; line-height:1.42; margin:0 0 18px; }
 
 .opt{
   display:flex; align-items:center; gap:12px; width:100%; text-align:left;
@@ -207,11 +219,37 @@ a{ color:var(--parchment); text-underline-offset:3px; }
 .opt.miss em{ border-color:var(--dannebrog); background:var(--dannebrog); color:#fff; }
 @keyframes shake{ 0%,100%{transform:none} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
 
-.why{ margin-top:16px; padding-top:16px; border-top:1px solid rgba(231,220,194,.12); animation:rise .35s var(--ease) both; }
-.why .lbl{ display:flex; align-items:center; gap:7px; font-family:'Fraunces',serif; font-style:italic; font-weight:600; font-size:13px; color:var(--ember); margin:0 0 8px; }
-.why p{ font-size:14px; line-height:1.65; margin:0; }
-.why .src{ display:block; margin-top:10px; font-size:11px; color:var(--parchment-dim); font-style:italic; }
-.why .src b{ color:var(--parchment); font-weight:600; }
+/* ---------- the panel that opens once you have answered ----------
+   The reward for answering is not a tick, it is a thing worth knowing.
+   A relic marks it, the passage explains it, and the provenance line
+   says when SIRI actually asked it. */
+.why{ margin-top:18px; padding-top:18px; border-top:1px solid rgba(231,220,194,.12); animation:rise .4s var(--ease) both; }
+.why .lbl{
+  display:flex; align-items:center; gap:9px; margin:0 0 10px;
+  font-family:var(--display); font-variation-settings:var(--carved);
+  font-style:italic; font-weight:600; font-size:14px; letter-spacing:.03em; color:var(--ember);
+}
+.why .lbl svg{ width:19px; height:19px; flex:0 0 auto; color:var(--ember); }
+.why .lbl svg{ animation:relic .5s var(--ease) both; }
+@keyframes relic{ from{ opacity:0; transform:translateY(4px) rotate(-8deg); } to{ opacity:1; transform:none; } }
+.why p{ font-size:14.5px; line-height:1.68; margin:0; }
+.why p + p{ margin-top:9px; }
+
+.why .src{
+  display:block; margin-top:12px; padding-top:10px;
+  border-top:1px dashed rgba(231,220,194,.14);
+  font-size:11.5px; line-height:1.6; color:var(--parchment-dim); font-style:italic;
+}
+.why .src b{ color:var(--parchment); font-weight:700; font-style:normal; }
+.why .src a{ color:var(--parchment-dim); }
+
+/* Shown when the world has moved since the question was set. */
+.why .caution{
+  display:flex; gap:9px; margin-top:12px; padding:11px 13px; border-radius:9px;
+  background:rgba(224,121,60,.08); border:1px solid rgba(224,121,60,.32);
+  font-size:12.5px; line-height:1.55; font-style:normal; color:var(--parchment);
+}
+.why .caution svg{ width:15px; height:15px; flex:0 0 auto; margin-top:2px; color:var(--ember); }
 
 .quiz-nav{ display:flex; justify-content:space-between; align-items:center; width:100%; margin-top:18px; }
 .quiz-nav .btn.primary{ margin-top:0; }
@@ -219,10 +257,10 @@ a{ color:var(--parchment); text-underline-offset:3px; }
 /* ---------- result ---------- */
 .result{ text-align:center; max-width:560px; }
 .result .lead{ text-transform:uppercase; letter-spacing:.16em; font-size:12px; color:var(--parchment-dim); margin:0; }
-.result .score{ font-family:'Fraunces',serif; font-weight:700; font-size:52px; margin:8px 0 2px; font-variant-numeric:tabular-nums; }
+.result .score{ font-family:var(--display); font-weight:700; font-variation-settings:var(--carved); font-size:52px; margin:8px 0 2px; font-variant-numeric:tabular-nums; }
 .result .score.pass{ color:var(--green); }
 .result .score.fail{ color:var(--ember); }
-.result .verdict{ font-family:'Fraunces',serif; font-style:italic; font-size:18px; margin:6px 0 0; }
+.result .verdict{ font-family:var(--display); font-style:italic; font-size:18px; margin:6px 0 0; }
 .result p.note{ font-size:14px; line-height:1.6; color:var(--parchment-dim); margin:14px 0 0; }
 .result .gate{ margin-top:18px; padding:12px 14px; border-radius:9px; font-size:13px; line-height:1.5; border:1px solid rgba(231,220,194,.14); background:rgba(231,220,194,.04); }
 .result .gate.ok{ border-color:rgba(106,156,90,.5); }

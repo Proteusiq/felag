@@ -1,0 +1,38 @@
+/* Self-hosted so the site makes no third-party request and the files
+   never change under us. Latin subset only; Danish æ ø å live there. */
+
+@font-face{
+  font-family:'Fraunces';
+  font-style:italic;
+  font-weight:400 700;
+  font-display:swap;
+  src:url('../assets/fonts/fraunces-400_700-italic.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Fraunces';
+  font-style:normal;
+  font-weight:400 700;
+  font-display:swap;
+  src:url('../assets/fonts/fraunces-400_700-normal.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Atkinson Hyperlegible';
+  font-style:italic;
+  font-weight:400;
+  font-display:swap;
+  src:url('../assets/fonts/atkinson-400-italic.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Atkinson Hyperlegible';
+  font-style:normal;
+  font-weight:400;
+  font-display:swap;
+  src:url('../assets/fonts/atkinson-400-normal.woff2') format('woff2');
+}
+@font-face{
+  font-family:'Atkinson Hyperlegible';
+  font-style:normal;
+  font-weight:700;
+  font-display:swap;
+  src:url('../assets/fonts/atkinson-700-normal.woff2') format('woff2');
+}
