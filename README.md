@@ -6,6 +6,7 @@
 
 [![Open the site](https://img.shields.io/badge/Begynd%20vandringen-proteusiq.github.io%2Ffelag-e0793c?style=for-the-badge)](https://proteusiq.github.io/felag/)
 
+[![Version](https://img.shields.io/badge/version-0.0.1-e0793c?style=flat-square)](https://github.com/Proteusiq/felag/releases)
 [![Questions](https://img.shields.io/badge/spørgsmål-508-2a3e3c?style=flat-square)](data/questions.jsonl)
 [![Papers](https://img.shields.io/badge/prøver-13%20(2020–2026)-2a3e3c?style=flat-square)](https://danskogproever.dk/borger/indfoedsretsproeve-statsborgerskab/forberedelse-til-indfoedsretsproeven/)
 [![Price](https://img.shields.io/badge/pris-0%20kr-6a9c5a?style=flat-square)](#)
@@ -68,8 +69,18 @@ without ever barring the door.
 | V | Dansk kulturliv | 46 |
 | VI | Temaopslag | 111 |
 
-Beyond them stand **Tinget**, the five questions on Danish values, and
-**Altinget**, the whole paper on the clock.
+Beyond them stand:
+
+- **Tidslinjen**, chapter 1 sailed period by period, from the vikings to now
+- **Dysten**, a race against Bjørn or against a friend, where the boat moves on correct answers rather than speed
+- **Tinget**, the five values questions, taught as ten principles rather than drilled
+- **Altinget**, the whole paper on the clock
+
+A challenge is a link and nothing else. The seed rebuilds the identical paper,
+in the same order, with the same option order, so the race is fair without a
+server, an account or a database behind it.
+
+    #dyst=dyst~1toqq5u~111011100111001
 
 ## Two things the papers gave up under questioning
 
