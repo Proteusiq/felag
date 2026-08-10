@@ -154,7 +154,7 @@ function hallMode(hall, index) {
     da: `Hal ${hall.numeral}. ${hall.da}`,
     accent: hall.accent,
     hall, index,
-    build: () => weighted(stock, Math.min(12, stock.length)),
+    build: (rand) => weighted(stock, Math.min(12, stock.length), rand),
   };
 }
 
@@ -191,7 +191,14 @@ const MODES = [
     id: 'ovelse', da: 'Øvelse', en: 'Practice', accent: '--freja',
     blurb: 'Tilfældige spørgsmål fra lærematerialet, vægtet efter hvor ofte SIRI faktisk har stillet dem.',
     tag: 'Ubegrænset',
-    build: () => weighted(pool('laeremateriale'), 15),
+    build: (rand) => weighted(pool('laeremateriale'), 15, rand),
+  },
+  {
+    id: 'dyst', da: 'Dysten', en: 'The duel', accent: '--bjorn',
+    blurb: 'Ro om kap med Bjørn over 15 spørgsmål. Båden flytter sig efter rigtige svar, ikke efter tid, så det er præcision der afgør det.',
+    tag: 'Mod Bjørn',
+    duel: true,
+    build: (rand) => weighted(pool('laeremateriale'), 15, rand),
   },
   {
     id: 'tid', da: 'Tidslinjen', en: 'The timeline', accent: '--astrid',
@@ -204,19 +211,19 @@ const MODES = [
     blurb: 'De 5 værdispørgsmål. Du skal have mindst 4 rigtige, ellers dumper du hele prøven uanset resten. Lær principperne først.',
     tag: 'Kræver 4 af 5',
     teaches: true, ting: true,
-    build: () => pick(pool('vaerdier'), RULES.values),
+    build: (rand) => pick(pool('vaerdier'), RULES.values, rand),
     gate: { need: RULES.valuesPass, of: RULES.values },
   },
   {
     id: 'alting', da: 'Altinget', en: 'The full assembly', accent: '--thor',
     blurb: 'Hele prøven under rigtige regler: 45 spørgsmål, 36 for at bestå, og mindst 4 af 5 værdispørgsmål.',
     tag: '45 spørgsmål',
-    build: () => [
-      ...pick(pool('laeremateriale'), 35),
+    build: (rand) => [
+      ...pick(pool('laeremateriale'), 35, rand),
       // Only the freshest current-affairs questions, and even those are
       // labelled. On the day, these five will be about your own year.
-      ...pick(recent(pool('aktuelt')), 5),
-      ...pick(pool('vaerdier'), 5),
+      ...pick(recent(pool('aktuelt')), 5, rand),
+      ...pick(pool('vaerdier'), 5, rand),
     ],
     exam: true,
   },
@@ -246,7 +253,7 @@ const leave = (mode) => mode?.ting ? showTing()
 const usable = (q) => q.status !== 'outdated';
 
 const pool = (section) => state.bank.filter((q) => q.section === section && usable(q));
-const pick = (list, n) => shuffle(list, Math.random).slice(0, Math.min(n, list.length));
+const pick = (list, n, rand) => shuffle(list, rand).slice(0, Math.min(n, list.length));
 
 /** The newest sittings only; older current-affairs answers have moved on. */
 function recent(list) {
@@ -256,13 +263,16 @@ function recent(list) {
   return list.filter((q) => latest(q) >= cutoff);
 }
 
-/** Frequency-weighted draw: questions SIRI asks often come up more. */
-function weighted(list, n) {
+/** Frequency-weighted draw: questions SIRI asks often come up more.
+    Takes the run's own generator, so the same seed always yields the same paper
+    and two people can be given an identical one. */
+function weighted(list, n, rand) {
   const bag = list.flatMap((q) => Array(Math.min(q.seen.length, 4)).fill(q));
   const out = [];
   const taken = new Set();
-  while (out.length < Math.min(n, list.length) && bag.length) {
-    const q = bag[Math.floor(Math.random() * bag.length)];
+  let guard = 0;
+  while (out.length < Math.min(n, list.length) && bag.length && guard++ < 5000) {
+    const q = bag[Math.floor(rand() * bag.length)];
     if (!taken.has(q.id)) { taken.add(q.id); out.push(q); }
   }
   return out;
@@ -387,7 +397,7 @@ function eraMode(era) {
   const stock = era.questions.map(byQuestion).filter((q) => q.id && usable(q));
   return {
     id: `tid-${era.page}`, da: era.title, accent: '--astrid', time: true,
-    build: () => weighted(stock, Math.min(12, stock.length)),
+    build: (rand) => weighted(stock, Math.min(12, stock.length), rand),
   };
 }
 
@@ -426,7 +436,7 @@ function principleMode(p) {
   const stock = state.bank.filter((q) => p.questions.includes(q.id) && usable(q));
   return {
     id: `princip-${p.id}`, da: p.title, accent: '--ingrid', ting: true,
-    build: () => shuffle(stock, Math.random),
+    build: (rand) => shuffle(stock, rand),
   };
 }
 
@@ -443,14 +453,15 @@ const BOAT = `<svg viewBox="0 0 38 30" fill="none" xmlns="http://www.w3.org/2000
     <circle cx="19" cy="14.5" r="2.4" fill="currentColor"/>
   </g></svg>`;
 
-function start(modeId, override) {
+function start(modeId, override, ghost) {
   const mode = override ?? MODES.find((m) => m.id === modeId);
-  const seed = Date.now();
-  const questions = mode.build().map((q) => present(q, seed));
+  const seed = ghost?.seed ?? (Date.now() >>> 0);
+  const questions = mode.build(rng(seed)).map((q) => present(q, seed));
   if (!questions.length) return;
 
   state.run = {
     mode, seed, questions, i: 0, marks: Array(questions.length).fill(null),
+    ghost: ghost ?? null,
     deadline: mode.exam ? Date.now() + RULES.minutes * 60000 : null,
   };
   $('hudTitle').textContent = mode.da;
@@ -470,15 +481,67 @@ function tick() {
   setTimeout(tick, 1000);
 }
 
+/**
+ * A challenge is a seed plus a record of who got what right, small enough to
+ * live in a link. No server, no accounts: the run rebuilds itself from the seed,
+ * so both people are given exactly the same paper in the same order.
+ */
+const packRun = (run) => [
+  run.mode.id, run.seed.toString(36),
+  run.marks.map((m) => (m ? '1' : '0')).join(''),
+].join('~');
+
+function unpackRun(text) {
+  const [id, seed, bits] = (text ?? '').split('~');
+  if (!id || !seed || !bits || !/^[01]+$/.test(bits)) return null;
+  return { modeId: id, seed: parseInt(seed, 36), marks: [...bits].map((b) => b === '1') };
+}
+
+/** Rebuild any mode from the id stored in a challenge link. */
+function modeById(id) {
+  if (id?.startsWith('hal-')) {
+    const n = Number(id.slice(4));
+    const i = HALLS.findIndex((h) => h.chapter === n);
+    return i < 0 ? null : hallMode(HALLS[i], i);
+  }
+  if (id?.startsWith('tid-')) {
+    const era = state.eras.find((e) => e.page === Number(id.slice(4)));
+    return era ? eraMode(era) : null;
+  }
+  if (id?.startsWith('princip-')) {
+    const p = state.principles.find((x) => x.id === id.slice(8));
+    return p ? principleMode(p) : null;
+  }
+  return MODES.find((m) => m.id === id) ?? null;
+}
+
+/** Bjørn does not need a recorded run: his is derived from the same seed. */
+function houseGhost(modeId, seed, accuracy = 0.72) {
+  const rand = rng(seed ^ 0x5bd1e995);
+  return { modeId, seed, name: 'Bjørn', house: true,
+           marks: Array.from({ length: 64 }, () => rand() < accuracy) };
+}
+
 /** Advance the crossing. One stroke of the oars per question answered. */
 function renderRow(stroke) {
-  const { marks, i } = state.run;
+  const { marks, i, ghost } = state.run;
   const row = $('row');
   $('rowTrack').innerHTML = marks
     .map((m) => `<i class="${m === true ? 'hit' : m === false ? 'miss' : ''}"></i>`).join('');
   $('rowBoat').innerHTML = BOAT;
-  const done = marks.filter((m) => m !== null).length;
-  row.style.setProperty('--p', (done / marks.length).toFixed(4));
+  $('rowGhost').innerHTML = state.run.ghost ? BOAT : '';
+  $('rowGhost').hidden = !state.run.ghost;
+  // Position is correct answers, not questions seen. The race is on accuracy,
+  // which is what the exam actually measures.
+  const answered = marks.filter((m) => m !== null).length;
+  const mine = marks.filter(Boolean).length;
+  row.style.setProperty('--p', (mine / marks.length).toFixed(4));
+
+  if (ghost) {
+    const theirs = ghost.marks.slice(0, answered).filter(Boolean).length;
+    row.style.setProperty('--g', (theirs / marks.length).toFixed(4));
+    row.classList.toggle('behind', answered > 0 && mine < theirs);
+  }
 
   if (!stroke) return;
   row.classList.remove('stroke', 'stumble');
@@ -622,6 +685,8 @@ function next() {
 /* ---------- result ---------- */
 function finish() {
   const { mode, questions, marks } = state.run;
+  const finished = state.run;
+  const state_seed = state.run.seed;
   const score = marks.filter(Boolean).length;
   const valuesIdx = questions.map((q, i) => (q.section === 'vaerdier' ? i : -1)).filter((i) => i >= 0);
   const valuesScore = valuesIdx.filter((i) => marks[i]).length;
@@ -653,6 +718,9 @@ function finish() {
     ? (passed ? 'Bestået' : 'Ikke bestået')
     : (passed === null ? 'Gennemført' : passed ? 'Bestået' : 'Ikke bestået');
 
+  const ghost = state.run.ghost;
+  const theirs = ghost ? ghost.marks.slice(0, questions.length).filter(Boolean).length : null;
+
   state.best[mode.id] = Math.max(state.best[mode.id] ?? 0, score);
   // Clearing a hall opens the next one, and only ever forwards.
   if (mode.hall && passed) {
@@ -675,14 +743,27 @@ function finish() {
       : `<p class="note">${score === questions.length
           ? 'Fejlfrit. Tag Altinget, når du er klar til hele prøven.'
           : 'Gennemgå de forkerte, og tag den igen. Spørgsmålene blandes hver gang.'}</p>`}
+    ${ghost ? `<div class="gate ${score >= theirs ? 'ok' : 'no'}">
+        ${ghost.name ?? 'Udfordreren'}: <b>${theirs} af ${questions.length}</b> rigtige.
+        ${score > theirs ? 'Du vandt kapsejladsen.'
+          : score === theirs ? 'Uafgjort. I nåede land samtidig.'
+          : 'Du kom i land efter ' + (ghost.name ?? 'udfordreren') + '.'}
+      </div>` : ''}
     <div class="actions">
       <button class="btn primary" id="againBtn" type="button">Prøv igen</button>
-      <button class="btn ghost" id="backPathBtn" type="button">Tilbage til vejen</button>
+      <button class="btn ghost" id="shareBtn" type="button">Udfordr en ven</button>
+      <button class="btn ghost" id="backPathBtn" type="button">Tilbage</button>
     </div>`;
 
   $('hudMeta').textContent = '';
   go('viewResult', sceneFor(mode));
-  $('againBtn').onclick = () => start(mode.id, mode);
+  $('againBtn').onclick = () => start(mode.id, mode, ghost && houseGhost(mode.id, state_seed));
+  $('shareBtn').onclick = async (e) => {
+    // The whole challenge travels in the fragment, so nothing is stored anywhere.
+    const link = `${location.origin}${location.pathname}#dyst=${packRun(finished)}`;
+    try { await navigator.clipboard.writeText(link); e.target.textContent = 'Link kopieret'; }
+    catch { prompt('Kopiér linket:', link); }
+  };
   $('backPathBtn').onclick = () => leave(mode);
   state.run = null;
 }
@@ -721,6 +802,18 @@ async function main() {
 
   renderShore();
   if (state.guide) choose(state.guide);
+
+  // A challenge link carries everything needed to replay the same paper.
+  const challenge = unpackRun(new URLSearchParams(location.hash.slice(1)).get('dyst'));
+  if (challenge) {
+    const mode = modeById(challenge.modeId);
+    history.replaceState(null, '', location.pathname);
+    if (mode) {
+      scenes.show('hall');
+      $('boot').hidden = true;
+      return start(mode.id, mode, { ...challenge, name: 'Din udfordrer' });
+    }
+  }
   $('soundToggle').textContent = state.sound ? 'Lyd til' : 'Lyd fra';
   $('soundToggle').setAttribute('aria-pressed', String(state.sound));
 
@@ -743,9 +836,13 @@ $('modes').addEventListener('click', (e) => {
   // Tinget teaches before it tests. The values questions barely repeat between
   // papers (46 unique out of 50 asked), so drilling the old ones trains for a
   // question that will not be asked. The principles behind them do repeat.
-  const teaches = MODES.find((m) => m.id === btn.dataset.id)?.teaches;
-  if (teaches === 'time') return showTime();
-  if (teaches) return showTing();
+  const mode = MODES.find((m) => m.id === btn.dataset.id);
+  if (mode?.teaches === 'time') return showTime();
+  if (mode?.teaches) return showTing();
+  if (mode?.duel) {
+    const seed = Date.now() >>> 0;
+    return start(mode.id, null, houseGhost(mode.id, seed));
+  }
   start(btn.dataset.id);
 });
 $('halls').addEventListener('click', (e) => {

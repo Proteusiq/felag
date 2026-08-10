@@ -356,6 +356,18 @@ a{ color:var(--parchment); text-underline-offset:3px; }
 .row.stumble .row-boat{ animation:stumble .45s ease; }
 @keyframes stumble{ 0%,100%{ transform:none } 35%{ transform:translateX(-5px) rotate(-5deg) } }
 
+/* The challenger's boat, sailing the same water a little behind or ahead. */
+.row-ghost{
+  position:absolute; top:4px; width:38px; height:30px;
+  left:calc(var(--g,0) * (100% - 44px));
+  transition:left .6s var(--ease);
+  color:var(--parchment-dim); opacity:.42;
+}
+.row-ghost[hidden]{ display:none !important; }
+.row-ghost svg{ width:100%; height:100%; display:block; }
+.row-ghost .oars{ display:none; }
+.row.behind .row-boat{ color:var(--ember); }
+
 .row-track{                            /* one tick per question, under the water */
   position:absolute; left:0; right:0; top:42px; height:6px;
   display:flex; align-items:center; gap:3px;
