@@ -116,6 +116,19 @@ const sfx = {
    ============================================================ */
 const HALL_PASS = 0.8;   // the real paper needs 36 of 45, the same ratio
 
+/* Drawn rather than typed. The old markup used a tick entity and bare words,
+   which sat badly next to everything else and could not take the accent colour. */
+const ICON = {
+  shut: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+    <rect x="3" y="7" width="10" height="7" rx="1.6"/><path d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2"/></svg>`,
+  open: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round">
+    <rect x="3" y="7" width="10" height="7" rx="1.6"/><path d="M5.5 7V5a2.5 2.5 0 0 1 4.9-.6"/></svg>`,
+  done: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3.2 8.4 6.4 11.6 12.8 4.8"/></svg>`,
+  chevron: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M4 6.5 8 10.5 12 6.5"/></svg>`,
+};
+
 const HALLS = [
   { numeral: 'I', chapter: 1, accent: '--thor', da: 'Danmarks historie', en: "Denmark's history",
     topics: ['Vikingetid', 'Middelalder', 'Enevælden', 'De slesvigske krige', 'Verdenskrigene', 'Velfærd og oprør'] },
@@ -151,16 +164,17 @@ function renderHalls() {
     const shut = i > cleared;
     const done = i < cleared;
     const stock = inChapter(hall.chapter).length;
-    const state_ = done ? 'Ryddet' : shut ? 'Låst' : 'Åben';
+    const mark = done ? ICON.done : shut ? ICON.shut : ICON.open;
+    const label = done ? 'Ryddet' : shut ? 'Låst' : 'Åben';
     return `<div class="hall ${done ? 'done' : ''} ${shut ? 'shut' : ''}"
         style="--accent:var(${hall.accent}); --d:${i * 0.06}s">
         <span class="thread"></span>
-        <span class="node">${done ? '&#10003;' : hall.numeral}</span>
+        <span class="node">${done ? ICON.done : hall.numeral}</span>
         <button class="body" type="button" data-i="${i}" ${shut ? 'disabled' : ''}>
           <span class="names">
             <span class="da">${hall.da}</span>
             <span class="en">${hall.en}</span>
-            <span class="state">${state_}</span>
+            <span class="state">${mark}${label}</span>
           </span>
           <span class="chips">${hall.topics.map((t) => `<span>${t}</span>`).join('')}
             <span>${stock} spørgsmål</span></span>
@@ -336,7 +350,8 @@ function showTing() {
     <div class="principle" data-id="${p.id}" style="--d:${i * 0.05}s">
       <button type="button" aria-expanded="false">
         <h4><span class="n">${String(i + 1).padStart(2, '0')}</span>${p.title}
-          <span class="count">${p.questions.length} spørgsmål</span></h4>
+          <span class="count">${p.questions.length} spørgsmål</span>
+          <span class="chev">${ICON.chevron}</span></h4>
         <p class="rule">${p.rule}</p>
       </button>
     </div>`).join('');
@@ -368,12 +383,17 @@ function principleMode(p) {
 }
 
 /* ---------- quiz ---------- */
-const SHIP = `<svg viewBox="0 0 24 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <path d="M3 13.2C5 15.6 8.6 16.6 12 16.6c3.4 0 7-1 9-3.4-3 1.2-6.6 1.5-9 1.5-2.4 0-6-.3-9-1.5Z" fill="currentColor"/>
-  <path d="M3.4 13C1.9 12.1 1.3 9.9 2.2 7.9c.6 1.5 1.5 2.7 2.7 3.6-.5.6-1 1.1-1.5 1.5Z" fill="currentColor"/>
-  <path d="M20.6 13c1.9-1.7 2.6-4.7 1.4-7.3-.6 1.8-1.7 3.4-3.4 4.5.7 1 1.4 2 2 2.8Z" fill="currentColor"/>
-  <rect x="11.5" y="3.2" width="1" height="10.4" fill="currentColor"/>
-  <path d="M8.2 4.6c0-.6.5-1 1.1-1h5.4c.6 0 1.1.4 1.1 1l-.7 4.5c-1.6.9-4.6.9-6.2 0Z" fill="currentColor"/></svg>`;
+/* A rowing boat, oars out. Not a longship under sail: you are the one pulling. */
+const BOAT = `<svg viewBox="0 0 38 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g class="oars" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" opacity=".85">
+    <path d="M13 17 4 11"/><path d="M25 17l9-6"/>
+  </g>
+  <g class="hull">
+    <path d="M6 18c2.4 3.1 7.4 4.4 13 4.4S29.6 21.1 32 18c-3.6 1.4-8.2 1.9-13 1.9S9.6 19.4 6 18Z" fill="currentColor"/>
+    <path d="M6.4 17.9C4.6 16.7 4 14.2 5.1 12c.7 1.8 1.8 3.2 3.2 4.3-.7.6-1.3 1.1-1.9 1.6Z" fill="currentColor"/>
+    <path d="M31.6 17.9c1.8-1.2 2.4-3.7 1.3-5.9-.7 1.8-1.8 3.2-3.2 4.3.7.6 1.3 1.1 1.9 1.6Z" fill="currentColor"/>
+    <circle cx="19" cy="14.5" r="2.4" fill="currentColor"/>
+  </g></svg>`;
 
 function start(modeId, override) {
   const mode = override ?? MODES.find((m) => m.id === modeId);
@@ -402,10 +422,20 @@ function tick() {
   setTimeout(tick, 1000);
 }
 
-function renderFleet() {
+/** Advance the crossing. One stroke of the oars per question answered. */
+function renderRow(stroke) {
   const { marks, i } = state.run;
-  $('fleet').innerHTML = marks.map((m, n) =>
-    `<i class="${m === true ? 'hit' : m === false ? 'miss' : n === i ? 'now' : ''}">${SHIP}</i>`).join('');
+  const row = $('row');
+  $('rowTrack').innerHTML = marks
+    .map((m) => `<i class="${m === true ? 'hit' : m === false ? 'miss' : ''}"></i>`).join('');
+  $('rowBoat').innerHTML = BOAT;
+  const done = marks.filter((m) => m !== null).length;
+  row.style.setProperty('--p', (done / marks.length).toFixed(4));
+
+  if (!stroke) return;
+  row.classList.remove('stroke', 'stumble');
+  void row.offsetWidth;                       // restart the animation
+  row.classList.add(stroke === 'miss' ? 'stumble' : 'stroke');
 }
 
 function renderQuestion() {
@@ -414,7 +444,7 @@ function renderQuestion() {
   const letters = ['A', 'B', 'C'];
 
   if (!run.deadline) $('hudMeta').textContent = `${run.i + 1} / ${run.questions.length}`;
-  renderFleet();
+  renderRow();
   $('quizNext').disabled = true;
   $('quizNextLabel').textContent =
     run.i === run.questions.length - 1 ? 'Afslut' : 'Næste';
@@ -441,7 +471,7 @@ function answer(chosen) {
   opts[q.answerAt].classList.add('hit');
   if (!right) opts[chosen].classList.add('miss');
   right ? sfx.hit() : sfx.miss();
-  renderFleet();
+  renderRow(right ? 'stroke' : 'miss');
 
   $('quizCard').append(buildWhy(q, right));
   $('quizNext').disabled = false;

@@ -201,7 +201,12 @@ a{ color:var(--parchment); text-underline-offset:3px; }
 .hall .names{ display:flex; align-items:baseline; gap:9px; flex-wrap:wrap; }
 .hall .da{ font-family:var(--display); font-variation-settings:var(--carved); font-weight:600; font-size:17px; }
 .hall .en{ font-size:12px; color:var(--parchment-dim); font-style:italic; }
-.hall .state{ margin-left:auto; font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--parchment-dim); }
+.hall .state{
+  margin-left:auto; display:inline-flex; align-items:center; gap:6px;
+  font-size:11px; letter-spacing:.09em; text-transform:uppercase; color:var(--parchment-dim);
+}
+.hall .state svg{ width:14px; height:14px; flex:0 0 auto; }
+.hall .node svg{ width:22px; height:22px; }
 .hall.done .state{ color:var(--accent); }
 .hall .chips{ display:flex; flex-wrap:wrap; gap:6px; margin-top:10px; }
 .hall .chips span{
@@ -256,6 +261,9 @@ a{ color:var(--parchment); text-underline-offset:3px; }
 }
 .principle h4 .n{ font-size:12px; color:var(--ember); letter-spacing:.1em; }
 .principle h4 .count{ margin-left:auto; font-size:11px; color:var(--parchment-dim); letter-spacing:.06em; text-transform:uppercase; }
+.principle h4 .chev{ display:inline-flex; color:var(--parchment-dim); transition:transform .25s var(--ease), color .25s ease; }
+.principle h4 .chev svg{ width:16px; height:16px; }
+.principle.open h4 .chev{ transform:rotate(180deg); color:var(--ember); }
 .principle .rule{ font-size:14px; line-height:1.6; color:var(--parchment); margin:0; }
 .principle .more{ padding:0 20px 18px; border-top:1px solid rgba(231,220,194,.1); }
 .principle .more p{ font-size:14px; line-height:1.7; color:var(--parchment-dim); margin:14px 0 0; }
@@ -264,12 +272,52 @@ a{ color:var(--parchment); text-underline-offset:3px; }
 
 /* ---------- quiz ---------- */
 .quiz{ max-width:660px; margin:0 auto; }
-.fleet{ display:flex; flex-wrap:wrap; gap:4px; justify-content:center; margin-bottom:22px; max-width:600px; }
-.fleet i{ width:17px; height:14px; color:rgba(231,220,194,.26); transition:color .3s ease, transform .3s var(--ease); }
-.fleet i svg{ width:100%; height:100%; display:block; }
-.fleet i.now{ color:var(--parchment); transform:scale(1.25) translateY(-1px); }
-.fleet i.hit{ color:var(--green); }
-.fleet i.miss{ color:var(--dannebrog); opacity:.75; transform:rotate(14deg); }
+/* ---------- the crossing ----------
+   You rowed ashore to get here, and the paper is the rest of that crossing.
+   Three stacked bands: the boat sits on the water, the answered questions are
+   ticks beneath it, and the far shore waits at the end. */
+.row{
+  position:relative; width:100%; max-width:600px; height:52px; margin:0 auto 20px;
+  --p:0;
+}
+.row::after{                          /* the water */
+  content:''; position:absolute; left:0; right:0; top:32px; height:2px; border-radius:2px;
+  background:linear-gradient(90deg,
+    rgba(231,220,194,.04) 0%, rgba(231,220,194,.24) 10%,
+    rgba(231,220,194,.24) 90%, rgba(231,220,194,.04) 100%);
+}
+.row-boat{
+  position:absolute; top:0; width:46px; height:36px; color:var(--parchment);
+  left:calc(var(--p) * (100% - 52px));
+  transition:left .6s var(--ease);
+  filter:drop-shadow(0 3px 5px rgba(0,0,0,.45));
+}
+.row-boat svg{ width:100%; height:100%; display:block; }
+.row-boat .hull{ transform-box:fill-box; transform-origin:50% 100%; animation:bob 3.4s ease-in-out infinite; }
+@keyframes bob{ 0%,100%{ transform:translateY(0) rotate(-1.4deg) } 50%{ transform:translateY(-2px) rotate(1.4deg) } }
+.row-boat .oars{ transform-box:fill-box; transform-origin:50% 45%; }
+.row.stroke .row-boat .oars{ animation:pull .6s var(--ease); }
+@keyframes pull{ 0%{ transform:rotate(-18deg) } 45%{ transform:rotate(15deg) } 100%{ transform:rotate(0) } }
+.row.stumble .row-boat{ animation:stumble .45s ease; }
+@keyframes stumble{ 0%,100%{ transform:none } 35%{ transform:translateX(-5px) rotate(-5deg) } }
+
+.row-track{                            /* one tick per question, under the water */
+  position:absolute; left:0; right:0; top:42px; height:6px;
+  display:flex; align-items:center; gap:3px;
+}
+.row-track i{
+  flex:1 1 0; height:3px; border-radius:2px;
+  background:rgba(231,220,194,.14); transition:background .35s ease, height .3s var(--ease);
+}
+.row-track i.hit{ background:var(--green); height:6px; }
+.row-track i.miss{ background:var(--dannebrog); height:6px; opacity:.75; }
+
+.row-shore{                            /* the far shore you are pulling towards */
+  position:absolute; right:0; top:22px; width:30px; height:12px; opacity:.4;
+  background:
+    radial-gradient(ellipse at 30% 100%, var(--parchment-dim) 0 55%, transparent 56%),
+    radial-gradient(ellipse at 75% 100%, var(--parchment-dim) 0 45%, transparent 46%);
+}
 
 .card{
   width:100%; padding:26px 24px; border-radius:14px;
