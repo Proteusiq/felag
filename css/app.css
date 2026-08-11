@@ -461,7 +461,7 @@ a{ color:var(--parchment); text-underline-offset:3px; }
 }
 .row-boat{
   position:absolute; top:0; width:46px; height:36px; color:var(--parchment);
-  left:calc(var(--p) * (100% - 52px));
+  left:var(--p);
   transition:left .6s var(--ease);
   filter:drop-shadow(0 3px 5px rgba(0,0,0,.45));
 }
@@ -473,11 +473,33 @@ a{ color:var(--parchment); text-underline-offset:3px; }
 @keyframes pull{ 0%{ transform:rotate(-18deg) } 45%{ transform:rotate(15deg) } 100%{ transform:rotate(0) } }
 .row.stumble .row-boat{ animation:stumble .45s ease; }
 @keyframes stumble{ 0%,100%{ transform:none } 35%{ transform:translateX(-5px) rotate(-5deg) } }
+.row.sinking::before{
+  content:''; position:absolute; left:var(--p); top:29px; width:54px; height:18px;
+  border-radius:50%; opacity:0;
+  background:radial-gradient(ellipse at 50% 50%, rgba(231,220,194,.38) 0 8%, transparent 10% 24%, rgba(231,220,194,.2) 27% 31%, transparent 33%);
+  animation:wake 1.1s ease-out forwards;
+}
+.row.sinking .row-boat{
+  animation:sinkboat 1.12s cubic-bezier(.2,.7,.3,1) forwards;
+  transform-origin:50% 100%;
+}
+.row.sinking .row-boat .hull,
+.row.sinking .row-boat .oars{ animation:none; }
+@keyframes sinkboat{
+  0%{ transform:translateY(0) rotate(0); opacity:1; }
+  20%{ transform:translateY(-3px) rotate(-8deg); opacity:1; }
+  100%{ transform:translateY(31px) rotate(23deg); opacity:.08; }
+}
+@keyframes wake{
+  0%{ transform:scale(.25); opacity:0; }
+  18%{ opacity:.85; }
+  100%{ transform:scale(1.45); opacity:0; }
+}
 
 /* The challenger's boat, sailing the same water a little behind or ahead. */
 .row-ghost{
   position:absolute; top:4px; width:38px; height:30px;
-  left:calc(var(--g,0) * (100% - 44px));
+  left:var(--g, 4%);
   transition:left .6s var(--ease);
   color:var(--parchment-dim); opacity:.42;
 }

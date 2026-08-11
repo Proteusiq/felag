@@ -51,6 +51,8 @@ function remember(list) {
    the 5 values questions. The values gate fails people who
    otherwise scored well, so it is modelled explicitly. */
 const RULES = { total: 45, pass: 36, values: 5, valuesPass: 4, minutes: 45 };
+const SINK_AFTER_WRONG = 6;
+const SINK_AFTER_VALUE_WRONG = 2;
 
 const state = {
   guide: null,
@@ -138,6 +140,7 @@ const sfx = {
   hit: () => { tone(660, 0.1); setTimeout(() => tone(990, 0.16), 70); },
   miss: () => tone(150, 0.22, 'triangle', 0.04),
   done: () => [523, 659, 784].forEach((f, i) => setTimeout(() => tone(f, 0.3), i * 110)),
+  sink: () => [220, 174, 130].forEach((f, i) => setTimeout(() => tone(f, 0.3, 'triangle', 0.06), i * 140)),
 };
 
 /* ============================================================
@@ -565,13 +568,17 @@ function tick() {
  */
 const packRun = (run) => [
   run.mode.id, run.seed.toString(36),
-  run.marks.map((m) => (m ? '1' : '0')).join(''),
+  run.marks.map((m) => (m === true ? '1' : m === false ? '0' : 'x')).join(''),
 ].join('~');
 
 function unpackRun(text) {
   const [id, seed, bits] = (text ?? '').split('~');
-  if (!id || !seed || !bits || !/^[01]+$/.test(bits)) return null;
-  return { modeId: id, seed: parseInt(seed, 36), marks: [...bits].map((b) => b === '1') };
+  if (!id || !seed || !bits || !/^[01x]+$/.test(bits)) return null;
+  return {
+    modeId: id,
+    seed: parseInt(seed, 36),
+    marks: [...bits].map((b) => b === 'x' ? null : b === '1'),
+  };
 }
 
 /** Rebuild any mode from the id stored in a challenge link. */
@@ -612,13 +619,19 @@ function renderRow(stroke) {
   // which is what the exam actually measures.
   const answered = marks.filter((m) => m !== null).length;
   const mine = marks.filter(Boolean).length;
-  row.style.setProperty('--p', (mine / marks.length).toFixed(4));
+
+  // One answer is one pull of the oars. Accuracy belongs in the wake markers;
+  // it must not leave the boat frozen at the shore after a wrong answer. Store
+  // a plain percentage rather than relying on CSS multiplication, which is not
+  // consistent across mobile engines.
+  row.style.setProperty('--p', `${2 + (answered / marks.length) * 90}%`);
 
   if (ghost) {
     const theirs = ghost.marks.slice(0, answered).filter(Boolean).length;
-    row.style.setProperty('--g', (theirs / marks.length).toFixed(4));
+    row.style.setProperty('--g', `${2 + (theirs / marks.length) * 90}%`);
     row.classList.toggle('behind', answered > 0 && mine < theirs);
   }
+  row.classList.toggle('sinking', Boolean(state.run.sunk));
 
   if (!stroke) return;
   row.classList.remove('stroke', 'stumble');
@@ -648,20 +661,43 @@ function renderQuestion() {
     btn.addEventListener('click', () => answer(Number(btn.dataset.n)), { once: true }));
 }
 
+function sinkReason(run) {
+  const wrong = run.marks.filter((mark) => mark === false).length;
+  if (wrong >= SINK_AFTER_WRONG) {
+    return `Seks fejl. Skibet tager for meget vand ind.`;
+  }
+
+  const valuesWrong = run.questions
+    .filter((question, index) => question.section === 'vaerdier' && run.marks[index] === false)
+    .length;
+  if (valuesWrong >= SINK_AFTER_VALUE_WRONG) {
+    return `To fejl i værdispørgsmålene. Tinget lader dig ikke passere.`;
+  }
+  return null;
+}
+
 function answer(chosen) {
   const run = state.run;
   const q = run.questions[run.i];
   const right = chosen === q.answerAt;
   run.marks[run.i] = right;
+  const sunk = right ? null : sinkReason(run);
+  run.sunk = sunk;
 
   const opts = [...$('quizCard').querySelectorAll('.opt')];
   opts.forEach((b) => { b.disabled = true; });
   opts[q.answerAt].classList.add('hit');
   if (!right) opts[chosen].classList.add('miss');
-  right ? sfx.hit() : sfx.miss();
+  right ? sfx.hit() : sunk ? sfx.sink() : sfx.miss();
   renderRow(right ? 'stroke' : 'miss');
 
   $('quizCard').append(buildWhy(q, right));
+  if (sunk) {
+    $('quizNext').disabled = true;
+    $('quizNextLabel').textContent = 'Skibet synker';
+    setTimeout(() => finish(), 1200);
+    return;
+  }
   $('quizNext').disabled = false;
 }
 
@@ -761,10 +797,14 @@ function next() {
 
 /* ---------- result ---------- */
 function finish() {
+  if (!state.run || state.run.finishing) return;
+  state.run.finishing = true;
   const { mode, questions, marks } = state.run;
   const finished = state.run;
   const state_seed = state.run.seed;
+  const sunk = state.run.sunk;
   const score = marks.filter(Boolean).length;
+  const answered = marks.filter((mark) => mark !== null).length;
   const valuesIdx = questions.map((q, i) => (q.section === 'vaerdier' ? i : -1)).filter((i) => i >= 0);
   const valuesScore = valuesIdx.filter((i) => marks[i]).length;
 
@@ -790,13 +830,16 @@ function finish() {
     // Decided here, with the other verdicts, so the label below sees it.
     passed = score / questions.length >= HALL_PASS;
   }
+  if (sunk) passed = false;
 
-  const label = mode.exam
+  const label = sunk
+    ? 'Skibet sank'
+    : mode.exam
     ? (passed ? 'Bestået' : 'Ikke bestået')
     : (passed === null ? 'Gennemført' : passed ? 'Bestået' : 'Ikke bestået');
 
   const ghost = state.run.ghost;
-  const theirs = ghost ? ghost.marks.slice(0, questions.length).filter(Boolean).length : null;
+  const theirs = ghost ? ghost.marks.slice(0, answered).filter(Boolean).length : null;
 
   state.best[mode.id] = Math.max(state.best[mode.id] ?? 0, score);
   // Clearing a hall opens the next one, and only ever forwards.
@@ -810,10 +853,13 @@ function finish() {
     <p class="lead">${mode.da}</p>
     <div class="score ${passed === false ? 'fail' : 'pass'}">${score} / ${questions.length}</div>
     <p class="verdict">${label}</p>
+    ${sunk ? `<div class="gate no"><b>${sunk}</b> Øv dig, og sæt sejl igen.</div>` : ''}
     ${gate}
     ${mode.hall
       ? `<p class="note">${passed
           ? 'Hallen er ryddet. Den næste har åbnet sig.'
+          : sunk
+          ? 'Du nåede ikke frem denne gang. Brug forklaringerne og prøv hallen igen.'
           : `Du skal have ${Math.ceil(questions.length * HALL_PASS)} af ${questions.length} for at rydde hallen. Spørgsmålene blandes hver gang.`}</p>`
       : mode.exam
       ? `<p class="note">Til den rigtige prøve skal du have ${RULES.pass} af ${RULES.total} rigtige.</p>`
