@@ -322,6 +322,8 @@ def sentences(text: str) -> list[str]:
 
 # A term appearing on more than this share of pages proves nothing by matching.
 COMMON = 0.15
+# How much rarer than COMMON a lone word must be to stand as evidence on its own.
+STRONG = 1.0
 # A yes/no answer is not a phrase that can be located in a passage at all. Half
 # the values questions answer "Ja" or "Nej", and "nej" is scattered across the
 # material, so containment would "prove" anything. These are never supported.
@@ -329,7 +331,8 @@ YES_NO = frozenset({"ja", "nej"})
 
 
 def states(passage: str | None, answer_terms: set[str],
-           idf: dict[str, float], floor: float) -> bool:
+           idf: dict[str, float], floor: float,
+           asks: set[str] | None = None) -> bool:
     """Does this quotation actually contain the answer, distinctively?
 
     Overlap alone is not evidence. Half the values questions answer "Ja" or
@@ -343,15 +346,27 @@ def states(passage: str | None, answer_terms: set[str],
     """
     if not passage or not answer_terms or answer_terms <= YES_NO:
         return False
-    matched = answer_terms & set(terms(passage))
+    words = set(terms(passage))
+    matched = answer_terms & words
     if len(matched) / len(answer_terms) < 0.5:
         return False
-    return any(idf.get(t, 0.0) >= floor for t in matched)
+    if not any(idf.get(t, 0.0) >= floor for t in matched):
+        return False
+    # Containing the answer is not enough when the answer is a single ordinary
+    # word. "Hvordan har arbejdsløsheden udviklet sig?" answers "Det er faldet",
+    # and a sentence about the birth rate falling matched on "faldet" alone.
+    # A genuinely rare word is evidence by itself; "Afghanistan" appears on one
+    # page and can only mean one thing. Anything less must also speak to what
+    # was actually asked.
+    if len(matched) >= 2 or max(idf.get(t, 0.0) for t in matched) >= floor + STRONG:
+        return True
+    return bool(asks) and any(idf.get(t, 0.0) >= floor for t in asks & words)
 
 
 def hunt(weights: Counter[str], answer_terms: set[str],
          corpus: list[tuple[int, str, Counter[str]]],
-         idf: dict[str, float], floor: float) -> tuple[str, int] | None:
+         idf: dict[str, float], floor: float,
+         asks: set[str]) -> tuple[str, int] | None:
     """Search every sentence in the material for one that states the answer."""
     if not answer_terms:
         return None  # numeric answers ("15 år") give nothing to search for
@@ -362,6 +377,10 @@ def hunt(weights: Counter[str], answer_terms: set[str],
             continue
         if not any(idf.get(t, 0.0) >= floor for t in matched):
             continue  # matched only on words too common to prove anything
+        if (len(matched) < 2
+                and max(idf.get(t, 0.0) for t in matched) < floor + STRONG
+                and not any(idf.get(t, 0.0) >= floor for t in asks & set(counts))):
+            continue  # one ordinary word in common is not evidence
         score = relevance(weights, counts, idf)
         if score > best:
             best, found = score, (tidy(text[:PASSAGE_CAP]), page)
@@ -491,12 +510,13 @@ def locate(entries: list[Entry]) -> None:
         entry.page = at + 1  # PDF pages are 1-based, as is the printed material
         entry.passage = best_passage(weights, pages[at], idf)
 
-        if not states(entry.passage, answer_terms, idf, floor):
-            found = hunt(weights, answer_terms, corpus, idf, floor)
+        asks = set(terms(entry.q))
+        if not states(entry.passage, answer_terms, idf, floor, asks):
+            found = hunt(weights, answer_terms, corpus, idf, floor, asks)
             if found:
                 entry.passage, entry.page = found
 
-        entry.supports = states(entry.passage, answer_terms, idf, floor)
+        entry.supports = states(entry.passage, answer_terms, idf, floor, asks)
         # The last chapter beginning at or before this page, not the first.
         entry.chapter = max((n for n, (start, _) in enumerate(chapters, 1)
                              if entry.page >= start), default=None)
