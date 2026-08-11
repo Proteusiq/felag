@@ -6,7 +6,7 @@
 
 [![Open the site](https://img.shields.io/badge/Begynd%20vandringen-proteusiq.github.io%2Ffelag-e0793c?style=for-the-badge)](https://proteusiq.github.io/felag/)
 
-[![Version](https://img.shields.io/badge/version-0.0.1-e0793c?style=flat-square)](https://github.com/Proteusiq/felag/releases)
+[![Version](https://img.shields.io/badge/version-0.0.2-e0793c?style=flat-square)](https://github.com/Proteusiq/felag/releases)
 [![Questions](https://img.shields.io/badge/spørgsmål-508-2a3e3c?style=flat-square)](data/questions.jsonl)
 [![Papers](https://img.shields.io/badge/prøver-13%20(2020–2026)-2a3e3c?style=flat-square)](https://danskogproever.dk/borger/indfoedsretsproeve-statsborgerskab/forberedelse-til-indfoedsretsproeven/)
 [![Price](https://img.shields.io/badge/pris-0%20kr-6a9c5a?style=flat-square)](#)
@@ -127,11 +127,11 @@ no fewer than four of the five questions on Danish values.
 
 ## Where the answers come from
 
-Answer a question and the panel gives you more than a tick. Where an explanation
-has been written, you get it. Otherwise you get the sentence from the
-læremateriale that states the answer, quoted with its page, so you can go and
-read around it. Beneath that sits the provenance: which sittings asked this, and
-which chapter it belongs to.
+Answer a question and the panel gives you more than a tick. Every question has
+an explanation: direct explanations draw on the material or the historical
+event, while Danish-values questions teach the underlying legal principle.
+Beneath that sits the provenance: which sittings asked this, which chapter it
+belongs to, and links back to the official question and material.
 
 > [!NOTE]
 > Restating the answer is never shown. The highlight already said it.
