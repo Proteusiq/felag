@@ -146,6 +146,44 @@
     <div class="eras" id="eras"></div>
   </section>
 
+  <!-- ============ ARENA ============ -->
+  <section class="view" id="viewArena" hidden>
+    <div class="arena-head">
+      <div class="arena-sigil" aria-hidden="true">
+        <svg viewBox="0 0 96 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g class="axe-left"><path d="M43 57 18 13" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="m14 12 13 2-5 12-11-5Z" fill="currentColor"/></g>
+          <g class="axe-right"><path d="m53 57 25-44" stroke="currentColor" stroke-width="5" stroke-linecap="round"/><path d="m82 12-13 2 5 12 11-5Z" fill="currentColor"/></g>
+          <path d="M48 18 28 27v18c0 16 10 25 20 31 10-6 20-15 20-31V27l-20-9Z" fill="#5c4130" stroke="#c9bd9f" stroke-width="2"/>
+          <path d="M48 20v53M30 45h36" stroke="#c9bd9f" stroke-width="2" opacity=".75"/>
+          <circle cx="48" cy="45" r="6" fill="#e0793c"/>
+        </svg>
+      </div>
+      <div>
+        <p class="path-kicker">Stå ved <span>skjoldmuren</span></p>
+        <h2 class="path-title">Dysten</h2>
+      </div>
+    </div>
+    <p class="path-sub">Her tæller rigtige svar som årer i vandet. Sæt dit løb mod Bjørn, eller sæt en prøve og send den til en ven.</p>
+
+    <div class="arena-choices">
+      <button class="arena-choice bjorn" id="bjornDuel" type="button">
+        <span class="arena-figure" id="arenaBjorn" aria-hidden="true"></span>
+        <span class="arena-copy"><b>Bjørns langskib</b><small>15 spørgsmål · Bjørn holder fast kurs</small><em>Tag kampen</em></span>
+      </button>
+      <button class="arena-choice friend" id="friendDuel" type="button">
+        <span class="arena-link-mark" aria-hidden="true">
+          <svg viewBox="0 0 48 48" fill="none"><path d="m18 30-2 2a7 7 0 0 1-10-10l8-8a7 7 0 0 1 10 0" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="m30 18 2-2a7 7 0 0 1 10 10l-8 8a7 7 0 0 1-10 0" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="m16 32 16-16" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+        </span>
+        <span class="arena-copy"><b>Sæt en venskabsdyst</b><small>Sejl 15 spørgsmål · del derefter dit skjold</small><em>Start dit løb</em></span>
+      </button>
+    </div>
+
+    <section class="ledger" aria-labelledby="ledgerTitle">
+      <div class="ledger-title"><span id="ledgerTitle">Dit skjoldregnskab</span><b id="battleRecord"></b></div>
+      <div class="battle-list" id="battleList"></div>
+    </section>
+  </section>
+
   <!-- ============ TINGET: principles before the gate ============ -->
   <section class="view" id="viewTing" hidden>
     <h2 class="path-title">Tinget</h2>

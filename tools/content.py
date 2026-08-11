@@ -55,6 +55,10 @@ CURRENCY = Path("data/currency.jsonl")
 
 SOURCE_PDF = re.compile(r"(indfoedsretsproeven-\d{4}-\d{2}|laeremateriale)")
 HREF = re.compile(r'href="(/media/[^"]+\.pdf)"')
+# Public URLs of the papers, so every citation can be opened and checked against
+# SIRI rather than trusted. Written next to the bank by `fetch`, because the
+# media hash in each link changes whenever SIRI re-uploads a file.
+SOURCES = Path("data/sources.json")
 
 QUESTION = re.compile(r"^\s*(\d{1,2})\.\s+(.*)")
 # Recent PDFs print a checkbox glyph; pre-2025 exams draw it as a form field,
@@ -552,6 +556,11 @@ def fetch(force: bool = False) -> int:
             target.write_bytes(client.get(ORIGIN + href).raise_for_status().content)
             print(f"  fetched {target.name}")
             downloaded += 1
+
+    SOURCES.write_text(
+        json.dumps({Path(href).stem: ORIGIN + href for href in links},
+                   ensure_ascii=False, indent=1, sort_keys=True) + "\n",
+        encoding="utf-8")
 
     print(f"{len(links)} linked, {downloaded} downloaded, {len(papers())} exams on disk")
     return 0

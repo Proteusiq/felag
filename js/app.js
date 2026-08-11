@@ -721,6 +721,24 @@ const sitting = (tag) => {
   return `${Number(month) > 8 ? 'vinter' : 'sommer'} ${year}`;
 };
 
+const MATERIAL_URL = 'laeremateriale-til-indfoedsretsproeven';
+
+/** A citation you can open. Every claim should be checkable against SIRI. */
+function paperLink(tag) {
+  const [stamp, number] = tag.split('#');
+  const url = state.sources?.[`indfoedsretsproeven-${stamp}`];
+  const label = sitting(tag);
+  return url
+    ? `<a href="${url}" target="_blank" rel="noopener">${label}, spørgsmål ${number}</a>`
+    : `${label}, spørgsmål ${number}`;
+}
+
+function materialLink(page) {
+  const url = state.sources?.[MATERIAL_URL];
+  const label = `Læremateriale til Indfødsretsprøven, side ${page}`;
+  return url ? `<a href="${url}" target="_blank" rel="noopener">${label}</a>` : label;
+}
+
 /**
  * Facts age. A question is only ever true as of the day it was set, so the
  * panel says when it was asked and warns where the world has since moved.
@@ -758,32 +776,27 @@ function buildWhy(q, right) {
     ? state.principles.find((p) => p.questions.includes(q.id))
     : null;
 
-  // Tiers, in order of how much they teach. A written explanation first, then
-  // the governing principle, then the sentence from the læremateriale that
-  // states the answer, quoted with its page. Restating the answer teaches
-  // nothing and is not an option: the green highlight already said it.
+  // A raw sentence selected by word overlap is not an explanation. It produced
+  // failures such as a 2022 coalition sentence for a 1993 Poul Nyrup question.
+  // Only a written explanation or a values principle may teach the answer.
   const body = q.explain
     ? `<p>${q.explain}</p>`
     : principle
     ? `<p><b>${principle.title}.</b> ${principle.rule}</p><p>${principle.detail}</p>`
-    : q.supports && q.passage
-      ? `<blockquote>${q.passage}</blockquote>
-         <p class="cite">Fra <b>Læremateriale til Indfødsretsprøven</b>, side ${q.page}.</p>`
-      : `<p class="thin">Der er endnu ikke skrevet en forklaring til dette spørgsmål.
-           Slå det efter i lærematerialet${q.page ? `, side ${q.page}` : ''}.</p>`;
+    : `<p class="thin">Forklaringen bliver skrevet fra lærematerialet${q.page ? `, side ${q.page}` : ''}.</p>`;
 
   const why = document.createElement('div');
   why.className = 'why';
   why.innerHTML = `
-    <p class="lbl">${relic.svg}${right ? relic.label : 'Det rigtige svar'}</p>
+    <p class="lbl">${relic.svg}Forklaring</p>
     ${body}
     ${dating(q)}
     <span class="src">
       ${times > 1
-        ? `Stillet <b>${times} gange</b> siden 2020: ${q.seen.map(sitting).join(', ')}.`
-        : `Stillet <b>${sitting(q.seen[0])}</b>.`}
-      ${where}
-      Officielt spørgsmål og retteark fra SIRI.
+        ? `Stillet <b>${times} gange</b> siden 2020: ${q.seen.map(paperLink).join(', ')}.`
+        : `Stillet <b>${paperLink(q.seen[0])}</b>.`}
+      ${q.page ? `Slå efter i ${materialLink(q.page)}.` : where}
+      Åbn den officielle prøve for at se spørgsmålet med de oprindelige svarmuligheder.
     </span>`;
   return why;
 }
@@ -901,13 +914,15 @@ async function main() {
   const lines = (t) => t.split('\n').filter(Boolean).map((l) => JSON.parse(l));
   const grab = (p) => fetch(p).then((r) => (r.ok ? r.text() : '')).catch(() => '');
 
-  const [questions, explanations, currency, principles, eras] = await Promise.all([
+  const [questions, explanations, currency, principles, eras, sources] = await Promise.all([
     fetch('./data/questions.jsonl').then((r) => r.text()),
     grab('./data/explanations.jsonl'),
     grab('./data/currency.jsonl'),
     grab('./data/principles.jsonl'),
     grab('./data/eras.jsonl'),
+    grab('./data/sources.json'),
   ]);
+  state.sources = sources ? JSON.parse(sources) : {};
   state.principles = principles ? lines(principles) : [];
   state.eras = eras ? lines(eras) : [];
 
