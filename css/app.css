@@ -87,6 +87,9 @@ a{ color:var(--parchment); text-underline-offset:3px; }
    block for position:fixed children. That silently trapped the mobile start
    button inside the view instead of pinning it to the viewport. */
 .view{ display:flex; flex-direction:column; align-items:center; animation:rise .5s var(--ease) backwards; }
+/* The mobile start button becomes fixed after choosing a guide. Keep the shore
+   entrance free of transforms, which would otherwise trap that button briefly. */
+#viewShore{ animation:fade .5s var(--ease) backwards; }
 
 @keyframes rise{ from{ opacity:0; transform:translateY(16px); } to{ opacity:1; transform:none; } }
 @keyframes fade{ from{ opacity:0 } to{ opacity:1 } }
@@ -735,7 +738,7 @@ a{ color:var(--parchment); text-underline-offset:3px; }
     background:var(--bg);
     backdrop-filter:blur(10px);
     box-shadow:0 8px 26px -10px rgba(0,0,0,.8);
-    animation:rise .35s var(--ease) both;
+    animation:fade .35s var(--ease) both;
   }
   /* room for it, so it covers neither the last card nor the footer */
   body:has(#beginBtn:not(:disabled)) .foot{ padding-bottom:86px; }
