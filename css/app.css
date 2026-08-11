@@ -100,6 +100,40 @@ a{ color:var(--parchment); text-underline-offset:3px; }
 }
 .subtitle{ max-width:480px; text-align:center; font-size:15px; line-height:1.55; color:var(--parchment-dim); margin:0 0 40px; }
 
+/* ---------- who is studying ---------- */
+.profiles{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center; width:100%; max-width:560px; }
+.profile{
+  position:relative; display:flex; align-items:center; gap:10px;
+  padding:12px 16px 12px 13px; border-radius:12px; cursor:pointer; font:inherit; color:inherit;
+  background:linear-gradient(180deg,rgba(42,62,60,.75),rgba(20,32,34,.75));
+  border:1px solid rgba(231,220,194,.12);
+  transition:transform .22s var(--ease), border-color .22s ease;
+  animation:rise .4s var(--ease) both; animation-delay:var(--d,0s);
+}
+.profile:hover{ transform:translateY(-3px); border-color:var(--ember); }
+.profile .mark{
+  width:34px; height:34px; border-radius:50%; flex:0 0 auto; display:grid; place-items:center;
+  font-family:var(--display); font-weight:700; font-size:15px;
+  background:rgba(231,220,194,.08); border:1px solid rgba(231,220,194,.2); color:var(--parchment);
+}
+.profile b{ font-family:var(--display); font-variation-settings:var(--carved); font-weight:600; font-size:16px; }
+.profile small{ display:block; font-size:11px; color:var(--parchment-dim); letter-spacing:.04em; }
+.profile .drop{
+  margin-left:6px; width:24px; height:24px; border-radius:50%; border:none; cursor:pointer;
+  background:none; color:var(--parchment-dim); font-size:16px; line-height:1;
+}
+.profile .drop:hover{ color:var(--dannebrog); background:rgba(200,16,46,.12); }
+
+.new-profile{ display:flex; gap:8px; margin-top:22px; width:100%; max-width:360px; }
+.new-profile input{
+  flex:1; font:inherit; font-size:15px; padding:12px 14px; border-radius:3px;
+  background:rgba(231,220,194,.05); border:1px solid rgba(231,220,194,.18); color:var(--parchment);
+}
+.new-profile input::placeholder{ color:var(--parchment-dim); }
+.new-profile input:focus{ outline:none; border-color:var(--ember); }
+.new-profile .btn.primary{ margin-top:0; padding:12px 20px; }
+#guestBtn{ margin-top:16px; }
+
 /* ---------- roster ---------- */
 .roster{ display:grid; grid-template-columns:repeat(6,1fr); gap:12px; width:100%; }
 @media (max-width:900px){ .roster{ grid-template-columns:repeat(3,1fr); } }
@@ -476,6 +510,7 @@ a{ color:var(--parchment); text-underline-offset:3px; }
   font-size:12px; color:var(--parchment-dim);
 }
 .foot .dot{ opacity:.5; }
+.foot .who b{ color:var(--parchment); font-weight:600; }
 
 .boot{ position:fixed; inset:0; z-index:50; display:grid; place-content:center; justify-items:center; gap:14px; background:var(--bg); color:var(--parchment-dim); font-size:13px; }
 .boot[hidden]{ display:none !important; }

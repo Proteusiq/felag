@@ -56,8 +56,35 @@
 
 <main class="stage" id="stage">
 
+  <!-- ============ WHO IS STUDYING ============ -->
+  <section class="view" id="viewWho">
+    <p class="kicker">
+      <span class="pennant" aria-hidden="true">
+        <svg width="15" height="14" viewBox="0 0 15 14"><path d="M0,0 L13,0 L15,7 L13,14 L0,14 Z" fill="#c8102e"/><rect x="5" width="2.4" height="14" fill="#e4ddc8"/><rect y="5.8" width="15" height="2.4" fill="#e4ddc8"/></svg>
+      </span>
+      Félag
+    </p>
+    <h1 class="title">Hvem øver?</h1>
+    <p class="subtitle">
+      Din fremgang gemmes kun på denne enhed og sendes ingen steder hen.
+      Deler I computer, så vælg hver jeres navn.
+    </p>
+
+    <div class="profiles" id="profiles"></div>
+
+    <form class="new-profile" id="newProfile" autocomplete="off">
+      <input id="profileName" type="text" maxlength="24" required
+             placeholder="Dit navn" aria-label="Navn på ny profil" />
+      <button class="btn primary" type="submit">Tilføj</button>
+    </form>
+
+    <button class="btn ghost" id="guestBtn" type="button">
+      Fortsæt som gæst &middot; intet gemmes
+    </button>
+  </section>
+
   <!-- ============ SHORE / GUIDE SELECT ============ -->
-  <section class="view" id="viewShore">
+  <section class="view" id="viewShore" hidden>
     <p class="kicker">
       <span class="pennant" aria-hidden="true">
         <svg width="15" height="14" viewBox="0 0 15 14"><path d="M0,0 L13,0 L15,7 L13,14 L0,14 Z" fill="#c8102e"/><rect x="5" width="2.4" height="14" fill="#e4ddc8"/><rect y="5.8" width="15" height="2.4" fill="#e4ddc8"/></svg>
@@ -167,7 +194,11 @@
 <footer class="foot">
   <span>Félag er gratis. Læring skal være gratis.</span>
   <span class="dot" aria-hidden="true">·</span>
+  <span class="who">Fremgang gemt på denne enhed for <b id="whoNow">...</b></span>
+  <span class="dot" aria-hidden="true">·</span>
   <button class="linklike" id="soundToggle" type="button" aria-pressed="false">Lyd fra</button>
+  <span class="dot" aria-hidden="true">·</span>
+  <button class="linklike" id="switchBtn" type="button">Skift profil</button>
   <span class="dot" aria-hidden="true">·</span>
   <button class="linklike" id="resetBtn" type="button">Nulstil fremgang</button>
 </footer>

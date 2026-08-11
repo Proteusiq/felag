@@ -11,7 +11,39 @@ import { CAST, byId } from './cast.js';
 import * as scenes from './scenes.js';
 
 const $ = (id) => document.getElementById(id);
-const SAVE = 'felag.v1';
+
+/* ============================================================
+   Where progress lives
+
+   On the device and nowhere else. There is no server, no account
+   and nothing transmitted, so the only real risk is a shared
+   machine: a family laptop, a library or a jobcenter computer,
+   where one browser profile would otherwise mean one shared
+   record that the next person inherits and overwrites.
+
+   So progress is namespaced per person on that device. A guest
+   writes to sessionStorage instead, which the browser discards
+   when the tab closes and leaves nothing behind on a public
+   computer.
+
+   localStorage is the right store at this size. The whole record
+   is a few hundred bytes, and IndexedDB would be machinery for
+   nothing.
+   ============================================================ */
+const ROSTER = 'felag.people';
+const LEGACY = 'felag.v1';
+const keyFor = (slug) => `felag.v1.${slug}`;
+const slugify = (name) =>
+  name.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9æøå-]/g, '').slice(0, 32);
+
+const store = () => (state.profile?.guest ? sessionStorage : localStorage);
+
+function people() {
+  try { return JSON.parse(localStorage.getItem(ROSTER) ?? '[]'); } catch { return []; }
+}
+function remember(list) {
+  try { localStorage.setItem(ROSTER, JSON.stringify(list)); } catch { /* ignore */ }
+}
 
 /* ---------- exam rules, straight from SIRI ----------
    45 questions: 35 from the læremateriale, 5 current affairs,
@@ -32,13 +64,16 @@ const state = {
    Persistence
    ============================================================ */
 function load() {
+  Object.assign(state, { guide: null, best: {}, cleared: 0, sound: false });
+  if (!state.profile) return;
   try {
-    Object.assign(state, JSON.parse(localStorage.getItem(SAVE) ?? '{}'));
+    Object.assign(state, JSON.parse(store().getItem(state.profile.key) ?? '{}'));
   } catch { /* corrupt or blocked storage is not worth a crash */ }
 }
 function save() {
+  if (!state.profile) return;
   try {
-    localStorage.setItem(SAVE, JSON.stringify({
+    store().setItem(state.profile.key, JSON.stringify({
       guide: state.guide, best: state.best, sound: state.sound, cleared: state.cleared,
     }));
   } catch { /* private mode: run without persistence rather than fail */ }
@@ -281,18 +316,60 @@ function weighted(list, n, rand) {
 /* ============================================================
    Views
    ============================================================ */
-const VIEWS = ['viewShore', 'viewPath', 'viewTime', 'viewTing', 'viewQuiz', 'viewResult'];
+const VIEWS = ['viewWho', 'viewShore', 'viewPath', 'viewTime', 'viewTing', 'viewQuiz', 'viewResult'];
 function go(id, scene) {
   const swap = () => {
     // The counter and clock belong to a run; nothing else should inherit them.
     if (id !== 'viewQuiz') $('hudMeta').textContent = '';
     VIEWS.forEach((v) => { $(v).hidden = v !== id; });
     if (scene) scenes.show(scene);
-    $('hud').hidden = id === 'viewShore';
+    $('hud').hidden = id === 'viewShore' || id === 'viewWho';
     scrollTo({ top: 0, behavior: 'instant' });
   };
   // Native view transitions; browsers without it simply get the swap.
   document.startViewTransition ? document.startViewTransition(swap) : swap();
+}
+
+/* ---------- who is studying ---------- */
+const escape = (t) => t.replace(/[&<>"']/g, (c) =>
+  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+function renderPeople() {
+  const list = people();
+  $('profiles').innerHTML = list.map((name, i) => {
+    const safe = escape(name);
+    let done = 0;
+    try { done = JSON.parse(localStorage.getItem(keyFor(slugify(name))) ?? '{}').cleared ?? 0; }
+    catch { /* ignore */ }
+    return `<button class="profile" type="button" data-name="${safe}" style="--d:${i * 0.05}s">
+        <span class="mark">${safe.slice(0, 1).toUpperCase()}</span>
+        <span><b>${safe}</b><small>${done ? `${done} af 6 haller ryddet` : 'ingen haller ryddet endnu'}</small></span>
+        <span class="drop" role="button" tabindex="0" data-drop="${safe}" aria-label="Fjern ${safe}">&times;</span>
+      </button>`;
+  }).join('');
+  $('newProfile').querySelector('input').placeholder = list.length ? 'Nyt navn' : 'Dit navn';
+}
+
+function useProfile(name, { guest = false } = {}) {
+  state.profile = guest
+    ? { name: 'Gæst', slug: 'gaest', key: 'felag.guest', guest: true }
+    : { name, slug: slugify(name), key: keyFor(slugify(name)), guest: false };
+  load();
+  $('whoNow').textContent = state.profile.name;
+  $('soundToggle').textContent = state.sound ? 'Lyd til' : 'Lyd fra';
+  $('soundToggle').setAttribute('aria-pressed', String(state.sound));
+  renderShore();
+  if (state.guide) {
+    choose(state.guide);
+    renderPath();
+    return go('viewPath', 'path');
+  }
+  go('viewShore', 'shore');
+}
+
+function showWho() {
+  renderPeople();
+  go('viewWho', 'shore');
 }
 
 /* ---------- shore ---------- */
@@ -800,8 +877,13 @@ async function main() {
     return now ? { ...merged, status: now.status, currency: now.note } : merged;
   });
 
-  renderShore();
-  if (state.guide) choose(state.guide);
+  // Anyone who used the app before profiles existed keeps their progress.
+  const legacy = localStorage.getItem(LEGACY);
+  if (legacy && !people().length) {
+    localStorage.setItem(keyFor('mig'), legacy);
+    remember(['Mig']);
+    localStorage.removeItem(LEGACY);
+  }
 
   // A challenge link carries everything needed to replay the same paper.
   const challenge = unpackRun(new URLSearchParams(location.hash.slice(1)).get('dyst'));
@@ -814,10 +896,7 @@ async function main() {
       return start(mode.id, mode, { ...challenge, name: 'Din udfordrer' });
     }
   }
-  $('soundToggle').textContent = state.sound ? 'Lyd til' : 'Lyd fra';
-  $('soundToggle').setAttribute('aria-pressed', String(state.sound));
-
-  scenes.show('shore');
+  showWho();
   $('boot').hidden = true;
 }
 
@@ -877,9 +956,42 @@ $('soundToggle').addEventListener('click', (e) => {
   tone(600, 0.1);
 });
 $('resetBtn').addEventListener('click', () => {
-  if (!confirm('Nulstil al fremgang?')) return;
-  localStorage.removeItem(SAVE);
+  const who = state.profile?.name ?? '';
+  if (!confirm(`Nulstil al fremgang for ${who}?`)) return;
+  store().removeItem(state.profile.key);
   location.reload();
+});
+$('switchBtn').addEventListener('click', () => { state.run = null; showWho(); });
+
+$('profiles').addEventListener('click', (e) => {
+  const drop = e.target.closest('[data-drop]');
+  if (drop) {
+    e.stopPropagation();
+    const name = drop.dataset.drop;
+    if (!confirm(`Fjern ${name} og al fremgang på denne enhed?`)) return;
+    remember(people().filter((n) => n !== name));
+    localStorage.removeItem(keyFor(slugify(name)));
+    return renderPeople();
+  }
+  const card = e.target.closest('.profile');
+  if (card) useProfile(card.dataset.name);
+});
+
+$('newProfile').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const input = $('profileName');
+  const name = input.value.trim();
+  if (!name) return;
+  const list = people();
+  // Same name twice would share one record, which is the bug we are fixing.
+  if (!list.some((n) => slugify(n) === slugify(name))) remember([...list, name]);
+  input.value = '';
+  useProfile(name);
+});
+
+$('guestBtn').addEventListener('click', () => {
+  sessionStorage.removeItem('felag.guest');
+  useProfile(null, { guest: true });
 });
 
 main().catch((err) => {
