@@ -198,87 +198,86 @@ a{ color:var(--parchment); text-underline-offset:3px; }
   display:inline-flex; align-items:center; gap:8px;
   transition:background .25s ease, color .25s ease, opacity .25s ease, border-color .25s ease;
 }
-/* ---------- wooden signs ----------
-   A carved plank rather than a rectangle: grain along the length, a lit top
-   edge, a dark shadowed underside and two iron nails. The quiz buttons are cut
-   to a point so they read as a signpost telling you which way the road runs. */
+/* ---------- waymarkers ----------
+   These are not polished planks. They are split pieces of old timber: bark-dark
+   at the broken edge, sun-bleached where hands have worn the grain, and scored
+   with angular carvings. The direction is cut into the timber, not bolted on. */
 .btn.primary{
-  --face:#7d5837; --deep:#4e3623; --edge:#2f1e10;
-  margin-top:26px; border:none; border-radius:3px; padding:14px 32px;
+  --face:#74553a; --deep:#382719; --edge:#20140c; --scar:rgba(31,18,10,.72);
+  margin-top:26px; border:none; border-radius:0; padding:15px 42px;
   color:var(--parchment);
   font-family:var(--display); font-variation-settings:var(--carved);
-  font-weight:600; font-size:13.5px; letter-spacing:.15em;
-  text-shadow:0 1px 0 rgba(0,0,0,.75);
+  font-weight:600; font-size:13.5px; letter-spacing:.12em;
+  text-shadow:0 2px 0 rgba(20,12,7,.9), 0 0 5px rgba(20,12,7,.8);
   background:
-    repeating-linear-gradient(90deg, rgba(0,0,0,.05) 0 1px, transparent 1px 6px),
-    repeating-linear-gradient(90deg, rgba(255,224,186,.045) 0 1px, transparent 1px 11px),
-    linear-gradient(180deg, var(--face) 0%, #664630 50%, var(--deep) 100%);
-  box-shadow:
-    inset 0 1px 0 rgba(255,229,193,.25),
-    inset 0 -3px 8px rgba(0,0,0,.42),
-    inset 0 0 0 1px var(--edge),
-    0 4px 0 var(--edge),
-    0 11px 20px -9px rgba(0,0,0,.8);
-  transition:filter .18s ease, transform .1s ease, box-shadow .1s ease;
+    radial-gradient(ellipse at 17% 38%, rgba(27,16,8,.68) 0 3px, transparent 4px),
+    radial-gradient(ellipse at 81% 68%, rgba(224,178,118,.1) 0 5px, transparent 6px),
+    repeating-linear-gradient(93deg, transparent 0 8px, rgba(24,14,7,.28) 9px 10px, transparent 11px 19px),
+    repeating-linear-gradient(87deg, rgba(220,177,119,.07) 0 1px, transparent 2px 13px),
+    linear-gradient(177deg, #8a6948 0%, var(--face) 26%, #563b28 67%, var(--deep) 100%);
+  clip-path:polygon(2% 5%, 7% 0, 91% 2%, 98% 7%, 100% 27%, 98% 61%, 100% 91%, 93% 100%, 9% 97%, 1% 92%, 0 64%, 2% 29%, 0 13%);
+  filter:drop-shadow(0 5px 0 var(--edge)) drop-shadow(0 13px 18px rgba(0,0,0,.68));
+  transition:filter .18s ease, transform .1s ease;
 }
-/* the two iron nails holding it up */
+/* Angular gouges: inspired by rune cuts, deliberately non-lettering. */
 .btn.primary::before, .btn.primary::after{
-  content:''; position:absolute; top:50%; width:5px; height:5px; border-radius:50%;
+  content:''; position:absolute; top:50%; width:21px; height:22px;
   transform:translateY(-50%);
-  background:radial-gradient(circle at 35% 30%, #b9a487 0 35%, #6a5946 60%, #2b231a 100%);
-  box-shadow:0 1px 1px rgba(0,0,0,.7);
+  background:
+    linear-gradient(62deg, transparent 43%, var(--scar) 45% 52%, transparent 54%),
+    linear-gradient(-62deg, transparent 43%, var(--scar) 45% 52%, transparent 54%),
+    linear-gradient(90deg, transparent 45%, rgba(211,166,108,.3) 47% 49%, var(--scar) 51% 55%, transparent 57%);
+  opacity:.74;
 }
-.btn.primary::before{ left:11px; }
-.btn.primary::after{ right:11px; }
+.btn.primary::before{ left:12px; }
+.btn.primary::after{ right:12px; transform:translateY(-50%) scaleX(-1); }
 .btn.primary{ position:relative; }
-.btn.primary:hover:not(:disabled){ filter:brightness(1.12) saturate(1.05); }
+.new-profile .btn.primary{
+  min-width:94px;
+  padding-left:18px;
+  padding-right:18px;
+}
+.new-profile .btn.primary::before,
+.new-profile .btn.primary::after{ display:none; }
+.btn.primary:hover:not(:disabled){ filter:drop-shadow(0 5px 0 var(--edge)) drop-shadow(0 13px 18px rgba(0,0,0,.68)) brightness(1.11); }
 .btn.primary:active:not(:disabled){
-  transform:translateY(3px);
-  box-shadow:
-    inset 0 1px 0 rgba(255,229,193,.2),
-    inset 0 -2px 6px rgba(0,0,0,.45),
-    inset 0 0 0 1px var(--edge),
-    0 1px 0 var(--edge),
-    0 5px 10px -6px rgba(0,0,0,.8);
+  transform:translateY(4px) rotate(-.2deg);
+  filter:drop-shadow(0 1px 0 var(--edge)) drop-shadow(0 5px 9px rgba(0,0,0,.65));
 }
 .btn.primary:disabled{ filter:grayscale(.55) brightness(.62); cursor:default; }
 
-/* signposts: the forward one points on, the back one points home */
+/* Signposts: forward points into the woods; back points to the shore. */
 .quiz-nav .btn.primary, #tingTest{
-  clip-path:polygon(0 0, calc(100% - 16px) 0, 100% 50%, calc(100% - 16px) 100%, 0 100%);
-  padding-right:42px;
-  box-shadow:
-    inset 0 1px 0 rgba(255,229,193,.25),
-    inset 0 -3px 8px rgba(0,0,0,.42),
-    inset 0 0 0 1px var(--edge);
-  filter:drop-shadow(0 4px 0 var(--edge)) drop-shadow(0 9px 13px rgba(0,0,0,.6));
+  clip-path:polygon(2% 5%, 78% 1%, 89% 8%, 100% 50%, 89% 93%, 78% 100%, 3% 96%, 0 88%, 2% 66%, 0 15%);
+  padding-right:46px;
+  filter:drop-shadow(0 5px 0 var(--edge)) drop-shadow(0 10px 14px rgba(0,0,0,.64));
 }
 .quiz-nav .btn.primary::after, #tingTest::after{ right:24px; }
 .quiz-nav .btn.primary:hover:not(:disabled), #tingTest:hover{
-  filter:drop-shadow(0 4px 0 var(--edge)) drop-shadow(0 9px 13px rgba(0,0,0,.6)) brightness(1.12);
+  filter:drop-shadow(0 5px 0 var(--edge)) drop-shadow(0 10px 14px rgba(0,0,0,.64)) brightness(1.11);
 }
 .quiz-nav .btn.primary:active:not(:disabled), #tingTest:active{ transform:translateY(3px); }
 
-.quiz-nav .btn.ghost{
-  --face:#5f4530; --deep:#3d2c1e; --edge:#251809;
-  border:none; border-radius:3px; padding:12px 22px 12px 34px; margin:0;
+.quiz-nav .btn.ghost, .result .actions #backPathBtn{
+  --face:#674a31; --deep:#302116; --edge:#1c1209;
+  border:none; border-radius:0; padding:13px 24px 13px 40px; margin:0;
   color:var(--parchment-dim); text-transform:uppercase;
   font-family:var(--display); font-variation-settings:var(--carved);
   font-weight:600; font-size:12px; letter-spacing:.12em;
-  text-shadow:0 1px 0 rgba(0,0,0,.7);
+  text-shadow:0 2px 0 rgba(0,0,0,.75);
   background:
-    repeating-linear-gradient(90deg, rgba(0,0,0,.05) 0 1px, transparent 1px 6px),
-    linear-gradient(180deg, var(--face) 0%, #4d3826 55%, var(--deep) 100%);
-  clip-path:polygon(16px 0, 100% 0, 100% 100%, 16px 100%, 0 50%);
-  box-shadow:inset 0 1px 0 rgba(255,229,193,.16), inset 0 0 0 1px var(--edge);
-  filter:drop-shadow(0 3px 0 var(--edge)) drop-shadow(0 7px 11px rgba(0,0,0,.55));
+    radial-gradient(ellipse at 71% 36%, rgba(21,12,6,.55) 0 3px, transparent 4px),
+    repeating-linear-gradient(93deg, transparent 0 8px, rgba(22,13,7,.27) 9px 10px, transparent 11px 18px),
+    linear-gradient(176deg, #755437 0%, var(--face) 45%, var(--deep) 100%);
+  clip-path:polygon(15% 2%, 97% 4%, 100% 17%, 98% 86%, 91% 98%, 15% 96%, 8% 91%, 0 50%, 8% 9%);
+  filter:drop-shadow(0 4px 0 var(--edge)) drop-shadow(0 8px 12px rgba(0,0,0,.62));
   transition:filter .18s ease, color .18s ease, transform .1s ease;
 }
-.quiz-nav .btn.ghost:hover{
+.quiz-nav .btn.ghost:hover, .result .actions #backPathBtn:hover{
   color:var(--parchment);
-  filter:drop-shadow(0 3px 0 var(--edge)) drop-shadow(0 7px 11px rgba(0,0,0,.55)) brightness(1.14);
+  filter:drop-shadow(0 4px 0 var(--edge)) drop-shadow(0 8px 12px rgba(0,0,0,.62)) brightness(1.12);
 }
-.quiz-nav .btn.ghost:active{ transform:translateY(2px); }
+.quiz-nav .btn.ghost:active, .result .actions #backPathBtn:active{ transform:translateY(2px); }
 .btn.ghost{ background:none; border:none; color:var(--parchment-dim); text-transform:none; letter-spacing:.02em; }
 .btn.ghost:hover{ color:var(--parchment); }
 .linklike{ background:none; border:none; color:var(--parchment-dim); font:inherit; font-size:12px; cursor:pointer; text-decoration:underline; text-underline-offset:3px; padding:0; }
