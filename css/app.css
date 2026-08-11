@@ -252,7 +252,13 @@ a{ color:var(--parchment); text-underline-offset:3px; }
   padding-right:46px;
   filter:drop-shadow(0 5px 0 var(--edge)) drop-shadow(0 10px 14px rgba(0,0,0,.64));
 }
-.quiz-nav .btn.primary::after, #tingTest::after{ right:24px; }
+/* A short directional sign has no room for the carved side marks: on Næste
+   they crossed the letters. The split tip, grain and broken silhouette carry
+   the timber language without sacrificing the word. */
+.quiz-nav .btn.primary::before,
+.quiz-nav .btn.primary::after,
+#tingTest::before,
+#tingTest::after{ display:none; }
 .quiz-nav .btn.primary:hover:not(:disabled), #tingTest:hover{
   filter:drop-shadow(0 5px 0 var(--edge)) drop-shadow(0 10px 14px rgba(0,0,0,.64)) brightness(1.11);
 }
