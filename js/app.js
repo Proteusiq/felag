@@ -58,6 +58,7 @@ const state = {
   guide: null,
   bank: [],
   best: {},
+  battles: [],
   sound: false,
   run: null,
 };
@@ -66,7 +67,7 @@ const state = {
    Persistence
    ============================================================ */
 function load() {
-  Object.assign(state, { guide: null, best: {}, cleared: 0, sound: false });
+  Object.assign(state, { guide: null, best: {}, battles: [], cleared: 0, sound: false });
   if (!state.profile) return;
   try {
     Object.assign(state, JSON.parse(store().getItem(state.profile.key) ?? '{}'));
@@ -76,7 +77,8 @@ function save() {
   if (!state.profile) return;
   try {
     store().setItem(state.profile.key, JSON.stringify({
-      guide: state.guide, best: state.best, sound: state.sound, cleared: state.cleared,
+      guide: state.guide, best: state.best, battles: state.battles,
+      sound: state.sound, cleared: state.cleared,
     }));
   } catch { /* private mode: run without persistence rather than fail */ }
 }
@@ -167,19 +169,86 @@ const ICON = {
     <path d="M4 6.5 8 10.5 12 6.5"/></svg>`,
 };
 
+/* One visual vocabulary from map to question. The same emblem follows a topic
+   into the hall and onto every question drawn from its pages. */
+const TOPIC = {
+  viking: ['Vikingetid', `<path d="M3 15c3 2 6 3 9 3s6-1 9-3l-2 4H5l-2-4Z"/><path d="M12 3v10m0-8c3 0 5 2 5 4-3 0-5-1-5-4ZM5 12V9"/>`],
+  medieval: ['Middelalder', `<path d="M5 20V8h3V4h3v4h2V4h3v4h3v12H5Z"/><path d="M9 20v-5h6v5M8 11h2m4 0h2"/>`],
+  crown: ['Konge og enevælde', `<path d="m4 8 4 4 4-7 4 7 4-4-2 11H6L4 8Z"/><path d="M7 16h10"/>`],
+  war: ['Krig og grænser', `<path d="m6 19 12-14m-12 0 12 14M4 4l4 1-3 3-1-4Zm16 0-4 1 3 3 1-4Z"/>`],
+  industry: ['Industri og bevægelser', `<path d="M4 20V10l5 3V8l5 3V5h4v15H4Z"/><path d="M7 17h2m3 0h2m2 0h2"/>`],
+  modern: ['Det moderne Danmark', `<path d="M12 3v18M4 12h16M7 7l10 10m0-10L7 17"/>`],
+  democracy: ['Styreformen', `<path d="M4 20h16M6 17h12M7 9h10v8H7V9Zm-2 0 7-5 7 5"/>`],
+  constitution: ['Grundloven', `<path d="M6 3h10l3 3v15H6V3Z"/><path d="M16 3v4h4M9 11h7m-7 4h7"/>`],
+  parliament: ['Folketinget', `<path d="M3 20h18M5 17h14M7 17V9h10v8M6 9l6-5 6 5"/>`],
+  justice: ['Retssamfundet', `<path d="M12 3v18M7 6h10M6 8l-3 6h6L6 8Zm12 0-3 6h6l-3-6ZM8 21h8"/>`],
+  welfare: ['Velfærd', `<path d="M12 20S4 15 4 9a4 4 0 0 1 7-2l1 1 1-1a4 4 0 0 1 7 2c0 6-8 11-8 11Z"/>`],
+  business: ['Erhvervsliv', `<path d="M4 20V8h16v12H4Zm4-12V5h8v3M4 13h16M10 13v2h4v-2"/>`],
+  labour: ['Arbejdsmarked', `<path d="M4 14h16v7H4v-7Zm3 0V9h10v5M9 9V5h6v4"/>`],
+  europe: ['Danmark i Europa', `<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18m0-18c-3 3-3 15 0 18"/>`],
+  globe: ['Globalt samarbejde', `<circle cx="12" cy="12" r="9"/><path d="m7 7 3 1 1 3 4 1 2 4-3 3-5-2-2-4-3-2"/>`],
+  defence: ['Forsvar og sikkerhed', `<path d="M12 3 5 6v6c0 5 3 8 7 10 4-2 7-5 7-10V6l-7-3Z"/><path d="M12 7v10M8 12h8"/>`],
+  book: ['Litteratur', `<path d="M4 5c3-1 6 0 8 2v14c-2-2-5-3-8-2V5Zm16 0c-3-1-6 0-8 2v14c2-2 5-3 8-2V5Z"/>`],
+  art: ['Billedkunst', `<path d="M12 3a9 9 0 1 0 0 18h2a2 2 0 0 0 0-4h-1a2 2 0 0 1 0-4h4a4 4 0 0 0 4-4c0-4-4-6-9-6Z"/><circle cx="8" cy="9" r="1"/><circle cx="12" cy="7" r="1"/>`],
+  music: ['Musik', `<path d="M9 18V7l10-2v11M9 18a3 3 0 1 1-3-3h3m10 1a3 3 0 1 1-3-3h3"/>`],
+  architecture: ['Arkitektur', `<path d="M4 21h16M6 18h12M7 18V9h10v9M5 9l7-6 7 6M10 18v-5h4v5"/>`],
+  stage: ['Scenekunst', `<path d="M4 4c5 0 8 2 8 7 0 5-3 8-8 9V4Zm16 0c-5 0-8 2-8 7 0 5 3 8 8 9V4Z"/><path d="M7 9h2m6 0h2M7 14c1 1 2 1 3 0m4 0c1 1 2 1 3 0"/>`],
+  film: ['Film', `<rect x="3" y="6" width="18" height="14" rx="2"/><path d="M3 10h18M7 6l3 4m2-4 3 4m2-4 3 4"/>`],
+  land: ['Land og steder', `<path d="M4 20 8 9l4 4 4-8 4 15H4Z"/><path d="M3 20h18"/>`],
+  flag: ['Flaget', `<path d="M6 22V3m1 2h12l-2 4 2 4H7V5Z"/><path d="M11 5v8M7 8h12"/>`],
+  realm: ['Rigsfællesskabet', `<circle cx="8" cy="10" r="4"/><circle cx="16" cy="10" r="4"/><circle cx="12" cy="16" r="4"/>`],
+  grundtvig: ['Grundtvig og skole', `<path d="M5 19V6h11l3 3v10H5Z"/><path d="M16 6v4h4M8 13h8m-8 3h6"/><path d="m4 4 2-2 2 2"/>`],
+  equality: ['Ligestilling og familie', `<circle cx="8" cy="8" r="4"/><circle cx="16" cy="8" r="4"/><path d="M8 12v9m-4-4h8m4-5v9m-4-4h8"/>`],
+  health: ['Sundhed', `<path d="M12 21S4 16 4 10a4 4 0 0 1 7-2l1 1 1-1a4 4 0 0 1 7 2c0 6-8 11-8 11Z"/><path d="M8 13h2l1-3 2 6 1-3h2"/>`],
+  climate: ['Klima', `<path d="M19 5C11 5 6 9 6 15c0 3 2 6 6 6 6 0 9-7 7-16Z"/><path d="M5 21c2-6 6-9 12-12"/>`],
+};
+
+const topicIcon = (key, className = '') => {
+  const topic = TOPIC[key] ?? TOPIC.modern;
+  return `<svg class="topic-icon ${className}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.55" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${topic[1]}</svg>`;
+};
+
+const topicLabel = (key) => (TOPIC[key] ?? TOPIC.modern)[0];
+
+function topicKey(question) {
+  const page = question.page ?? 0;
+  if (question.section === 'vaerdier') return 'justice';
+  if (question.section === 'aktuelt') return 'modern';
+  if (question.chapter === 1) {
+    if (page <= 9) return 'viking';
+    if (page <= 12) return 'medieval';
+    if (page <= 18) return 'crown';
+    if (page <= 25) return 'war';
+    if (page <= 36) return 'industry';
+    return 'modern';
+  }
+  if (question.chapter === 2) return page < 95 ? 'democracy' : 'justice';
+  if (question.chapter === 3) return page < 113 ? 'welfare' : page < 116 ? 'business' : 'labour';
+  if (question.chapter === 4) return page < 130 ? 'europe' : page < 135 ? 'globe' : 'defence';
+  if (question.chapter === 5) return page < 152 ? 'book' : page < 157 ? 'art' : page < 160 ? 'music' : page < 163 ? 'architecture' : page < 167 ? 'stage' : 'film';
+  if (page < 189) return 'land';
+  if (page < 190) return 'flag';
+  if (page < 192) return 'crown';
+  if (page < 205) return 'realm';
+  if (page < 226) return 'grundtvig';
+  if (page < 235) return 'equality';
+  if (page < 239) return 'health';
+  return 'climate';
+}
+
 const HALLS = [
   { numeral: 'I', chapter: 1, accent: '--thor', da: 'Danmarks historie', en: "Denmark's history",
-    topics: ['Vikingetid', 'Middelalder', 'Enevælden', 'De slesvigske krige', 'Verdenskrigene', 'Velfærd og oprør'] },
+    topics: ['viking', 'medieval', 'crown', 'war', 'industry', 'modern'] },
   { numeral: 'II', chapter: 2, accent: '--gorm', da: 'Det danske demokrati', en: 'Danish democracy',
-    topics: ['Styreformen', 'Grundloven', 'Folketinget', 'Retssamfundet'] },
+    topics: ['democracy', 'constitution', 'parliament', 'justice'] },
   { numeral: 'III', chapter: 3, accent: '--ingrid', da: 'Den danske økonomi', en: 'The Danish economy',
-    topics: ['Velfærdssamfundet', 'Erhvervslivet', 'Arbejdsmarkedet'] },
+    topics: ['welfare', 'business', 'labour'] },
   { numeral: 'IV', chapter: 4, accent: '--freja', da: 'Danmark og omverdenen', en: 'Denmark and the world',
-    topics: ['Danmark i Europa', 'Globalt samarbejde', 'Forsvar og sikkerhed'] },
+    topics: ['europe', 'globe', 'defence'] },
   { numeral: 'V', chapter: 5, accent: '--astrid', da: 'Dansk kulturliv', en: 'Danish cultural life',
-    topics: ['Litteratur', 'Billedkunst', 'Musik', 'Arkitektur', 'Scenekunst', 'Film'] },
+    topics: ['book', 'art', 'music', 'architecture', 'stage', 'film'] },
   { numeral: 'VI', chapter: 6, accent: '--bjorn', da: 'Temaopslag', en: 'Thematic entries',
-    topics: ['Flaget', 'Kongehuset', 'Rigsfællesskabet', 'Grundtvig', 'Ligestilling', 'Klima'] },
+    topics: ['land', 'flag', 'crown', 'realm', 'grundtvig', 'equality', 'health', 'climate'] },
 ];
 
 const inChapter = (n) =>
@@ -214,7 +283,7 @@ function renderHalls() {
             <span class="en">${hall.en}</span>
             <span class="state">${mark}${label}</span>
           </span>
-          <span class="chips">${hall.topics.map((t) => `<span>${t}</span>`).join('')}
+          <span class="chips">${hall.topics.map((key) => `<span>${topicIcon(key)}${topicLabel(key)}</span>`).join('')}
             <span>${stock} spørgsmål</span></span>
         </button>
       </div>`;
@@ -226,26 +295,26 @@ function renderHalls() {
    ============================================================ */
 const MODES = [
   {
-    id: 'ovelse', da: 'Øvelse', en: 'Practice', accent: '--freja',
+    id: 'ovelse', da: 'Øvelse', en: 'Practice', accent: '--freja', icon: 'grundtvig',
     blurb: 'Tilfældige spørgsmål fra lærematerialet, vægtet efter hvor ofte SIRI faktisk har stillet dem.',
     tag: 'Ubegrænset',
     build: (rand) => weighted(pool('laeremateriale'), 15, rand),
   },
   {
-    id: 'dyst', da: 'Dysten', en: 'The duel', accent: '--bjorn',
+    id: 'dyst', da: 'Dysten', en: 'The duel', accent: '--bjorn', icon: 'defence',
     blurb: 'Ro om kap med Bjørn over 15 spørgsmål. Båden flytter sig efter rigtige svar, ikke efter tid, så det er præcision der afgør det.',
     tag: 'Mod Bjørn',
     duel: true,
     build: (rand) => weighted(pool('laeremateriale'), 15, rand),
   },
   {
-    id: 'tid', da: 'Tidslinjen', en: 'The timeline', accent: '--astrid',
+    id: 'tid', da: 'Tidslinjen', en: 'The timeline', accent: '--astrid', icon: 'viking',
     blurb: 'Danmarks historie fra vikingetiden til i dag, periode for periode. Det største kapitel og det, der fylder mest på prøven.',
     tag: '12 perioder',
     teaches: 'time',
   },
   {
-    id: 'ting', da: 'Tinget', en: 'The values assembly', accent: '--ingrid',
+    id: 'ting', da: 'Tinget', en: 'The values assembly', accent: '--ingrid', icon: 'justice',
     blurb: 'De 5 værdispørgsmål. Du skal have mindst 4 rigtige, ellers dumper du hele prøven uanset resten. Lær principperne først.',
     tag: 'Kræver 4 af 5',
     teaches: true, ting: true,
@@ -253,7 +322,7 @@ const MODES = [
     gate: { need: RULES.valuesPass, of: RULES.values },
   },
   {
-    id: 'alting', da: 'Altinget', en: 'The full assembly', accent: '--thor',
+    id: 'alting', da: 'Altinget', en: 'The full assembly', accent: '--thor', icon: 'parliament',
     blurb: 'Hele prøven under rigtige regler: 45 spørgsmål, 36 for at bestå, og mindst 4 af 5 værdispørgsmål.',
     tag: '45 spørgsmål',
     build: (rand) => [
@@ -273,6 +342,7 @@ const sceneFor = (mode) => (mode.ting ? 'ting' : mode.exam ? 'alting' : 'hall');
 /** Leaving a drill returns where it was started from, not to the map. */
 const leave = (mode) => mode?.ting ? showTing()
   : mode?.time ? showTime()
+  : mode?.duel ? showArena()
   : (renderPath(), go('viewPath', 'path'));
 
 /**
@@ -291,7 +361,17 @@ const leave = (mode) => mode?.ting ? showTing()
 const usable = (q) => q.status !== 'outdated';
 
 const pool = (section) => state.bank.filter((q) => q.section === section && usable(q));
-const pick = (list, n, rand) => shuffle(list, rand).slice(0, Math.min(n, list.length));
+function pick(list, n, rand) {
+  const out = [];
+  const stems = new Set();
+  for (const question of shuffle(list, rand)) {
+    if (stems.has(question.stem)) continue;
+    stems.add(question.stem);
+    out.push(question);
+    if (out.length === Math.min(n, list.length)) break;
+  }
+  return out;
+}
 
 /** The newest sittings only; older current-affairs answers have moved on. */
 function recent(list) {
@@ -308,10 +388,15 @@ function weighted(list, n, rand) {
   const bag = list.flatMap((q) => Array(Math.min(q.seen.length, 4)).fill(q));
   const out = [];
   const taken = new Set();
+  const stems = new Set();
   let guard = 0;
   while (out.length < Math.min(n, list.length) && bag.length && guard++ < 5000) {
     const q = bag[Math.floor(rand() * bag.length)];
-    if (!taken.has(q.id)) { taken.add(q.id); out.push(q); }
+    if (!taken.has(q.id) && !stems.has(q.stem)) {
+      taken.add(q.id);
+      stems.add(q.stem);
+      out.push(q);
+    }
   }
   return out;
 }
@@ -319,7 +404,7 @@ function weighted(list, n, rand) {
 /* ============================================================
    Views
    ============================================================ */
-const VIEWS = ['viewWho', 'viewShore', 'viewPath', 'viewTime', 'viewTing', 'viewQuiz', 'viewResult'];
+const VIEWS = ['viewWho', 'viewShore', 'viewPath', 'viewTime', 'viewArena', 'viewTing', 'viewQuiz', 'viewResult'];
 function go(id, scene) {
   const swap = () => {
     // The counter and clock belong to a run; nothing else should inherit them.
@@ -362,6 +447,12 @@ function useProfile(name, { guest = false } = {}) {
   $('soundToggle').textContent = state.sound ? 'Lyd til' : 'Lyd fra';
   $('soundToggle').setAttribute('aria-pressed', String(state.sound));
   renderShore();
+  if (state.pendingChallenge) {
+    const challenge = state.pendingChallenge;
+    state.pendingChallenge = null;
+    const mode = modeById(challenge.modeId);
+    if (mode) return start(mode.id, mode, { ...challenge, name: 'Din udfordrer' });
+  }
   if (state.guide) {
     choose(state.guide);
     renderPath();
@@ -435,12 +526,55 @@ function renderPath() {
     const best = state.best[m.id];
     return `<button class="mode" type="button" data-id="${m.id}"
         style="--accent:var(${m.accent}); --d:${i * 0.08}s">
-        <h3>${m.da} ${best ? `<span class="best">bedste ${best}</span>` : ''}</h3>
+        <h3>${topicIcon(m.icon)}${m.da} ${best ? `<span class="best">bedste ${best}</span>` : ''}</h3>
         <span class="en">${m.en}</span>
         <p>${m.blurb}</p>
         <span class="tag">${m.tag}</span>
       </button>`;
   }).join('');
+}
+
+/* ---------- Arena ---------- */
+const RESULT_MARK = {
+  won: `<svg viewBox="0 0 24 24" fill="none"><path d="M12 3 5 6v6c0 5 3 8 7 10 4-2 7-5 7-10V6l-7-3Z"/><path d="m8 12 3 3 5-6"/></svg>`,
+  lost: `<svg viewBox="0 0 24 24" fill="none"><path d="M12 3 5 6v6c0 5 3 8 7 10 4-2 7-5 7-10V6l-7-3Z"/><path d="m9 9 6 6m0-6-6 6"/></svg>`,
+  draw: `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9"/><path d="M7 12h10"/></svg>`,
+};
+
+function showArena() {
+  $('hudTitle').textContent = 'Dysten';
+  $('arenaBjorn').innerHTML = byId('bjorn').svg;
+  renderBattles();
+  go('viewArena', 'hall');
+}
+
+function renderBattles() {
+  const battles = state.battles ?? [];
+  const won = battles.filter((battle) => battle.result === 'won').length;
+  const lost = battles.filter((battle) => battle.result === 'lost').length;
+  const drawn = battles.filter((battle) => battle.result === 'draw').length;
+  $('battleRecord').textContent = `${won} vundet · ${lost} tabt · ${drawn} uafgjort`;
+  $('battleList').innerHTML = battles.length
+    ? battles.slice(0, 12).map((battle) => `
+      <div class="battle ${battle.result}">
+        <span class="battle-mark">${RESULT_MARK[battle.result]}</span>
+        <span><b>${battle.opponent}</b><small>${battle.mine} mod ${battle.theirs} · ${battle.date}</small></span>
+        <em>${battle.result === 'won' ? 'Vundet' : battle.result === 'lost' ? 'Tabt' : 'Uafgjort'}</em>
+      </div>`).join('')
+    : `<p class="battle-empty">Intet er ridset i skjoldet endnu. Vælg din første modstander.</p>`;
+}
+
+function recordBattle(opponent, mine, theirs, sunk) {
+  const result = mine > theirs ? 'won' : mine < theirs ? 'lost' : 'draw';
+  state.battles = [{
+    opponent,
+    mine,
+    theirs,
+    result,
+    sunk: Boolean(sunk),
+    date: new Intl.DateTimeFormat('da-DK', { day: 'numeric', month: 'short' }).format(new Date()),
+  }, ...(state.battles ?? [])].slice(0, 30);
+  return result;
 }
 
 /* ---------- Tidslinjen ---------- */
@@ -459,7 +593,7 @@ function showTime() {
         <span class="knot"></span>
         <span class="axis"><b>${span}</b><span>${years}</span></span>
         <button class="body" type="button" data-i="${i}" ${stock ? '' : 'disabled'}>
-          <h4>${era.title}</h4>
+          <h4>${topicIcon(topicKey({ chapter: 1, page: era.page }))}${era.title}</h4>
           <span class="weight">
             <i style="width:${Math.round((stock / most) * 100)}px"></i>
             <span>${stock ? `${stock} spørgsmål` : 'ingen spørgsmål'}</span>
@@ -643,6 +777,7 @@ function renderQuestion() {
   const run = state.run;
   const q = run.questions[run.i];
   const letters = ['A', 'B', 'C'];
+  const topic = topicKey(q);
 
   if (!run.deadline) $('hudMeta').textContent = `${run.i + 1} / ${run.questions.length}`;
   renderRow();
@@ -651,6 +786,7 @@ function renderQuestion() {
     run.i === run.questions.length - 1 ? 'Afslut' : 'Næste';
 
   $('quizCard').innerHTML = `
+    <div class="q-topic">${topicIcon(topic)}<span>${topicLabel(topic)}</span></div>
     <p class="q">${q.q}</p>
     ${q.options.map((o, n) => `
       <button class="opt" type="button" data-n="${n}" style="--d:${n * 0.05}s">
@@ -700,14 +836,6 @@ function answer(chosen) {
   }
   $('quizNext').disabled = false;
 }
-
-/* ---------- the panel after an answer ----------
-   Three relics rotate so the panel never looks like the same box twice. */
-const RELICS = [
-  { label: 'Runefund', svg: `<svg viewBox="0 0 24 24" fill="none"><rect x="10.2" y="9" width="3.6" height="12" rx="1" fill="currentColor"/><path d="M5 4h14a1 1 0 0 1 1 1v3a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" fill="currentColor"/></svg>` },
-  { label: 'Fra sagaerne', svg: `<svg viewBox="0 0 24 24" fill="none"><path d="M3 15c2.5 2 5.8 3 9 3s6.5-1 9-3l-1.7 4.2a2 2 0 0 1-1.86 1.3H6.56a2 2 0 0 1-1.86-1.3L3 15Z" fill="currentColor"/><path d="M12 2v9M12 4c2.2 0 4 1.3 4 3-2 0-4-.5-4-3Z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 12V9.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>` },
-  { label: 'Skjoldmærke', svg: `<svg viewBox="0 0 24 24" fill="none"><path d="M12 2 5 5v6c0 5 3 8.5 7 11 4-2.5 7-6 7-11V5l-7-3Z" fill="currentColor" opacity=".9"/><path d="M12 2v20M5 11h14" stroke="#1c2e2f" stroke-width="1.1"/></svg>` },
-];
 
 const WARN = `<svg viewBox="0 0 24 24" fill="none"><path d="M12 3.5 22 20H2L12 3.5Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 10v4M12 17h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>`;
 
@@ -762,7 +890,7 @@ function dating(q) {
 }
 
 function buildWhy(q, right) {
-  const relic = RELICS[state.run.i % RELICS.length];
+  const topic = topicKey(q);
   const times = q.seen.length;
   const where = q.chapter
     ? `Kapitel ${q.chapter}, ${CHAPTERS[q.chapter]}${q.page ? `, side ${q.page}` : ''}.`
@@ -788,7 +916,7 @@ function buildWhy(q, right) {
   const why = document.createElement('div');
   why.className = 'why';
   why.innerHTML = `
-    <p class="lbl">${relic.svg}Forklaring</p>
+    <p class="lbl">${topicIcon(topic)}Forklaring · ${topicLabel(topic)}</p>
     ${body}
     ${dating(q)}
     <span class="src">
@@ -853,6 +981,9 @@ function finish() {
 
   const ghost = state.run.ghost;
   const theirs = ghost ? ghost.marks.slice(0, answered).filter(Boolean).length : null;
+  const battleResult = ghost
+    ? recordBattle(ghost.name ?? 'Udfordreren', score, theirs, sunk)
+    : null;
 
   state.best[mode.id] = Math.max(state.best[mode.id] ?? 0, score);
   // Clearing a hall opens the next one, and only ever forwards.
@@ -879,10 +1010,10 @@ function finish() {
       : `<p class="note">${score === questions.length
           ? 'Fejlfrit. Tag Altinget, når du er klar til hele prøven.'
           : 'Gennemgå de forkerte, og tag den igen. Spørgsmålene blandes hver gang.'}</p>`}
-    ${ghost ? `<div class="gate ${score >= theirs ? 'ok' : 'no'}">
+    ${ghost ? `<div class="gate ${battleResult === 'lost' ? 'no' : 'ok'}">
         ${ghost.name ?? 'Udfordreren'}: <b>${theirs} af ${questions.length}</b> rigtige.
-        ${score > theirs ? 'Du vandt kapsejladsen.'
-          : score === theirs ? 'Uafgjort. I nåede land samtidig.'
+        ${battleResult === 'won' ? 'Du vandt kapsejladsen.'
+          : battleResult === 'draw' ? 'Uafgjort. I nåede land samtidig.'
           : 'Du kom i land efter ' + (ghost.name ?? 'udfordreren') + '.'}
       </div>` : ''}
     <div class="actions">
@@ -949,13 +1080,8 @@ async function main() {
   // A challenge link carries everything needed to replay the same paper.
   const challenge = unpackRun(new URLSearchParams(location.hash.slice(1)).get('dyst'));
   if (challenge) {
-    const mode = modeById(challenge.modeId);
     history.replaceState(null, '', location.pathname);
-    if (mode) {
-      scenes.show('hall');
-      $('boot').hidden = true;
-      return start(mode.id, mode, { ...challenge, name: 'Din udfordrer' });
-    }
+    state.pendingChallenge = challenge;
   }
   showWho();
   $('boot').hidden = true;
@@ -979,10 +1105,7 @@ $('modes').addEventListener('click', (e) => {
   const mode = MODES.find((m) => m.id === btn.dataset.id);
   if (mode?.teaches === 'time') return showTime();
   if (mode?.teaches) return showTing();
-  if (mode?.duel) {
-    const seed = Date.now() >>> 0;
-    return start(mode.id, null, houseGhost(mode.id, seed));
-  }
+  if (mode?.duel) return showArena();
   start(btn.dataset.id);
 });
 $('halls').addEventListener('click', (e) => {
@@ -1001,6 +1124,12 @@ $('principles').addEventListener('click', (e) => {
   if (card) togglePrinciple(card);
 });
 $('tingTest').addEventListener('click', () => start('ting'));
+$('bjornDuel').addEventListener('click', () => {
+  const mode = MODES.find((item) => item.id === 'dyst');
+  const seed = Date.now() >>> 0;
+  start(mode.id, mode, houseGhost(mode.id, seed));
+});
+$('friendDuel').addEventListener('click', () => start('dyst'));
 $('eras').addEventListener('click', (e) => {
   const btn = e.target.closest('.body:not([disabled])');
   if (btn) start(null, eraMode(state.eras[Number(btn.dataset.i)]));
