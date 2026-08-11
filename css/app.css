@@ -77,7 +77,11 @@ a{ color:var(--parchment); text-underline-offset:3px; }
 .hud-back:hover{ color:var(--parchment); }
 
 /* ---------- stage ---------- */
-.stage{ position:relative; z-index:1; flex:1; width:100%; max-width:1120px; margin:0 auto; padding:44px 20px 32px; }
+/* Above .foot, which shares z-index 1 and comes later in the DOM. The pinned
+   mobile start button lives in here, and its own z-index cannot climb out of
+   this stacking context, so the stage itself has to sit higher or the footer
+   swallows the taps. */
+.stage{ position:relative; z-index:2; flex:1; width:100%; max-width:1120px; margin:0 auto; padding:44px 20px 32px; }
 /* fill-mode is backwards, not both: 'both' leaves an identity transform on the
    element after the entrance finishes, and any transform makes it a containing
    block for position:fixed children. That silently trapped the mobile start
@@ -186,7 +190,7 @@ a{ color:var(--parchment); text-underline-offset:3px; }
 
 /* ---------- buttons ---------- */
 .btn{
-  font:inherit; font-size:13px; letter-spacing:.1em; text-transform:uppercase;
+  font:inherit; font-size:13px; touch-action:manipulation; letter-spacing:.1em; text-transform:uppercase;
   padding:13px 30px; border-radius:3px; cursor:pointer;
   display:inline-flex; align-items:center; gap:8px;
   transition:background .25s ease, color .25s ease, opacity .25s ease, border-color .25s ease;
@@ -538,7 +542,9 @@ a{ color:var(--parchment); text-underline-offset:3px; }
      already on screen. Fixed, and only once it is actually usable. */
   #beginBtn{ width:100%; justify-content:center; margin-top:20px; }
   #beginBtn:not(:disabled){
-    position:fixed; left:16px; right:16px; bottom:14px; width:auto; z-index:20;
+    position:fixed; left:16px; right:16px; width:auto; z-index:20;
+    /* clear of the home indicator, where iOS eats the first tap */
+    bottom:calc(14px + env(safe-area-inset-bottom));
     margin:0; border-color:var(--ember);
     background:var(--bg);
     backdrop-filter:blur(10px);
