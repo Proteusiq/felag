@@ -1018,18 +1018,39 @@ function finish() {
       </div>` : ''}
     <div class="actions">
       <button class="btn primary" id="againBtn" type="button">Prøv igen</button>
-      <button class="btn ghost" id="shareBtn" type="button">Udfordr en ven</button>
+      <button class="btn ghost" id="shareBtn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 12 15 6m-6 6 6 6M15 6v4m0-4h-4m4 12v-4m0 4h-4"/></svg>
+        Del dit skjold
+      </button>
       <button class="btn ghost" id="backPathBtn" type="button">Tilbage</button>
-    </div>`;
+    </div>
+    <p class="share-note" id="shareNote" role="status" aria-live="polite" hidden></p>`;
 
   $('hudMeta').textContent = '';
   go('viewResult', sceneFor(mode));
   $('againBtn').onclick = () => start(mode.id, mode, ghost && houseGhost(mode.id, state_seed));
-  $('shareBtn').onclick = async (e) => {
+  $('shareBtn').onclick = async () => {
     // The whole challenge travels in the fragment, so nothing is stored anywhere.
     const link = `${location.origin}${location.pathname}#dyst=${packRun(finished)}`;
-    try { await navigator.clipboard.writeText(link); e.target.textContent = 'Link kopieret'; }
-    catch { prompt('Kopiér linket:', link); }
+    const note = $('shareNote');
+    const tell = (message) => {
+      note.hidden = false;
+      note.innerHTML = `${RESULT_MARK.won}<span>${message}</span>`;
+    };
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'Félag: tag mit løb', text: 'Kan du slå mit løb?', url: link });
+        return tell('Dit løb er delt. Glæd dig til modsvaret.');
+      } catch (error) {
+        if (error.name === 'AbortError') return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(link);
+      tell('Dit løb er klar. Linket er kopieret.');
+    } catch {
+      prompt('Kopiér dit løb:', link);
+    }
   };
   $('backPathBtn').onclick = () => leave(mode);
   state.run = null;
