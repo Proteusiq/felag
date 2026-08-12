@@ -81,8 +81,10 @@
       <button class="btn primary" type="submit"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Tilføj</button>
     </form>
 
-    <button class="btn ghost" id="guestBtn" type="button">
-      Fortsæt som gæst &middot; intet gemmes
+    <button class="guest-entry" id="guestBtn" type="button">
+      <span class="guest-sigil" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M5 22c5 3 17 3 22 0l-3 5H8l-3-5Z"/><path d="M16 6v16m0-13c4 0 7 3 7 6-4 0-7-2-7-6Z"/><path d="M6 12h.01m-3 4h.01"/></svg></span>
+      <span><b>Fortsæt som gæst</b><small>En let rejse · intet gemmes</small></span>
+      <svg class="guest-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m10 5 7 7-7 7m6-7H6"/></svg>
     </button>
   </section>
 
@@ -131,7 +133,10 @@
       Alle spørgsmål er officielle, tidligere prøvespørgsmål fra SIRI med officielt retteark.
       <a href="https://danskogproever.dk/borger/indfoedsretsproeve-statsborgerskab/forberedelse-til-indfoedsretsproeven/" target="_blank" rel="noopener">Se kilden</a>.
     </p>
-    <button class="btn ghost" id="changeGuide" type="button">Skift vejleder</button>
+    <button class="guide-switch" id="changeGuide" type="button">
+      <span class="guide-helmet" aria-hidden="true"><svg viewBox="0 0 32 32" fill="none"><path d="M9 24v-9a7 7 0 0 1 14 0v9H9Z"/><path d="M9 15 4 10l1-5 6 5m12 5 5-5-1-5-6 5M8 24h16M13 19h.01m6 0h.01"/></svg></span>
+      <span>Skift vejleder</span>
+    </button>
   </section>
 
   <!-- ============ TRAINING ============ -->
