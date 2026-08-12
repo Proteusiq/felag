@@ -378,7 +378,7 @@ function modeCard(mode, index) {
   const best = state.best[mode.id];
   return `<button class="mode" type="button" data-id="${mode.id}"
       style="--accent:var(${mode.accent}); --d:${index * 0.08}s">
-      <h3>${topicIcon(mode.icon)}${mode.da} ${best ? `<span class="best">bedste ${best}</span>` : ''}</h3>
+      <h3>${topicIcon(mode.icon, `mode-icon ${mode.id}`)}${mode.da} ${best ? `<span class="best">bedste ${best}</span>` : ''}</h3>
       <span class="en">${mode.en}</span>
       <p>${mode.blurb}</p>
       <span class="tag">${mode.tag}</span>
@@ -1114,7 +1114,6 @@ function finish() {
         <span><b>Udfordr en dansk viking</b><small>Hvem kender Danmark bedst?</small></span>
         <svg class="challenge-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m10 5 7 7-7 7m6-7H6"/></svg>
       </button>
-      <button class="result-back" id="backPathBtn" type="button" aria-label="Tilbage til vejen og hallerne" data-tooltip="Tilbage til vejen og hallerne"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3V6Zm6-3v15m6-12v15"/></svg></button>
     </div>
     <p class="share-note" id="shareNote" role="status" aria-live="polite" hidden></p>`;
 
@@ -1147,7 +1146,6 @@ function finish() {
       prompt('Kopiér dit løb:', link);
     }
   };
-  $('backPathBtn').onclick = () => leave(mode);
   state.run = null;
 }
 
