@@ -553,15 +553,24 @@ function renderBattles() {
   const won = battles.filter((battle) => battle.result === 'won').length;
   const lost = battles.filter((battle) => battle.result === 'lost').length;
   const drawn = battles.filter((battle) => battle.result === 'draw').length;
-  $('battleRecord').textContent = `${won} vundet · ${lost} tabt · ${drawn} uafgjort`;
+  const stats = [
+    ['won', 'Sejre', won, 'Sejre mod Bjørn eller venner'],
+    ['lost', 'Tabt', lost, 'Kampe, hvor modstanderen nåede først'],
+    ['draw', 'Uafgjort', drawn, 'Kampe, hvor I nåede land samtidig'],
+  ];
+  $('battleRecord').innerHTML = stats.map(([result, label, count, tip]) => `
+    <span class="battle-stat ${result}" data-tooltip="${tip}" aria-label="${count} ${label.toLowerCase()}">
+      ${RESULT_MARK[result]}<b>${count}</b><small>${label}</small>
+    </span>`).join('');
   $('battleList').innerHTML = battles.length
     ? battles.slice(0, 12).map((battle) => `
       <div class="battle ${battle.result}">
         <span class="battle-mark">${RESULT_MARK[battle.result]}</span>
-        <span><b>${battle.opponent}</b><small>${battle.mine} mod ${battle.theirs} · ${battle.date}</small></span>
+        <span class="battle-opponent"><b>${battle.opponent}</b><small>${battle.date}</small></span>
+        <span class="battle-score" aria-label="${battle.mine} mod ${battle.theirs}"><b>${battle.mine}</b><i>mod</i><b>${battle.theirs}</b></span>
         <em>${battle.result === 'won' ? 'Vundet' : battle.result === 'lost' ? 'Tabt' : 'Uafgjort'}</em>
       </div>`).join('')
-    : `<p class="battle-empty">Intet er ridset i skjoldet endnu. Vælg din første modstander.</p>`;
+    : `<p class="battle-empty">${RESULT_MARK.won}<span><b>Dit skjold venter på sit første mærke.</b> Vælg Bjørn eller kast handsken til en dansk viking.</span></p>`;
 }
 
 function recordBattle(opponent, mine, theirs, sunk) {
@@ -782,8 +791,10 @@ function renderQuestion() {
   if (!run.deadline) $('hudMeta').textContent = `${run.i + 1} / ${run.questions.length}`;
   renderRow();
   $('quizNext').disabled = true;
-  $('quizNextLabel').textContent =
-    run.i === run.questions.length - 1 ? 'Afslut' : 'Næste';
+  const nextLabel = run.i === run.questions.length - 1 ? 'Afslut løbet' : 'Næste spørgsmål';
+  $('quizNextLabel').textContent = nextLabel;
+  $('quizNext').setAttribute('aria-label', nextLabel);
+  $('quizNext').dataset.tooltip = nextLabel;
 
   $('quizCard').innerHTML = `
     <div class="q-topic">${topicIcon(topic)}<span>${topicLabel(topic)}</span></div>
@@ -831,6 +842,8 @@ function answer(chosen) {
   if (sunk) {
     $('quizNext').disabled = true;
     $('quizNextLabel').textContent = 'Skibet synker';
+    $('quizNext').setAttribute('aria-label', 'Skibet synker');
+    $('quizNext').dataset.tooltip = 'Skibet synker';
     setTimeout(() => finish(), 1200);
     return;
   }
@@ -942,7 +955,6 @@ function finish() {
   state.run.finishing = true;
   const { mode, questions, marks } = state.run;
   const finished = state.run;
-  const state_seed = state.run.seed;
   const sunk = state.run.sunk;
   const score = marks.filter(Boolean).length;
   const answered = marks.filter((mark) => mark !== null).length;
@@ -1017,18 +1029,22 @@ function finish() {
           : 'Du kom i land efter ' + (ghost.name ?? 'udfordreren') + '.'}
       </div>` : ''}
     <div class="actions">
-      <button class="btn primary" id="againBtn" type="button">Prøv igen</button>
-      <button class="btn ghost" id="shareBtn" type="button">
-        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M9 12 15 6m-6 6 6 6M15 6v4m0-4h-4m4 12v-4m0 4h-4"/></svg>
-        Del dit skjold
+      <button class="btn primary" id="againBtn" type="button">Få nye spørgsmål</button>
+      <button class="challenge-btn" id="shareBtn" type="button" data-tooltip="Din danske viking får det samme sæt spørgsmål og kan slå din score.">
+        <span class="challenge-sigil" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none"><path d="m11 39 26-30m-26 0 26 30"/><path d="m8 10 9 2-4 8-7-4 2-6Zm32 0-9 2 4 8 7-4-2-6Z" fill="currentColor"/><path d="M24 19v16M17 35h14"/></svg></span>
+        <span><b>Udfordr en dansk viking</b><small>Hvem kender Danmark bedst?</small></span>
+        <svg class="challenge-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m10 5 7 7-7 7m6-7H6"/></svg>
       </button>
-      <button class="btn ghost" id="backPathBtn" type="button">Tilbage</button>
+      <button class="result-back" id="backPathBtn" type="button" aria-label="Tilbage til vejen" data-tooltip="Tilbage til vejen"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m14 5-7 7 7 7M8 12h10"/></svg></button>
     </div>
     <p class="share-note" id="shareNote" role="status" aria-live="polite" hidden></p>`;
 
   $('hudMeta').textContent = '';
   go('viewResult', sceneFor(mode));
-  $('againBtn').onclick = () => start(mode.id, mode, ghost && houseGhost(mode.id, state_seed));
+  $('againBtn').onclick = () => {
+    const freshSeed = Date.now() >>> 0;
+    start(mode.id, mode, ghost?.house ? houseGhost(mode.id, freshSeed) : null);
+  };
   $('shareBtn').onclick = async () => {
     // The whole challenge travels in the fragment, so nothing is stored anywhere.
     const link = `${location.origin}${location.pathname}#dyst=${packRun(finished)}`;
@@ -1039,7 +1055,7 @@ function finish() {
     };
     if (navigator.share) {
       try {
-        await navigator.share({ title: 'Félag: tag mit løb', text: 'Kan du slå mit løb?', url: link });
+        await navigator.share({ title: 'Félag: udfordr en dansk viking', text: 'Hvem kender Danmark bedst?', url: link });
         return tell('Dit løb er delt. Glæd dig til modsvaret.');
       } catch (error) {
         if (error.name === 'AbortError') return;

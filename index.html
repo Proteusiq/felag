@@ -49,7 +49,10 @@
 <div class="scene" id="scene" aria-hidden="true"></div>
 
 <header class="hud" id="hud" hidden>
-  <button class="hud-back" id="hudBack" type="button">&larr; <span id="hudBackLabel">Tilbage</span></button>
+  <button class="hud-back" id="hudBack" type="button" aria-label="Forlad løbet" data-tooltip="Forlad løbet" data-tooltip-side="down">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m14 5-7 7 7 7M8 12h10"/></svg>
+    <span class="sr-only" id="hudBackLabel">Forlad</span>
+  </button>
   <span class="hud-title" id="hudTitle"></span>
   <span class="hud-meta" id="hudMeta"></span>
 </header>
@@ -163,23 +166,26 @@
         <h2 class="path-title">Dysten</h2>
       </div>
     </div>
-    <p class="path-sub">Her tæller rigtige svar som årer i vandet. Sæt dit løb mod Bjørn, eller sæt en prøve og send den til en ven.</p>
+    <p class="path-sub">Hvert rigtigt svar fører skibet frem. Udfordr Bjørn, eller kast handsken til en ven.</p>
 
     <div class="arena-choices">
       <button class="arena-choice bjorn" id="bjornDuel" type="button">
         <span class="arena-figure" id="arenaBjorn" aria-hidden="true"></span>
         <span class="arena-copy"><b>Bjørns langskib</b><small>15 spørgsmål · Bjørn holder fast kurs</small><em>Tag kampen</em></span>
       </button>
-      <button class="arena-choice friend" id="friendDuel" type="button">
+      <button class="arena-choice friend" id="friendDuel" type="button" data-tooltip="Din danske viking får præcis de samme spørgsmål. Det er en fair kamp.">
         <span class="arena-link-mark" aria-hidden="true">
-          <svg viewBox="0 0 48 48" fill="none"><path d="m18 30-2 2a7 7 0 0 1-10-10l8-8a7 7 0 0 1 10 0" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="m30 18 2-2a7 7 0 0 1 10 10l-8 8a7 7 0 0 1-10 0" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="m16 32 16-16" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+          <svg viewBox="0 0 48 48" fill="none"><path d="m11 39 26-30m-26 0 26 30" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><path d="m8 10 9 2-4 8-7-4 2-6Zm32 0-9 2 4 8 7-4-2-6Z" fill="currentColor"/><path d="M24 19v16M17 35h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
         </span>
-        <span class="arena-copy"><b>Sæt en venskabsdyst</b><small>Sejl 15 spørgsmål · del derefter dit skjold</small><em>Start dit løb</em></span>
+        <span class="arena-copy"><b>Udfordr en dansk viking</b><small>Sejl gennem de samme 15 spørgsmål. Hvem kender Danmark bedst?</small><em>Kast handsken</em></span>
       </button>
     </div>
 
     <section class="ledger" aria-labelledby="ledgerTitle">
-      <div class="ledger-title"><span id="ledgerTitle">Dit skjoldregnskab</span><b id="battleRecord"></b></div>
+      <div class="ledger-title">
+        <div><span id="ledgerTitle">Dit skjoldregnskab</span><small>Hver dyst bliver ridset i dit skjold.</small></div>
+        <div class="battle-record" id="battleRecord" aria-label="Kampstatistik"></div>
+      </div>
       <div class="battle-list" id="battleList"></div>
     </section>
   </section>
@@ -215,9 +221,12 @@
     </div>
     <div class="card" id="quizCard"></div>
     <div class="quiz-nav">
-      <button class="btn ghost" id="quizExit" type="button">&larr; Forlad</button>
-      <button class="btn primary" id="quizNext" type="button" disabled>
-        <span id="quizNextLabel">Næste</span>
+      <button class="quiz-nav-icon exit" id="quizExit" type="button" aria-label="Forlad løbet" data-tooltip="Forlad løbet">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m14 5-7 7 7 7M8 12h10"/></svg>
+      </button>
+      <button class="quiz-nav-icon next" id="quizNext" type="button" disabled aria-label="Næste spørgsmål" data-tooltip="Næste spørgsmål">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m10 5 7 7-7 7m6-7H6"/></svg>
+        <span class="sr-only" id="quizNextLabel">Næste spørgsmål</span>
       </button>
     </div>
   </section>
