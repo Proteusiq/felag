@@ -688,7 +688,9 @@ function start(modeId, override, ghost) {
     deadline: mode.exam ? Date.now() + RULES.minutes * 60000 : null,
   };
   $('hudTitle').textContent = mode.da;
-  $('hudBackLabel').textContent = 'Forlad';
+  $('hudBackLabel').textContent = 'Tilbage til vejen og hallerne';
+  $('hudBack').setAttribute('aria-label', 'Tilbage til vejen og hallerne');
+  $('hudBack').dataset.tooltip = 'Tilbage til vejen og hallerne';
   go('viewQuiz', sceneFor(mode));
   renderQuestion();
   if (state.run.deadline) tick();
@@ -791,7 +793,7 @@ function renderQuestion() {
   if (!run.deadline) $('hudMeta').textContent = `${run.i + 1} / ${run.questions.length}`;
   renderRow();
   $('quizNext').disabled = true;
-  const nextLabel = run.i === run.questions.length - 1 ? 'Afslut løbet' : 'Næste spørgsmål';
+  const nextLabel = run.i === run.questions.length - 1 ? 'Læg til ved land' : 'Sejl videre';
   $('quizNextLabel').textContent = nextLabel;
   $('quizNext').setAttribute('aria-label', nextLabel);
   $('quizNext').dataset.tooltip = nextLabel;
@@ -1035,7 +1037,7 @@ function finish() {
         <span><b>Udfordr en dansk viking</b><small>Hvem kender Danmark bedst?</small></span>
         <svg class="challenge-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m10 5 7 7-7 7m6-7H6"/></svg>
       </button>
-      <button class="result-back" id="backPathBtn" type="button" aria-label="Tilbage til vejen" data-tooltip="Tilbage til vejen"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m14 5-7 7 7 7M8 12h10"/></svg></button>
+      <button class="result-back" id="backPathBtn" type="button" aria-label="Tilbage til vejen og hallerne" data-tooltip="Tilbage til vejen og hallerne"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3V6Zm6-3v15m6-12v15"/></svg></button>
     </div>
     <p class="share-note" id="shareNote" role="status" aria-live="polite" hidden></p>`;
 
