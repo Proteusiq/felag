@@ -138,7 +138,7 @@
   <section class="view" id="viewHalls" hidden>
     <div class="learning-view-head">
       <span class="learning-sigil" aria-hidden="true"><svg viewBox="0 0 64 56" fill="none"><path d="M7 45c10-18 18-27 27-27 8 0 12 8 23 8"/><path d="m49 17 8 9-10 6"/><circle cx="8" cy="45" r="4"/><circle cx="20" cy="31" r="3"/><circle cx="33" cy="18" r="3"/><circle cx="46" cy="25" r="3"/></svg></span>
-      <div><p class="path-kicker">Dit studieforløb</p><h2 class="path-title">Læringsstien</h2></div>
+      <div><p class="path-kicker">Læringsstien</p><h2 class="path-title">De Seks Haller</h2></div>
     </div>
     <p class="path-sub">De seks haller følger lærematerialets kapitler. Ryd en hal, og den næste åbner sig.</p>
     <div class="halls" id="halls"></div>
@@ -186,12 +186,13 @@
       </button>
     </div>
 
-    <section class="ledger" aria-labelledby="ledgerTitle">
-      <div class="ledger-title">
-        <div><span id="ledgerTitle">Dit skjoldregnskab</span><small>Hver dyst bliver ridset i dit skjold.</small></div>
-        <div class="battle-record" id="battleRecord" aria-label="Kampstatistik"></div>
+    <section class="scoreboard" aria-labelledby="scoreboardTitle">
+      <div class="scoreboard-head">
+        <div><p>Kampens tavle</p><h3 id="scoreboardTitle">Skjoldtavlen</h3></div>
+        <span id="battleForm"></span>
       </div>
-      <div class="battle-list" id="battleList"></div>
+      <div class="scoreboard-summary" id="battleRecord" aria-label="Kampstatistik"></div>
+      <div class="match-feed" id="battleList"></div>
     </section>
   </section>
 

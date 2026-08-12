@@ -282,7 +282,7 @@ function renderHalls() {
     const done = i < cleared;
     const progress = hallProgress(hall);
     const mark = done ? ICON.done : shut ? ICON.shut : ICON.open;
-    const label = done ? 'Ryddet' : shut ? 'Låst' : 'Åben';
+    const label = done ? 'Port åbnet' : shut ? 'Låst' : 'Åben';
     return `<div class="hall ${done ? 'done' : ''} ${shut ? 'shut' : ''}"
         style="--accent:var(${hall.accent}); --d:${i * 0.06}s">
         <span class="thread"></span>
@@ -306,9 +306,9 @@ function renderLearningPath() {
   const next = HALLS[cleared];
   $('learningPath').innerHTML = `
     <span class="learning-sigil" aria-hidden="true"><svg viewBox="0 0 64 56" fill="none"><path d="M7 45c10-18 18-27 27-27 8 0 12 8 23 8"/><path d="m49 17 8 9-10 6"/><circle cx="8" cy="45" r="4"/><circle cx="20" cy="31" r="3"/><circle cx="33" cy="18" r="3"/><circle cx="46" cy="25" r="3"/></svg></span>
-    <span class="learning-copy"><span class="learning-kicker">Dit studieforløb</span><b>Læringsstien</b>
-      <small>${cleared === HALLS.length ? 'Alle seks haller er ryddet.' : `Næste hal: ${next.da}`}</small>
-      <span class="learning-meter" aria-label="${cleared} af ${HALLS.length} haller ryddet">${HALLS.map((_, i) => `<i class="${i < cleared ? 'done' : i === cleared ? 'current' : ''}"></i>`).join('')}<em>${cleared} / ${HALLS.length} ryddet</em></span>
+    <span class="learning-copy"><span class="learning-kicker">Læringsstien</span><b>De Seks Haller</b>
+      <small>${cleared === HALLS.length ? 'Alle seks porte er åbnet.' : `Næste hal: ${next.da}`}</small>
+      <span class="learning-meter" aria-label="${cleared} af ${HALLS.length} porte åbnet">${HALLS.map((_, i) => `<i class="${i < cleared ? 'done' : i === cleared ? 'current' : ''}"></i>`).join('')}<em>${cleared} / ${HALLS.length} porte åbnet</em></span>
     </span>
     <span class="learning-open">Åbn stien<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m10 5 7 7-7 7m6-7H6"/></svg></span>`;
 }
@@ -435,7 +435,7 @@ function go(id, scene) {
     if (id !== 'viewQuiz') $('hudMeta').textContent = '';
     VIEWS.forEach((v) => { $(v).hidden = v !== id; });
     if (scene) scenes.show(scene);
-    $('hud').hidden = id === 'viewShore' || id === 'viewWho';
+    $('hud').hidden = id === 'viewShore' || id === 'viewWho' || id === 'viewPath';
     scrollTo({ top: 0, behavior: 'instant' });
   };
   // Native view transitions; browsers without it simply get the swap.
@@ -455,7 +455,7 @@ function renderPeople() {
     catch { /* ignore */ }
     return `<button class="profile" type="button" data-name="${safe}" style="--d:${i * 0.05}s">
         <span class="mark">${safe.slice(0, 1).toUpperCase()}</span>
-        <span><b>${safe}</b><small>${done ? `${done} af 6 haller ryddet` : 'ingen haller ryddet endnu'}</small></span>
+        <span><b>${safe}</b><small>${done ? `${done} af 6 porte åbnet` : 'ingen porte åbnet endnu'}</small></span>
         <span class="drop" role="button" tabindex="0" data-drop="${safe}" aria-label="Fjern ${safe}">&times;</span>
       </button>`;
   }).join('');
@@ -559,7 +559,7 @@ function renderPath() {
 }
 
 function showHalls() {
-  $('hudTitle').textContent = 'Læringsstien';
+  $('hudTitle').textContent = 'De Seks Haller';
   $('hudBackLabel').textContent = 'Tilbage til vejen';
   $('hudBack').setAttribute('aria-label', 'Tilbage til vejen');
   $('hudBack').dataset.tooltip = 'Tilbage til vejen';
@@ -586,24 +586,27 @@ function renderBattles() {
   const won = battles.filter((battle) => battle.result === 'won').length;
   const lost = battles.filter((battle) => battle.result === 'lost').length;
   const drawn = battles.filter((battle) => battle.result === 'draw').length;
+  const total = battles.length;
+  const rate = total ? Math.round((won / total) * 100) : 0;
   const stats = [
-    ['won', 'Sejre', won, 'Sejre mod Bjørn eller venner'],
-    ['lost', 'Tabt', lost, 'Kampe, hvor modstanderen nåede først'],
-    ['draw', 'Uafgjort', drawn, 'Kampe, hvor I nåede land samtidig'],
+    ['won', 'Sejre', won], ['lost', 'Tabt', lost], ['draw', 'Uafgjort', drawn],
   ];
-  $('battleRecord').innerHTML = stats.map(([result, label, count, tip]) => `
-    <span class="battle-stat ${result}" data-tooltip="${tip}" aria-label="${count} ${label.toLowerCase()}">
-      ${RESULT_MARK[result]}<b>${count}</b><small>${label}</small>
-    </span>`).join('');
+  $('battleForm').textContent = total ? `${rate}% sejrsrate` : 'Klar til kamp';
+  $('battleRecord').innerHTML = `
+    <div class="record-hero ${total ? '' : 'empty'}">
+      <span class="record-shield">${RESULT_MARK.won}</span>
+      <span><small>${total ? 'Din sejrsrate' : 'Dit første mærke'}</small><b>${total ? `${rate}%` : 'Klar'}</b><em>${total ? `${won} af ${total} kampe vundet` : 'Vælg en modstander og sæt sejl.'}</em></span>
+    </div>
+    ${stats.map(([result, label, count]) => `<span class="record-total ${result}" aria-label="${count} ${label.toLowerCase()}">${RESULT_MARK[result]}<b>${count}</b><small>${label}</small></span>`).join('')}`;
   $('battleList').innerHTML = battles.length
-    ? battles.slice(0, 12).map((battle) => `
-      <div class="battle ${battle.result}">
-        <span class="battle-mark">${RESULT_MARK[battle.result]}</span>
-        <span class="battle-opponent"><b>${battle.opponent}</b><small>${battle.date}</small></span>
-        <span class="battle-score" aria-label="${battle.mine} mod ${battle.theirs}"><b>${battle.mine}</b><i>mod</i><b>${battle.theirs}</b></span>
+    ? `<p class="match-feed-title">Seneste kampe</p>${battles.slice(0, 6).map((battle) => `
+      <div class="match ${battle.result}">
+        <span class="match-mark">${RESULT_MARK[battle.result]}</span>
+        <span><b>Mod ${battle.opponent}</b><small>${battle.date}</small></span>
+        <span class="match-score" aria-label="${battle.mine} mod ${battle.theirs}"><b>${battle.mine}</b><i>:</i><b>${battle.theirs}</b></span>
         <em>${battle.result === 'won' ? 'Vundet' : battle.result === 'lost' ? 'Tabt' : 'Uafgjort'}</em>
-      </div>`).join('')
-    : `<p class="battle-empty">${RESULT_MARK.won}<span><b>Dit skjold venter på sit første mærke.</b> Vælg Bjørn eller kast handsken til en dansk viking.</span></p>`;
+      </div>`).join('')}`
+    : `<div class="scoreboard-empty">${RESULT_MARK.won}<span><b>Skjoldtavlen venter.</b> Vælg Bjørn eller kast handsken til en dansk viking.</span></div>`;
 }
 
 function recordBattle(opponent, mine, theirs, sunk) {
@@ -720,7 +723,7 @@ function start(modeId, override, ghost) {
     ghost: ghost ?? null,
     deadline: mode.exam ? Date.now() + RULES.minutes * 60000 : null,
   };
-  const returnLabel = mode.hall ? 'Tilbage til Læringsstien' : 'Tilbage til vejen og hallerne';
+  const returnLabel = mode.hall ? 'Tilbage til De Seks Haller' : 'Tilbage til vejen og hallerne';
   $('hudTitle').textContent = mode.da;
   $('hudBackLabel').textContent = returnLabel;
   $('hudBack').setAttribute('aria-label', returnLabel);
@@ -1055,7 +1058,7 @@ function finish() {
     ${gate}
     ${mode.hall
       ? `<p class="note">${passed
-          ? 'Hallen er ryddet. Den næste har åbnet sig.'
+          ? 'Porten er åbnet. Den næste hal kan nu besøges.'
           : sunk
           ? 'Du nåede ikke frem denne gang. Brug forklaringerne og prøv hallen igen.'
           : `Du skal have ${Math.ceil(questions.length * HALL_PASS)} af ${questions.length} for at rydde hallen. Spørgsmålene blandes hver gang.`}</p>`
@@ -1215,7 +1218,13 @@ $('eras').addEventListener('click', (e) => {
   if (btn) start(null, eraMode(state.eras[Number(btn.dataset.i)]));
 });
 $('quizNext').addEventListener('click', next);
-const exitRun = () => { const m = state.run?.mode; state.run = null; leave(m); };
+const exitRun = () => {
+  const mode = state.run?.mode;
+  state.run = null;
+  if (mode) return leave(mode);
+  renderPath();
+  go('viewPath', 'path');
+};
 $('quizExit').addEventListener('click', exitRun);
 $('hudBack').addEventListener('click', exitRun);
 $('soundToggle').addEventListener('click', (e) => {
