@@ -58,6 +58,7 @@ const state = {
   guide: null,
   bank: [],
   best: {},
+  hallStats: {},
   battles: [],
   sound: false,
   run: null,
@@ -67,7 +68,7 @@ const state = {
    Persistence
    ============================================================ */
 function load() {
-  Object.assign(state, { guide: null, best: {}, battles: [], cleared: 0, sound: false });
+  Object.assign(state, { guide: null, best: {}, hallStats: {}, battles: [], cleared: 0, sound: false });
   if (!state.profile) return;
   try {
     Object.assign(state, JSON.parse(store().getItem(state.profile.key) ?? '{}'));
@@ -77,7 +78,7 @@ function save() {
   if (!state.profile) return;
   try {
     store().setItem(state.profile.key, JSON.stringify({
-      guide: state.guide, best: state.best, battles: state.battles,
+      guide: state.guide, best: state.best, hallStats: state.hallStats, battles: state.battles,
       sound: state.sound, cleared: state.cleared,
     }));
   } catch { /* private mode: run without persistence rather than fail */ }
@@ -254,6 +255,15 @@ const HALLS = [
 const inChapter = (n) =>
   state.bank.filter((q) => q.section === 'laeremateriale' && q.chapter === n && usable(q));
 
+function hallProgress(hall) {
+  const stock = inChapter(hall.chapter);
+  const ids = new Set(stock.map((q) => q.id));
+  const progress = state.hallStats?.[hall.chapter] ?? {};
+  const seen = new Set((progress.seen ?? []).filter((id) => ids.has(id))).size;
+  const correct = new Set((progress.correct ?? []).filter((id) => ids.has(id))).size;
+  return { total: stock.length, seen, correct, left: stock.length - seen };
+}
+
 function hallMode(hall, index) {
   const stock = inChapter(hall.chapter);
   return {
@@ -270,7 +280,7 @@ function renderHalls() {
   $('halls').innerHTML = HALLS.map((hall, i) => {
     const shut = i > cleared;
     const done = i < cleared;
-    const stock = inChapter(hall.chapter).length;
+    const progress = hallProgress(hall);
     const mark = done ? ICON.done : shut ? ICON.shut : ICON.open;
     const label = done ? 'Ryddet' : shut ? 'Låst' : 'Åben';
     return `<div class="hall ${done ? 'done' : ''} ${shut ? 'shut' : ''}"
@@ -279,15 +289,28 @@ function renderHalls() {
         <span class="node">${done ? ICON.done : hall.numeral}</span>
         <button class="body" type="button" data-i="${i}" ${shut ? 'disabled' : ''}>
           <span class="names">
-            <span class="da">${hall.da}</span>
+           <span class="da">${hall.da}</span>
             <span class="en">${hall.en}</span>
             <span class="state">${mark}${label}</span>
           </span>
           <span class="chips">${hall.topics.map((key) => `<span>${topicIcon(key)}${topicLabel(key)}</span>`).join('')}
-            <span>${stock} spørgsmål</span></span>
+            <span>${progress.total} spørgsmål</span></span>
+          <span class="hall-progress"><span>Set <b>${progress.seen}</b></span><span>Rigtige <b>${progress.correct}</b></span><span>Tilbage <b>${progress.left}</b></span></span>
         </button>
       </div>`;
   }).join('');
+}
+
+function renderLearningPath() {
+  const cleared = Math.min(state.cleared ?? 0, HALLS.length);
+  const next = HALLS[cleared];
+  $('learningPath').innerHTML = `
+    <span class="learning-sigil" aria-hidden="true"><svg viewBox="0 0 64 56" fill="none"><path d="M7 45c10-18 18-27 27-27 8 0 12 8 23 8"/><path d="m49 17 8 9-10 6"/><circle cx="8" cy="45" r="4"/><circle cx="20" cy="31" r="3"/><circle cx="33" cy="18" r="3"/><circle cx="46" cy="25" r="3"/></svg></span>
+    <span class="learning-copy"><span class="learning-kicker">Dit studieforløb</span><b>Læringsstien</b>
+      <small>${cleared === HALLS.length ? 'Alle seks haller er ryddet.' : `Næste hal: ${next.da}`}</small>
+      <span class="learning-meter" aria-label="${cleared} af ${HALLS.length} haller ryddet">${HALLS.map((_, i) => `<i class="${i < cleared ? 'done' : i === cleared ? 'current' : ''}"></i>`).join('')}<em>${cleared} / ${HALLS.length} ryddet</em></span>
+    </span>
+    <span class="learning-open">Åbn stien<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m10 5 7 7-7 7m6-7H6"/></svg></span>`;
 }
 
 /* ============================================================
@@ -340,7 +363,8 @@ const MODES = [
 const sceneFor = (mode) => (mode.ting ? 'ting' : mode.exam ? 'alting' : 'hall');
 
 /** Leaving a drill returns where it was started from, not to the map. */
-const leave = (mode) => mode?.ting ? showTing()
+const leave = (mode) => mode?.hall ? showHalls()
+  : mode?.ting ? showTing()
   : mode?.time ? showTime()
   : mode?.duel ? showArena()
   : (renderPath(), go('viewPath', 'path'));
@@ -404,7 +428,7 @@ function weighted(list, n, rand) {
 /* ============================================================
    Views
    ============================================================ */
-const VIEWS = ['viewWho', 'viewShore', 'viewPath', 'viewTime', 'viewArena', 'viewTing', 'viewQuiz', 'viewResult'];
+const VIEWS = ['viewWho', 'viewShore', 'viewPath', 'viewHalls', 'viewTime', 'viewArena', 'viewTing', 'viewQuiz', 'viewResult'];
 function go(id, scene) {
   const swap = () => {
     // The counter and clock belong to a run; nothing else should inherit them.
@@ -521,7 +545,7 @@ function renderPath() {
   $('guideName').textContent = c.name;
   $('pathSub').textContent = c.recommends;
 
-  renderHalls();
+  renderLearningPath();
   $('modes').innerHTML = MODES.map((m, i) => {
     const best = state.best[m.id];
     return `<button class="mode" type="button" data-id="${m.id}"
@@ -532,6 +556,15 @@ function renderPath() {
         <span class="tag">${m.tag}</span>
       </button>`;
   }).join('');
+}
+
+function showHalls() {
+  $('hudTitle').textContent = 'Læringsstien';
+  $('hudBackLabel').textContent = 'Tilbage til vejen';
+  $('hudBack').setAttribute('aria-label', 'Tilbage til vejen');
+  $('hudBack').dataset.tooltip = 'Tilbage til vejen';
+  renderHalls();
+  go('viewHalls', 'path');
 }
 
 /* ---------- Arena ---------- */
@@ -687,10 +720,11 @@ function start(modeId, override, ghost) {
     ghost: ghost ?? null,
     deadline: mode.exam ? Date.now() + RULES.minutes * 60000 : null,
   };
+  const returnLabel = mode.hall ? 'Tilbage til Læringsstien' : 'Tilbage til vejen og hallerne';
   $('hudTitle').textContent = mode.da;
-  $('hudBackLabel').textContent = 'Tilbage til vejen og hallerne';
-  $('hudBack').setAttribute('aria-label', 'Tilbage til vejen og hallerne');
-  $('hudBack').dataset.tooltip = 'Tilbage til vejen og hallerne';
+  $('hudBackLabel').textContent = returnLabel;
+  $('hudBack').setAttribute('aria-label', returnLabel);
+  $('hudBack').dataset.tooltip = returnLabel;
   go('viewQuiz', sceneFor(mode));
   renderQuestion();
   if (state.run.deadline) tick();
@@ -830,6 +864,12 @@ function answer(chosen) {
   const q = run.questions[run.i];
   const right = chosen === q.answerAt;
   run.marks[run.i] = right;
+  if (run.mode.hall) {
+    const progress = (state.hallStats ??= {})[run.mode.hall.chapter] ??= { seen: [], correct: [] };
+    if (!progress.seen.includes(q.id)) progress.seen.push(q.id);
+    if (right && !progress.correct.includes(q.id)) progress.correct.push(q.id);
+    save();
+  }
   const sunk = right ? null : sinkReason(run);
   run.sunk = sunk;
 
@@ -1031,7 +1071,7 @@ function finish() {
           : 'Du kom i land efter ' + (ghost.name ?? 'udfordreren') + '.'}
       </div>` : ''}
     <div class="actions">
-      <button class="btn primary" id="againBtn" type="button">Få nye spørgsmål</button>
+      <button class="btn primary" id="againBtn" type="button"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 11a8 8 0 1 0 2 5M20 4v7h-7"/></svg>Få nye spørgsmål</button>
       <button class="challenge-btn" id="shareBtn" type="button" data-tooltip="Din danske viking får det samme sæt spørgsmål og kan slå din score.">
         <span class="challenge-sigil" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none"><path d="m11 39 26-30m-26 0 26 30"/><path d="m8 10 9 2-4 8-7-4 2-6Zm32 0-9 2 4 8 7-4-2-6Z" fill="currentColor"/><path d="M24 19v16M17 35h14"/></svg></span>
         <span><b>Udfordr en dansk viking</b><small>Hvem kender Danmark bedst?</small></span>
@@ -1135,6 +1175,7 @@ function begin() {
 
 $('beginBtn').addEventListener('click', begin);
 $('changeGuide').addEventListener('click', () => go('viewShore', 'shore'));
+$('learningPath').addEventListener('click', showHalls);
 $('modes').addEventListener('click', (e) => {
   const btn = e.target.closest('.mode');
   if (!btn) return;

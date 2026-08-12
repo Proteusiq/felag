@@ -201,92 +201,24 @@ a{ color:var(--parchment); text-underline-offset:3px; }
   display:inline-flex; align-items:center; gap:8px;
   transition:background .25s ease, color .25s ease, opacity .25s ease, border-color .25s ease;
 }
-/* ---------- waymarkers ----------
-   These are not polished planks. They are split pieces of old timber: bark-dark
-   at the broken edge, sun-bleached where hands have worn the grain, and scored
-   with angular carvings. The direction is cut into the timber, not bolted on. */
 .btn.primary{
-  --face:#74553a; --deep:#382719; --edge:#20140c; --scar:rgba(31,18,10,.72);
-  margin-top:26px; border:none; border-radius:0; padding:15px 42px;
-  color:var(--parchment);
-  font-family:var(--display); font-variation-settings:var(--carved);
-  font-weight:600; font-size:13.5px; letter-spacing:.12em;
-  text-shadow:0 2px 0 rgba(20,12,7,.9), 0 0 5px rgba(20,12,7,.8);
-  background:
-    radial-gradient(ellipse at 17% 38%, rgba(27,16,8,.68) 0 3px, transparent 4px),
-    radial-gradient(ellipse at 81% 68%, rgba(224,178,118,.1) 0 5px, transparent 6px),
-    repeating-linear-gradient(93deg, transparent 0 8px, rgba(24,14,7,.28) 9px 10px, transparent 11px 19px),
-    repeating-linear-gradient(87deg, rgba(220,177,119,.07) 0 1px, transparent 2px 13px),
-    linear-gradient(177deg, #8a6948 0%, var(--face) 26%, #563b28 67%, var(--deep) 100%);
-  clip-path:polygon(2% 5%, 7% 0, 91% 2%, 98% 7%, 100% 27%, 98% 61%, 100% 91%, 93% 100%, 9% 97%, 1% 92%, 0 64%, 2% 29%, 0 13%);
-  filter:drop-shadow(0 5px 0 var(--edge)) drop-shadow(0 13px 18px rgba(0,0,0,.68));
-  transition:filter .18s ease, transform .1s ease;
+  margin-top:26px; padding:14px 24px; border:1px solid rgba(224,121,60,.62); border-radius:10px;
+  color:var(--parchment); font-family:var(--display); font-variation-settings:var(--carved);
+  font-weight:600; font-size:13.5px; letter-spacing:.1em;
+  background:radial-gradient(circle at 20% 15%,rgba(255,225,181,.2),transparent 34%),linear-gradient(135deg,#dc7944,#873b4a);
+  box-shadow:inset 0 1px rgba(255,255,255,.14),0 10px 22px -15px rgba(0,0,0,.85);
+  transition:transform .18s var(--ease),border-color .18s ease,box-shadow .18s ease,filter .18s ease;
 }
-/* Angular gouges: inspired by rune cuts, deliberately non-lettering. */
-.btn.primary::before, .btn.primary::after{
-  content:''; position:absolute; top:50%; width:21px; height:22px;
-  transform:translateY(-50%);
-  background:
-    linear-gradient(62deg, transparent 43%, var(--scar) 45% 52%, transparent 54%),
-    linear-gradient(-62deg, transparent 43%, var(--scar) 45% 52%, transparent 54%),
-    linear-gradient(90deg, transparent 45%, rgba(211,166,108,.3) 47% 49%, var(--scar) 51% 55%, transparent 57%);
-  opacity:.74;
-}
-.btn.primary::before{ left:12px; }
-.btn.primary::after{ right:12px; transform:translateY(-50%) scaleX(-1); }
-.btn.primary{ position:relative; }
+.btn.primary svg{ width:17px; height:17px; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
 .new-profile .btn.primary{
   min-width:94px;
   padding-left:18px;
   padding-right:18px;
 }
-.new-profile .btn.primary::before,
-.new-profile .btn.primary::after{ display:none; }
-.btn.primary:hover:not(:disabled){ filter:drop-shadow(0 5px 0 var(--edge)) drop-shadow(0 13px 18px rgba(0,0,0,.68)) brightness(1.11); }
-.btn.primary:active:not(:disabled){
-  transform:translateY(4px) rotate(-.2deg);
-  filter:drop-shadow(0 1px 0 var(--edge)) drop-shadow(0 5px 9px rgba(0,0,0,.65));
-}
-.btn.primary:disabled{ filter:grayscale(.55) brightness(.62); cursor:default; }
-
-/* Signposts: forward points into the woods; back points to the shore. */
-.quiz-nav .btn.primary, #tingTest{
-  clip-path:polygon(2% 5%, 78% 1%, 89% 8%, 100% 50%, 89% 93%, 78% 100%, 3% 96%, 0 88%, 2% 66%, 0 15%);
-  padding-right:46px;
-  filter:drop-shadow(0 5px 0 var(--edge)) drop-shadow(0 10px 14px rgba(0,0,0,.64));
-}
-/* A short directional sign has no room for the carved side marks: on Næste
-   they crossed the letters. The split tip, grain and broken silhouette carry
-   the timber language without sacrificing the word. */
-.quiz-nav .btn.primary::before,
-.quiz-nav .btn.primary::after,
-#tingTest::before,
-#tingTest::after{ display:none; }
-.quiz-nav .btn.primary:hover:not(:disabled), #tingTest:hover{
-  filter:drop-shadow(0 5px 0 var(--edge)) drop-shadow(0 10px 14px rgba(0,0,0,.64)) brightness(1.11);
-}
-.quiz-nav .btn.primary:active:not(:disabled), #tingTest:active{ transform:translateY(3px); }
-
-.quiz-nav .btn.ghost, .result .actions #backPathBtn{
-  --face:#674a31; --deep:#302116; --edge:#1c1209;
-  border:none; border-radius:0; padding:13px 24px 13px 40px; margin:0;
-  color:var(--parchment-dim); text-transform:uppercase;
-  font-family:var(--display); font-variation-settings:var(--carved);
-  font-weight:600; font-size:12px; letter-spacing:.12em;
-  text-shadow:0 2px 0 rgba(0,0,0,.75);
-  background:
-    radial-gradient(ellipse at 71% 36%, rgba(21,12,6,.55) 0 3px, transparent 4px),
-    repeating-linear-gradient(93deg, transparent 0 8px, rgba(22,13,7,.27) 9px 10px, transparent 11px 18px),
-    linear-gradient(176deg, #755437 0%, var(--face) 45%, var(--deep) 100%);
-  clip-path:polygon(15% 2%, 97% 4%, 100% 17%, 98% 86%, 91% 98%, 15% 96%, 8% 91%, 0 50%, 8% 9%);
-  filter:drop-shadow(0 4px 0 var(--edge)) drop-shadow(0 8px 12px rgba(0,0,0,.62));
-  transition:filter .18s ease, color .18s ease, transform .1s ease;
-}
-.quiz-nav .btn.ghost:hover, .result .actions #backPathBtn:hover{
-  color:var(--parchment);
-  filter:drop-shadow(0 4px 0 var(--edge)) drop-shadow(0 8px 12px rgba(0,0,0,.62)) brightness(1.12);
-}
-.quiz-nav .btn.ghost:active, .result .actions #backPathBtn:active{ transform:translateY(2px); }
+.btn.primary:hover:not(:disabled){ border-color:#f1c07b; box-shadow:0 13px 25px -15px rgba(224,121,60,.8); filter:brightness(1.08); transform:translateY(-2px); }
+.btn.primary:active:not(:disabled){ transform:translateY(1px); }
+.btn.primary:focus-visible{ outline:2px solid #f1c07b; outline-offset:3px; }
+.btn.primary:disabled{ cursor:default; opacity:.48; }
 .btn.ghost{ background:none; border:none; color:var(--parchment-dim); text-transform:none; letter-spacing:.02em; }
 .btn.ghost:hover{ color:var(--parchment); }
 .linklike{ background:none; border:none; color:var(--parchment-dim); font:inherit; font-size:12px; cursor:pointer; text-decoration:underline; text-underline-offset:3px; padding:0; }
@@ -307,6 +239,21 @@ a{ color:var(--parchment); text-underline-offset:3px; }
   font-weight:600; font-size:20px; margin:8px 0 4px; align-self:flex-start;
 }
 .section-note{ font-size:13px; color:var(--parchment-dim); margin:0 0 18px; align-self:flex-start; max-width:560px; line-height:1.55; }
+.learning-path{
+  display:grid; grid-template-columns:76px 1fr auto; align-items:center; gap:17px; width:100%; max-width:760px;
+  padding:18px 20px; color:var(--parchment); text-align:left; cursor:pointer; font:inherit;
+  border:1px solid rgba(224,121,60,.34); border-radius:15px;
+  background:radial-gradient(circle at 12% 30%,rgba(224,121,60,.13),transparent 25%),linear-gradient(145deg,rgba(54,69,65,.86),rgba(18,30,32,.96));
+  box-shadow:inset 0 1px rgba(255,255,255,.06),0 16px 30px -24px #000;
+  transition:transform .25s var(--ease),border-color .25s ease,box-shadow .25s ease;
+}
+.learning-path:hover,.learning-path:focus-visible{ outline:none; transform:translateY(-3px); border-color:var(--ember); box-shadow:0 18px 35px -22px rgba(224,121,60,.8); }
+.learning-sigil{ display:grid; place-items:center; width:62px; height:62px; color:var(--ember); border:1px solid rgba(224,121,60,.45); border-radius:50%; background:rgba(224,121,60,.07); }
+.learning-sigil svg{ width:48px; height:43px; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }.learning-sigil circle{ fill:var(--bg); }
+.learning-copy{ min-width:0; }.learning-kicker{ display:block; color:var(--ember); font-size:10px; letter-spacing:.14em; text-transform:uppercase; }.learning-copy > b{ display:block; margin-top:1px; font-family:var(--display); font-size:23px; font-weight:600; font-variation-settings:var(--carved); }.learning-copy > small{ display:block; margin-top:2px; color:var(--parchment-dim); font-size:12px; }
+.learning-meter{ display:flex; align-items:center; gap:5px; margin-top:12px; }.learning-meter i{ display:block; width:21px; height:5px; border-radius:5px; background:rgba(231,220,194,.16); }.learning-meter i.done{ background:var(--green); }.learning-meter i.current{ background:var(--ember); box-shadow:0 0 9px -1px var(--ember); }.learning-meter em{ margin-left:5px; color:var(--parchment-dim); font-size:11px; font-style:normal; white-space:nowrap; }
+.learning-open{ display:flex; align-items:center; gap:6px; color:var(--ember); font-family:var(--display); font-size:13px; font-weight:600; white-space:nowrap; }.learning-open svg{ width:19px; height:19px; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
+.learning-view-head{ display:flex; align-items:center; gap:16px; align-self:flex-start; }.learning-view-head .learning-sigil{ width:58px; height:58px; }.learning-view-head .learning-sigil svg{ width:43px; height:39px; }
 
 .halls{ width:100%; max-width:760px; display:flex; flex-direction:column; margin-bottom:34px; }
 .hall{ position:relative; display:flex; gap:16px; padding:9px 0; align-items:flex-start; animation:rise .45s var(--ease) both; animation-delay:var(--d,0s); }
@@ -349,6 +296,7 @@ a{ color:var(--parchment); text-underline-offset:3px; }
   background:rgba(231,220,194,.05); border:1px solid rgba(231,220,194,.12);
 }
 .hall:not(.shut) .chips span{ color:var(--parchment); }
+.hall-progress{ display:flex; flex-wrap:wrap; gap:6px; margin-top:11px; }.hall-progress span{ padding:4px 7px; border-radius:5px; background:rgba(231,220,194,.05); color:var(--parchment-dim); font-size:10px; letter-spacing:.04em; text-transform:uppercase; }.hall-progress span:last-child{ color:var(--ember); background:rgba(224,121,60,.08); }.hall-progress b{ color:var(--parchment); font-variant-numeric:tabular-nums; }
 .topic-icon{ width:18px; height:18px; flex:0 0 auto; }
 .hall .chips .topic-icon{ color:var(--accent); }
 .era h4{ display:flex; align-items:center; gap:9px; }
@@ -783,6 +731,12 @@ a{ color:var(--parchment); text-underline-offset:3px; }
   .hall .thread{ left:20px; top:46px; }
   .hall .body{ padding:12px 14px; }
   .hall .en{ display:none; }
+  .learning-path{ grid-template-columns:58px 1fr; gap:12px; padding:15px; }
+  .learning-path .learning-sigil{ width:54px; height:54px; }
+  .learning-path .learning-sigil svg{ width:42px; height:38px; }
+  .learning-copy > b{ font-size:20px; }
+  .learning-meter i{ width:15px; }
+  .learning-open{ grid-column:2; justify-self:start; margin-top:-3px; }
 
   .result .actions{ grid-template-columns:1fr; }
   .result .actions .btn.primary,.challenge-btn{ width:100%; justify-content:center; }
