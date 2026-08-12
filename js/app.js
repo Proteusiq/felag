@@ -320,7 +320,7 @@ const MODES = [
   {
     id: 'ovelse', da: 'Øvelse', en: 'Practice', accent: '--freja', icon: 'grundtvig',
     blurb: 'Tilfældige spørgsmål fra lærematerialet, vægtet efter hvor ofte SIRI faktisk har stillet dem.',
-    tag: 'Ubegrænset',
+    tag: 'Ubegrænset', training: true,
     build: (rand) => weighted(pool('laeremateriale'), 15, rand),
   },
   {
@@ -359,11 +359,38 @@ const MODES = [
   },
 ];
 
+const DESTINATIONS = [
+  {
+    id: 'training', da: 'Træning', en: 'Practice routes', accent: '--freja', icon: 'book',
+    blurb: 'Øvelse, Tidslinjen og Tinget samlet ét sted. Vælg det, du vil træne.', tag: '3 træningsrum',
+  },
+  {
+    id: 'dyst', da: 'Dysten', en: 'The battle', accent: '--bjorn', icon: 'defence',
+    blurb: 'Mål dig mod Bjørn eller en dansk viking i de samme 15 spørgsmål.', tag: 'Kampplads',
+  },
+  {
+    id: 'alting', da: 'Altinget', en: 'The full test', accent: '--thor', icon: 'parliament',
+    blurb: 'Hele prøven under de rigtige regler: 45 spørgsmål, 36 for at bestå.', tag: '45 spørgsmål',
+  },
+];
+
+function modeCard(mode, index) {
+  const best = state.best[mode.id];
+  return `<button class="mode" type="button" data-id="${mode.id}"
+      style="--accent:var(${mode.accent}); --d:${index * 0.08}s">
+      <h3>${topicIcon(mode.icon)}${mode.da} ${best ? `<span class="best">bedste ${best}</span>` : ''}</h3>
+      <span class="en">${mode.en}</span>
+      <p>${mode.blurb}</p>
+      <span class="tag">${mode.tag}</span>
+    </button>`;
+}
+
 /** Each mode keeps its own place, including on the result screen. */
 const sceneFor = (mode) => (mode.ting ? 'ting' : mode.exam ? 'alting' : 'hall');
 
 /** Leaving a drill returns where it was started from, not to the map. */
 const leave = (mode) => mode?.hall ? showHalls()
+  : mode?.training ? showTraining()
   : mode?.ting ? showTing()
   : mode?.time ? showTime()
   : mode?.duel ? showArena()
@@ -428,7 +455,7 @@ function weighted(list, n, rand) {
 /* ============================================================
    Views
    ============================================================ */
-const VIEWS = ['viewWho', 'viewShore', 'viewPath', 'viewHalls', 'viewTime', 'viewArena', 'viewTing', 'viewQuiz', 'viewResult'];
+const VIEWS = ['viewWho', 'viewShore', 'viewPath', 'viewTraining', 'viewHalls', 'viewTime', 'viewArena', 'viewTing', 'viewQuiz', 'viewResult'];
 function go(id, scene) {
   const swap = () => {
     // The counter and clock belong to a run; nothing else should inherit them.
@@ -546,16 +573,17 @@ function renderPath() {
   $('pathSub').textContent = c.recommends;
 
   renderLearningPath();
-  $('modes').innerHTML = MODES.map((m, i) => {
-    const best = state.best[m.id];
-    return `<button class="mode" type="button" data-id="${m.id}"
-        style="--accent:var(${m.accent}); --d:${i * 0.08}s">
-        <h3>${topicIcon(m.icon)}${m.da} ${best ? `<span class="best">bedste ${best}</span>` : ''}</h3>
-        <span class="en">${m.en}</span>
-        <p>${m.blurb}</p>
-        <span class="tag">${m.tag}</span>
-      </button>`;
-  }).join('');
+  $('modes').innerHTML = DESTINATIONS.map(modeCard).join('');
+}
+
+function showTraining() {
+  $('hudTitle').textContent = 'Træning';
+  $('hudBackLabel').textContent = 'Tilbage til vejen';
+  $('hudBack').setAttribute('aria-label', 'Tilbage til vejen');
+  $('hudBack').dataset.tooltip = 'Tilbage til vejen';
+  $('trainingSigil').innerHTML = topicIcon('book');
+  $('trainingModes').innerHTML = MODES.filter((mode) => mode.training || mode.teaches).map(modeCard).join('');
+  go('viewTraining', 'path');
 }
 
 function showHalls() {
@@ -625,6 +653,9 @@ function recordBattle(opponent, mine, theirs, sunk) {
 /* ---------- Tidslinjen ---------- */
 function showTime() {
   $('hudTitle').textContent = 'Tidslinjen';
+  $('hudBackLabel').textContent = 'Tilbage til Træning';
+  $('hudBack').setAttribute('aria-label', 'Tilbage til Træning');
+  $('hudBack').dataset.tooltip = 'Tilbage til Træning';
   const most = Math.max(...state.eras.map((e) => e.questions.length), 1);
 
   $('eras').innerHTML = state.eras.map((era, i) => {
@@ -663,6 +694,9 @@ function eraMode(era) {
 /* ---------- Tinget ---------- */
 function showTing() {
   $('hudTitle').textContent = 'Tinget';
+  $('hudBackLabel').textContent = 'Tilbage til Træning';
+  $('hudBack').setAttribute('aria-label', 'Tilbage til Træning');
+  $('hudBack').dataset.tooltip = 'Tilbage til Træning';
   $('principles').innerHTML = state.principles.map((p, i) => `
     <div class="principle" data-id="${p.id}" style="--d:${i * 0.05}s">
       <button type="button" aria-expanded="false">
@@ -1179,17 +1213,27 @@ function begin() {
 $('beginBtn').addEventListener('click', begin);
 $('changeGuide').addEventListener('click', () => go('viewShore', 'shore'));
 $('learningPath').addEventListener('click', showHalls);
-$('modes').addEventListener('click', (e) => {
-  const btn = e.target.closest('.mode');
-  if (!btn) return;
+function openMode(id) {
+  const mode = MODES.find((item) => item.id === id);
+  if (!mode) return;
   // Tinget teaches before it tests. The values questions barely repeat between
   // papers (46 unique out of 50 asked), so drilling the old ones trains for a
   // question that will not be asked. The principles behind them do repeat.
-  const mode = MODES.find((m) => m.id === btn.dataset.id);
-  if (mode?.teaches === 'time') return showTime();
-  if (mode?.teaches) return showTing();
-  if (mode?.duel) return showArena();
-  start(btn.dataset.id);
+  if (mode.teaches === 'time') return showTime();
+  if (mode.teaches) return showTing();
+  if (mode.duel) return showArena();
+  start(mode.id);
+}
+
+$('modes').addEventListener('click', (e) => {
+  const btn = e.target.closest('.mode');
+  if (!btn) return;
+  if (btn.dataset.id === 'training') return showTraining();
+  openMode(btn.dataset.id);
+});
+$('trainingModes').addEventListener('click', (e) => {
+  const btn = e.target.closest('.mode');
+  if (btn) openMode(btn.dataset.id);
 });
 $('halls').addEventListener('click', (e) => {
   const btn = e.target.closest('.body:not([disabled])');
@@ -1222,6 +1266,7 @@ const exitRun = () => {
   const mode = state.run?.mode;
   state.run = null;
   if (mode) return leave(mode);
+  if (!$('viewTime').hidden || !$('viewTing').hidden) return showTraining();
   renderPath();
   go('viewPath', 'path');
 };

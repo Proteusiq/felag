@@ -282,6 +282,7 @@ a{ color:var(--parchment); text-underline-offset:3px; }
 .learning-meter{ display:flex; align-items:center; gap:5px; margin-top:12px; }.learning-meter i{ display:block; width:21px; height:5px; border-radius:5px; background:rgba(231,220,194,.16); }.learning-meter i.done{ background:var(--green); }.learning-meter i.current{ background:var(--ember); box-shadow:0 0 9px -1px var(--ember); }.learning-meter em{ margin-left:5px; color:var(--parchment-dim); font-size:11px; font-style:normal; white-space:nowrap; }
 .learning-open{ display:flex; align-items:center; gap:6px; color:var(--ember); font-family:var(--display); font-size:13px; font-weight:600; white-space:nowrap; }.learning-open svg{ width:19px; height:19px; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
 .learning-view-head{ display:flex; align-items:center; gap:16px; align-self:flex-start; }.learning-view-head .learning-sigil{ width:58px; height:58px; }.learning-view-head .learning-sigil svg{ width:43px; height:39px; }
+.training-head{ display:flex; align-items:center; gap:16px; align-self:flex-start; }.training-sigil{ display:grid; place-items:center; width:58px; height:58px; color:var(--freja); border:1px solid rgba(106,156,90,.45); border-radius:50%; background:rgba(106,156,90,.08); }.training-sigil .topic-icon{ width:32px; height:32px; }
 
 .halls{ width:100%; max-width:760px; display:flex; flex-direction:column; margin-bottom:34px; }
 .hall{ position:relative; display:flex; gap:16px; padding:9px 0; align-items:flex-start; animation:rise .45s var(--ease) both; animation-delay:var(--d,0s); }
@@ -752,6 +753,7 @@ a{ color:var(--parchment); text-underline-offset:3px; }
   .learning-copy > b{ font-size:20px; }
   .learning-meter i{ width:15px; }
   .learning-open{ grid-column:2; justify-self:start; margin-top:-3px; }
+  .training-sigil{ width:52px; height:52px; }
 
   .result .actions{ grid-template-columns:1fr; }
   .result .actions .btn.primary,.challenge-btn{ width:100%; justify-content:center; }
