@@ -1,0 +1,15 @@
+{
+  "name": "Félag: træning til Indfødsretsprøven",
+  "short_name": "Félag",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "lang": "da",
+  "background_color": "#111d28",
+  "theme_color": "#111d28",
+  "icons": [
+    { "src": "./assets/favicon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "./assets/favicon-32.png", "sizes": "32x32", "type": "image/png" },
+    { "src": "./assets/apple-touch-icon.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}

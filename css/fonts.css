@@ -1,19 +1,15 @@
 /* Self-hosted so the site makes no third-party request and the files
    never change under us. Latin subset only; Danish æ ø å live there. */
 
+/* Metamorphous (SIL OFL 1.1, Nicole Fally). One weight only: the carved
+   letterforms lose the chisel when a second weight is drawn, and the browser's
+   synthetic bold is closer to a deeper cut than a different typeface would be. */
 @font-face{
-  font-family:'Fraunces';
-  font-style:italic;
-  font-weight:400 700;
-  font-display:swap;
-  src:url('../assets/fonts/fraunces-400_700-italic.woff2') format('woff2');
-}
-@font-face{
-  font-family:'Fraunces';
+  font-family:'Metamorphous';
   font-style:normal;
-  font-weight:400 700;
+  font-weight:400;
   font-display:swap;
-  src:url('../assets/fonts/fraunces-400_700-normal.woff2') format('woff2');
+  src:url('../assets/fonts/metamorphous-400-normal.woff2') format('woff2');
 }
 @font-face{
   font-family:'Atkinson Hyperlegible';

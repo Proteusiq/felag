@@ -56,7 +56,7 @@ export const CAST = [
       torso: `<path d="M36,98 Q40,82 60,78 L100,78 Q120,82 124,98 L128,150 Q128,160 118,160 L42,160 Q32,160 32,150 Z" fill="#5c4130"/>
         <path d="M50,86 L110,86 L114,150 L46,150 Z" fill="var(--thor)" opacity=".85"/>
         <path d="M40,98 Q30,110 34,124 L46,120 Q42,108 48,100 Z" fill="${SKIN}"/>
-        <circle cx="80" cy="128" r="6" fill="#e7dcc2" stroke="var(--thor)" stroke-width="2"/>`,
+        <circle cx="80" cy="128" r="6" fill="#efe3c8" stroke="var(--thor)" stroke-width="2"/>`,
       hair: `<path d="M52,36 Q80,20 108,36 Q108,26 96,20 Q80,14 64,20 Q52,26 52,36 Z" fill="#7a4a2a"/>`,
       face: eyes(10, 52) + `
         <path d="M64,40 Q71,36 78,40" stroke="#3a2a20" stroke-width="2.4" fill="none" stroke-linecap="round"/>
@@ -126,7 +126,7 @@ export const CAST = [
       hair: `<path d="M54,32 Q80,18 106,32 Q108,44 100,52 L52,48 Q50,40 54,32 Z" fill="#5a4636"/>
         <circle cx="80" cy="26" r="7" fill="#5a4636"/>`,
       prop: `<g transform="translate(96,118) rotate(-8)">
-          <rect width="24" height="18" rx="1.5" fill="#e7dcc2"/>
+          <rect width="24" height="18" rx="1.5" fill="#efe3c8"/>
           <rect width="24" height="18" rx="1.5" fill="none" stroke="#5a4636" stroke-width="1.6"/>
           <line x1="12" y1="1" x2="12" y2="17" stroke="#5a4636" stroke-width="1.2"/>
           <rect x="10" y="-3" width="4" height="7" fill="#c8102e"/>
