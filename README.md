@@ -4,12 +4,12 @@
 
 **Free training for the Danish citizenship test, Indfødsretsprøven.**
 
-[![Open the site](https://img.shields.io/badge/Begynd%20vandringen-proteusiq.github.io%2Ffelag-e0793c?style=for-the-badge)](https://proteusiq.github.io/felag/)
+[![Open the site](https://img.shields.io/badge/Begynd%20vandringen-proteusiq.github.io%2Ffelag-d3a24c?style=for-the-badge)](https://proteusiq.github.io/felag/)
 
-[![Version](https://img.shields.io/badge/version-0.0.10-e0793c?style=flat-square)](https://github.com/Proteusiq/felag/releases)
-[![Questions](https://img.shields.io/badge/spørgsmål-508-2a3e3c?style=flat-square)](data/questions.jsonl)
-[![Papers](https://img.shields.io/badge/prøver-13%20(2020–2026)-2a3e3c?style=flat-square)](https://danskogproever.dk/borger/indfoedsretsproeve-statsborgerskab/forberedelse-til-indfoedsretsproeven/)
-[![Price](https://img.shields.io/badge/pris-0%20kr-6a9c5a?style=flat-square)](#)
+[![Version](https://img.shields.io/badge/version-0.0.11-d3a24c?style=flat-square)](https://github.com/Proteusiq/felag/releases)
+[![Questions](https://img.shields.io/badge/spørgsmål-508-223448?style=flat-square)](data/questions.jsonl)
+[![Papers](https://img.shields.io/badge/prøver-13%20(2020–2026)-223448?style=flat-square)](https://danskogproever.dk/borger/indfoedsretsproeve-statsborgerskab/forberedelse-til-indfoedsretsproeven/)
+[![Price](https://img.shields.io/badge/pris-0%20kr-8fae8c?style=flat-square)](#)
 
 [![Félag](assets/hero.png)](https://proteusiq.github.io/felag/)
 
@@ -72,9 +72,12 @@ without ever barring the door.
 Beyond them stand:
 
 - **Tidslinjen**, chapter 1 sailed period by period, from the vikings to now
-- **Dysten**, a race against Bjørn or against a friend, where the boat moves on correct answers rather than speed
+- **Dysten**, a race against Bjørn or against a friend, settled under a raised banner or a struck one, with both scores side by side
 - **Tinget**, the five values questions, taught as ten principles rather than drilled
 - **Altinget**, the whole paper on the clock
+
+And on the road itself, the only date that matters: how many days until the ship
+puts in, and how many until the door to sign up shuts behind it.
 
 A challenge is a link and nothing else. The seed rebuilds the identical paper,
 in the same order, with the same option order, so the race is fair without a
@@ -114,6 +117,25 @@ server, an account or a database behind it.
 > Where an answer still holds but rests on something that moves, the panel says
 > so: Venstre became the largest mayoral party at the election of 18 November
 > 2025 with 40 mayors to Socialdemokratiet's 26.
+
+## The tide table
+
+SIRI holds the test twice a year, in May or June and in November or December,
+and publishes the coming year's dates by 1 October. Félag carries them in one
+object, `EXAM` at the head of `js/app.js`, beside the date they were last
+checked against the source:
+
+```js
+const EXAM = { date: '2026-11-25', signup: '2026-10-21', fee: 946, checked: '2026-08-13', ... };
+```
+
+> [!IMPORTANT]
+> **Twice a year, somebody must look this up.** The registration deadline is
+> what people actually miss, and missing it costs six months and the fee again.
+> So the card refuses to count downwards past its own date: once `date` is in
+> the past it shows no numbers at all, only the way to
+> [SIRI's own table](https://danskogproever.dk/tilmeldingsfrister-og-proevedatoer/).
+> A confidently wrong date here is worse than no date.
 
 ## The law of the Ting
 
@@ -174,15 +196,27 @@ explanation `ORPHANED` rather than letting it drown quietly.
 
 ```
 index.html               the hull
+css/fonts.css            two faces, self-hosted, no third-party request
 css/app.css              tokens, the light of the hour, motion
 js/cast.js               the six guides, one shared frame
-js/scenes.js             scenes as data, drawn by one hand
-js/app.js                state, routing, the halls, the law
+js/scenes.js             scenes as data, drawn by one hand; Holger waits in one
+js/app.js                state, routing, the halls, the law, the tide table
 tools/content.py         uv script: fetch, read, ground in the material
 data/questions.jsonl     won from the papers, never edited by hand
 data/explanations.jsonl  written by hand, joined by id
+assets/fonts/            Metamorphous for the carving, Atkinson for the reading
+favicon.ico              Holger, at the path browsers ask for by name
 llms.txt                 for assistants that answer these questions now
 ```
+
+### Of ink and lettering
+
+Colour is lifted off Norse and Celtic type specimens rather than a UI kit: aged
+parchment, iron-gall navy, gold leaf on the capitals, oxide rust, and the sage
+of an old printed border. **Metamorphous** cuts the headings; **Atkinson
+Hyperlegible** carries everything read closely, which is not a matter of taste.
+Most people here are reading Danish as a second language against a clock, and a
+carved *d* reads as *ð*. The costume stops at the headings.
 
 </details>
 

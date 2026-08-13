@@ -359,7 +359,37 @@ a{ color:var(--parchment); text-underline-offset:3px; }
 .mode .tag{ display:inline-block; margin-top:12px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); }
 .mode .best{ margin-left:auto; font-family:var(--text); font-size:11px; color:var(--parchment-dim); font-variant-numeric:tabular-nums; }
 
-.fineprint{ margin:30px 0 0; font-size:12px; line-height:1.6; color:var(--parchment-dim); text-align:center; max-width:520px; }
+/* ---------- the date everything is actually for ----------
+   Two sittings a year and one registration deadline you cannot miss without
+   losing six months. The deadline gets equal weight to the exam date, because
+   the deadline is the one people actually miss. */
+.landing{
+  display:grid; grid-template-columns:auto 1fr auto; align-items:center; gap:18px;
+  width:100%; max-width:760px; margin:30px 0 0; padding:16px 20px;
+  border:1px solid rgba(211,162,76,.28); border-radius:15px;
+  background:radial-gradient(circle at 10% 20%,rgba(211,162,76,.07),transparent 26%),linear-gradient(145deg,rgba(38,56,78,.7),rgba(13,23,33,.9));
+}
+.landing-boat{ display:grid; place-items:center; width:46px; height:46px; color:var(--gold); }
+.landing-boat svg{ width:40px; height:32px; }.landing-boat .hull{ transform-box:fill-box; transform-origin:50% 100%; animation:bob 3.4s ease-in-out infinite; }
+.landing-copy small,.landing-signup small{ display:block; color:var(--parchment-dim); font-size:10px; letter-spacing:.14em; text-transform:uppercase; }
+.landing-copy b{ display:block; margin-top:1px; color:var(--gold); font-family:var(--display); font-size:26px; line-height:1.1; font-variant-numeric:tabular-nums; }
+.landing-copy em{ display:block; margin-top:2px; color:var(--parchment); font-size:12.5px; font-style:normal; }
+.landing-signup{ text-align:right; padding-left:18px; border-left:1px solid rgba(239,227,200,.13); }
+.landing-signup b{ display:block; margin-top:1px; font-family:var(--display); font-size:16px; }
+.landing-signup em{ display:block; margin-top:2px; color:var(--parchment-dim); font-size:11px; font-style:normal; }
+.landing-signup a{ display:inline-block; margin-top:6px; color:var(--gold); font-size:11px; text-underline-offset:3px; }
+.landing-signup.shut b{ color:var(--rust); }
+/* Out of date: no numbers at all, just the way to the real ones. */
+.landing.stale{ text-decoration:none; grid-template-columns:auto 1fr; transition:border-color .2s ease; }
+.landing.stale:hover{ border-color:var(--gold); }
+.landing.stale b{ display:block; margin-top:1px; font-family:var(--display); font-size:18px; color:var(--parchment); }
+.landing.stale em{ display:block; margin-top:2px; color:var(--parchment-dim); font-size:12px; font-style:normal; }
+@media (max-width:620px){
+  .landing{ grid-template-columns:auto 1fr; gap:12px; padding:14px; }
+  .landing-signup{ grid-column:1 / -1; padding-left:0; padding-top:12px; text-align:left; border-left:0; border-top:1px solid rgba(239,227,200,.13); }
+}
+
+.fineprint{ margin:22px 0 0; font-size:12px; line-height:1.6; color:var(--parchment-dim); text-align:center; max-width:520px; }
 
 /* ---------- Tidslinjen ----------
    A course sailed from the vikings to now. The line runs down the left, the
@@ -756,7 +786,7 @@ a{ color:var(--parchment); text-underline-offset:3px; }
 .foot-control:hover .linklike, .foot-control:hover svg, .foot .linklike:focus-visible{ color:var(--parchment); stroke:var(--parchment); }
 .foot-control.reset:hover .linklike, .foot-control.reset:hover svg{ color:#df7783; stroke:#df7783; }
 
-.boot{ position:fixed; inset:0; z-index:50; display:grid; place-content:center; justify-items:center; gap:14px; background:var(--bg); color:var(--parchment-dim); font-size:13px; }
+.boot{ position:fixed; inset:0; z-index:50; display:grid; place-content:center; justify-items:center; gap:14px; background:var(--bg); color:var(--parchment-dim); font-family:var(--display); font-size:14px; letter-spacing:.04em; }
 .boot[hidden]{ display:none !important; }
 .boot-spin{ width:26px; height:26px; border:2px solid rgba(239,227,200,.2); border-top-color:var(--gold); border-radius:50%; animation:spin .9s linear infinite; }
 @keyframes spin{ to{ transform:rotate(360deg) } }
