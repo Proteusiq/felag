@@ -502,7 +502,7 @@ function useProfile(name, { guest = false } = {}) {
     const challenge = state.pendingChallenge;
     state.pendingChallenge = null;
     const mode = modeById(challenge.modeId);
-    if (mode) return start(mode.id, mode, { ...challenge, name: 'Din udfordrer' });
+    if (mode) return start(mode.id, mode, { ...challenge, name: 'Vikingen' });
   }
   if (state.guide) {
     choose(state.guide);
@@ -514,7 +514,7 @@ function useProfile(name, { guest = false } = {}) {
 
 function showWho() {
   renderPeople();
-  go('viewWho', 'shore');
+  go('viewWho', 'landfall');
 }
 
 /* ---------- shore ---------- */
@@ -602,9 +602,52 @@ const RESULT_MARK = {
   draw: `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9"/><path d="M7 12h10"/></svg>`,
 };
 
+/**
+ * The banner you sail home under. Raised on a spear when the throne holds,
+ * struck and torn from a broken staff when it does not, and furled around the
+ * shaft when neither side took the field. Drawn rather than lettered, because
+ * you should be able to tell how it went from across the room.
+ */
+const BANNER = {
+  won: `<svg viewBox="0 0 76 76" fill="none" aria-hidden="true">
+    <path class="banner-gust" d="M60 21h10M62 30h9M60 39h10" stroke="#d3a24c" stroke-width="2.6" stroke-linecap="round" opacity=".3"/>
+    <path d="M16 2 21 12h-10l5-10Z" fill="#d3a24c"/>
+    <path d="M16 10v60" stroke="#d3a24c" stroke-width="3.4" stroke-linecap="round"/>
+    <path class="banner-cloth" d="M17 14h39l-9 13 9 13H17Z" fill="#c8102e"/>
+    <path class="banner-cloth" d="M31 14v26M17 27h30" stroke="#efe3c8" stroke-width="5"/>
+    <path d="M4 70h26" stroke="#d3a24c" stroke-width="3" stroke-linecap="round" opacity=".5"/>
+  </svg>`,
+  lost: `<svg viewBox="0 0 76 76" fill="none" aria-hidden="true">
+    <path d="M14 70 19 44" stroke="#7d6a4e" stroke-width="3.4" stroke-linecap="round"/>
+    <path d="m21 40 6-22" stroke="#7d6a4e" stroke-width="3.4" stroke-linecap="round"/>
+    <path class="banner-cloth" d="M28 17h33l-7 12 6 12-9-6-6 10-7-9-8 8Z" fill="#7e3427"/>
+    <path class="banner-cloth" d="M42 18v22M29 27h27" stroke="#9c8a6e" stroke-width="5"/>
+    <path d="M4 70h30" stroke="#7d6a4e" stroke-width="3" stroke-linecap="round" opacity=".45"/>
+  </svg>`,
+  draw: `<svg viewBox="0 0 76 76" fill="none" aria-hidden="true">
+    <path d="M20 6v64M56 6v64" stroke="#8fae8c" stroke-width="3.4" stroke-linecap="round"/>
+    <path class="banner-cloth" d="M21 16h14v20l-7-6-7 6Z" fill="#8fae8c" opacity=".85"/>
+    <path class="banner-cloth" d="M41 16h14v20l-7-6-7 6Z" fill="#8fae8c" opacity=".85"/>
+    <path d="M4 70h68" stroke="#8fae8c" stroke-width="3" stroke-linecap="round" opacity=".45"/>
+  </svg>`,
+};
+
+/** What the hall shouts when you walk back in. */
+const DUEL_CRY = (result, them) => ({
+  won: ['Sejr', 'Du beholder din trone, viking!', `${them} ror hjem med tom snekke. Skjoldtavlen har fået et mærke mere.`],
+  lost: ['Nederlag', 'Er du sikker på, du er viking?', `${them} tog tronen. Slib øksen, og kræv den tilbage.`],
+  draw: ['Uafgjort', 'Ingen tog tronen i dag.', `Skjold mod skjold. Du og ${them.toLowerCase()} nåede land på samme åretag.`],
+}[result]);
+
+/* The feed opens on the last ten and grows on request. Old duels are worth
+   keeping, but nobody arrives at the arena wanting to read thirty of them. */
+const BATTLE_PAGE = 10;
+let battlesShown = BATTLE_PAGE;
+
 function showArena() {
   $('hudTitle').textContent = 'Dysten';
   $('arenaBjorn').innerHTML = byId('bjorn').svg;
+  battlesShown = BATTLE_PAGE;
   renderBattles();
   go('viewArena', 'hall');
 }
@@ -626,15 +669,20 @@ function renderBattles() {
       <span><small>${total ? 'Din sejrsrate' : 'Dit første mærke'}</small><b>${total ? `${rate}%` : 'Klar'}</b><em>${total ? `${won} af ${total} kampe vundet` : 'Vælg en modstander og sæt sejl.'}</em></span>
     </div>
     ${stats.map(([result, label, count]) => `<span class="record-total ${result}" aria-label="${count} ${label.toLowerCase()}">${RESULT_MARK[result]}<b>${count}</b><small>${label}</small></span>`).join('')}`;
-  $('battleList').innerHTML = battles.length
-    ? `<p class="match-feed-title">Seneste kampe</p>${battles.slice(0, 6).map((battle) => `
+  const shown = Math.min(battlesShown, total);
+  const rest = total - shown;
+  $('battleList').innerHTML = total
+    ? `<p class="match-feed-title">Skjoldtavlen · ${total} ${total === 1 ? 'kamp' : 'kampe'}</p>${battles.slice(0, shown).map((battle) => `
       <div class="match ${battle.result}">
         <span class="match-mark">${RESULT_MARK[battle.result]}</span>
-        <span><b>Mod ${battle.opponent}</b><small>${battle.date}</small></span>
-        <span class="match-score" aria-label="${battle.mine} mod ${battle.theirs}"><b>${battle.mine}</b><i>:</i><b>${battle.theirs}</b></span>
+        <span><b>Mod ${escape(battle.opponent)}</b><small>${battle.date}</small></span>
+        <span class="match-score" aria-label="${battle.mine} mod ${battle.theirs}"><b>${battle.mine}</b><i>–</i><b>${battle.theirs}</b></span>
         <em>${battle.result === 'won' ? 'Vundet' : battle.result === 'lost' ? 'Tabt' : 'Uafgjort'}</em>
-      </div>`).join('')}`
+      </div>`).join('')}
+      ${rest ? `<button class="match-more" id="battleMore" type="button">Rul tavlen længere tilbage · ${rest} ${rest === 1 ? 'kamp' : 'kampe'} mere</button>` : ''}`
     : `<div class="scoreboard-empty">${RESULT_MARK.won}<span><b>Skjoldtavlen venter.</b> Vælg Bjørn eller kast handsken til en dansk viking.</span></div>`;
+  const more = document.getElementById('battleMore');
+  if (more) more.onclick = () => { battlesShown += BATTLE_PAGE; renderBattles(); };
 }
 
 function recordBattle(opponent, mine, theirs, sunk) {
@@ -1071,10 +1119,13 @@ function finish() {
     : (passed === null ? 'Gennemført' : passed ? 'Bestået' : 'Ikke bestået');
 
   const ghost = state.run.ghost;
-  const theirs = ghost ? ghost.marks.slice(0, answered).filter(Boolean).length : null;
-  const battleResult = ghost
-    ? recordBattle(ghost.name ?? 'Udfordreren', score, theirs, sunk)
-    : null;
+  // Over the whole paper, not over the part you reached. Your ship sinking is
+  // your problem: it does not shorten the crossing the other one already rowed,
+  // and scoring them out of `answered` printed a number nobody could reconcile
+  // with the "af 15" next to it.
+  const theirs = ghost ? ghost.marks.slice(0, questions.length).filter(Boolean).length : null;
+  const rival = ghost?.name ?? 'Vikingen';
+  const battleResult = ghost ? recordBattle(rival, score, theirs, sunk) : null;
 
   state.best[mode.id] = Math.max(state.best[mode.id] ?? 0, score);
   // Clearing a hall opens the next one, and only ever forwards.
@@ -1084,13 +1135,32 @@ function finish() {
   save();
   if (passed !== false) sfx.done();
 
+  // A duel is settled head to head, so the solo score and the neutral
+  // "Gennemført" give way to the banner and the two numbers side by side.
+  const [cry, shout, aftermath] = ghost ? DUEL_CRY(battleResult, rival) : [];
+  const verdict = ghost
+    ? `<div class="duel ${battleResult}">
+        <span class="duel-banner">${BANNER[battleResult]}</span>
+        <p class="duel-cry">${cry}</p>
+        <p class="duel-shout">${shout}</p>
+        <div class="duel-tally">
+          <span class="side"><small>Dig</small><b>${score}</b></span>
+          <i aria-hidden="true">–</i>
+          <span class="side"><small>${escape(rival)}</small><b>${theirs}</b></span>
+        </div>
+        <p class="duel-after">${aftermath}</p>
+      </div>`
+    : `<div class="score ${passed === false ? 'fail' : 'pass'}">${score} / ${questions.length}</div>
+       <p class="verdict">${label}</p>`;
+
   $('resultCard').innerHTML = `
     <p class="lead">${mode.da}</p>
-    <div class="score ${passed === false ? 'fail' : 'pass'}">${score} / ${questions.length}</div>
-    <p class="verdict">${label}</p>
+    ${verdict}
     ${sunk ? `<div class="gate no"><b>${sunk}</b> Øv dig, og sæt sejl igen.</div>` : ''}
     ${gate}
-    ${mode.hall
+    ${ghost
+      ? ''
+      : mode.hall
       ? `<p class="note">${passed
           ? 'Porten er åbnet. Den næste hal kan nu besøges.'
           : sunk
@@ -1101,14 +1171,8 @@ function finish() {
       : `<p class="note">${score === questions.length
           ? 'Fejlfrit. Tag Altinget, når du er klar til hele prøven.'
           : 'Gennemgå de forkerte, og tag den igen. Spørgsmålene blandes hver gang.'}</p>`}
-    ${ghost ? `<div class="gate ${battleResult === 'lost' ? 'no' : 'ok'}">
-        ${ghost.name ?? 'Udfordreren'}: <b>${theirs} af ${questions.length}</b> rigtige.
-        ${battleResult === 'won' ? 'Du vandt kapsejladsen.'
-          : battleResult === 'draw' ? 'Uafgjort. I nåede land samtidig.'
-          : 'Du kom i land efter ' + (ghost.name ?? 'udfordreren') + '.'}
-      </div>` : ''}
     <div class="actions">
-      <button class="btn primary" id="againBtn" type="button"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 11a8 8 0 1 0 2 5M20 4v7h-7"/></svg>Få nye spørgsmål</button>
+      <button class="btn primary" id="againBtn" type="button"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 11a8 8 0 1 0 2 5M20 4v7h-7"/></svg>${ghost ? (ghost.house ? 'Kræv omkamp' : 'Sejl igen') : 'Få nye spørgsmål'}</button>
       <button class="challenge-btn" id="shareBtn" type="button" data-tooltip="Din danske viking får det samme sæt spørgsmål og kan slå din score.">
         <span class="challenge-sigil" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none"><path d="m11 39 26-30m-26 0 26 30"/><path d="m8 10 9 2-4 8-7-4 2-6Zm32 0-9 2 4 8 7-4-2-6Z" fill="currentColor"/><path d="M24 19v16M17 35h14"/></svg></span>
         <span><b>Udfordr en dansk viking</b><small>Hvem kender Danmark bedst?</small></span>

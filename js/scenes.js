@@ -24,6 +24,56 @@ const water = (y) => `<rect x="0" y="${y}" width="1440" height="${900 - y}" fill
   <path d="M0,${y + 42} Q120,${y + 35} 240,${y + 42} T480,${y + 42} T720,${y + 42} T960,${y + 42} T1200,${y + 42} T1440,${y + 42}"
     stroke="#253a44" stroke-width="2" fill="none" opacity=".4"/>`;
 
+const runestone = `<g transform="translate(700,555)">
+  <path d="M-26,90 L-30,10 Q-30,-30 0,-34 Q30,-30 30,10 L26,90 Z" fill="#2f3d44"/>
+  <path d="M-16,20 L-4,-4 L6,14 L16,-8" stroke="#16262f" stroke-width="3.5" fill="none" stroke-linecap="round" opacity=".7"/>
+  <path d="M-14,44 L14,44 M-12,58 L12,58" stroke="#16262f" stroke-width="3" fill="none" stroke-linecap="round" opacity=".5"/>
+</g>`;
+
+/* Holger Danske, waiting at the water's edge.
+   He is the one who sleeps until Denmark needs him, so landfall is where he
+   belongs: he is already standing there when you arrive to say who you are.
+   He gets the landfall scene alone. On the guide picker the six guides are the
+   subject, and a seventh viking behind them is just noise. */
+const holger = `<g transform="translate(579,491) scale(0.55)" opacity=".93">
+  <path d="M120 252 Q220 216 320 252 L340 456 Q220 482 100 456 Z" fill="#5f4028"/>
+  <g fill="#7a5738">
+    <circle cx="132" cy="264" r="11"/><circle cx="168" cy="248" r="11"/><circle cx="204" cy="240" r="11"/>
+    <circle cx="236" cy="240" r="11"/><circle cx="272" cy="248" r="11"/><circle cx="308" cy="264" r="11"/>
+  </g>
+  <rect x="310" y="176" width="14" height="240" rx="7" fill="#5c3a21"/>
+  <path d="M324 188 L392 170 L400 218 L380 242 L324 230 Z" fill="#79838c"/>
+  <path d="M380 242 L400 218 L408 244 L388 262 Z" fill="#5b656d"/>
+  <circle cx="112" cy="342" r="62" fill="#8a3324"/>
+  <circle cx="112" cy="342" r="50" fill="none" stroke="#e7dcc4" stroke-width="5"/>
+  <circle cx="112" cy="342" r="37" fill="none" stroke="#e7dcc4" stroke-width="3"/>
+  <circle cx="112" cy="342" r="12" fill="#3d3d3d"/>
+  <path d="M166 268 Q220 238 274 268 L268 452 Q220 468 172 452 Z" fill="#3d5a4c"/>
+  <path d="M174 352 H266" stroke="#2c4137" stroke-width="14"/>
+  <path d="M174 286 Q140 306 120 332" stroke="#c08b5f" stroke-width="22" stroke-linecap="round" fill="none"/>
+  <path d="M266 286 Q298 296 313 318" stroke="#c08b5f" stroke-width="22" stroke-linecap="round" fill="none"/>
+  <path d="M166 156 Q158 234 180 270 Q220 296 260 270 Q282 234 274 156 Z" fill="#cfc7b4"/>
+  <g fill="none" stroke="#a8a08c" stroke-width="4" stroke-linecap="round">
+    <path d="M186 238 Q194 264 208 276"/><path d="M254 238 Q246 264 232 276"/><path d="M204 258 Q220 278 236 258"/>
+  </g>
+  <ellipse cx="220" cy="152" rx="62" ry="64" fill="#c08b5f"/>
+  <ellipse cx="196" cy="150" rx="8" ry="10" fill="#3d3d3d"/>
+  <ellipse cx="244" cy="150" rx="8" ry="10" fill="#3d3d3d"/>
+  <path d="M178 130 Q196 118 213 129" stroke="#8a6142" stroke-width="6" stroke-linecap="round" fill="none"/>
+  <path d="M227 129 Q244 118 262 131" stroke="#8a6142" stroke-width="6" stroke-linecap="round" fill="none"/>
+  <ellipse cx="188" cy="178" rx="11" ry="7" fill="#a8674a" opacity=".45"/>
+  <ellipse cx="252" cy="178" rx="11" ry="7" fill="#a8674a" opacity=".45"/>
+  <path d="M184 176 Q203 190 217 182 Q220 188 223 182 Q237 190 256 176 Q248 204 220 207 Q192 204 184 176 Z" fill="#cfc7b4"/>
+  <path d="M162 124 A58 58 0 0 1 278 124 L278 137 Q220 110 162 137 Z" fill="#79838c"/>
+  <path d="M162 130 Q220 106 278 130" stroke="#5b656d" stroke-width="7" fill="none"/>
+  <rect x="212" y="72" width="16" height="60" rx="4" fill="#5b656d"/>
+  <circle cx="220" cy="72" r="11" fill="#6b7075"/>
+  <path d="M172 134 Q126 122 86 58 Q106 118 148 148 Z" fill="#ded3ba"/>
+  <path d="M268 134 Q314 122 354 58 Q334 118 292 148 Z" fill="#ded3ba"/>
+  <path d="M162 138 Q124 120 100 78" stroke="#bdb298" stroke-width="3" fill="none"/>
+  <path d="M278 138 Q316 120 340 78" stroke="#bdb298" stroke-width="3" fill="none"/>
+</g>`;
+
 /* Mute swan, Denmark's national bird. Drifts the width of the fjord
    over a long session; nobody is meant to notice it quickly. */
 const swan = (x, y, s, o) => `<g transform="translate(${x},${y}) scale(${s})" opacity="${o}">
@@ -39,14 +89,16 @@ const SCENES = {
       { d: 0.02, svg: sky },
       { d: 0.06, svg: `<path d="M0,590 Q200,570 420,585 T860,580 T1260,590 L1440,585 1440,900 0,900 Z" fill="#16262f"/>` },
       { d: 0.14, svg: beech('#1b2c31', [[70,630,60],[150,640,52],[240,628,58],[330,642,50],[420,626,62],[520,638,54],[900,628,56],[990,640,50],[1080,624,60],[1170,638,52],[1260,626,58],[1350,640,54]]) },
-      { d: 0.22, svg: `<g transform="translate(700,555)">
-          <path d="M-26,90 L-30,10 Q-30,-30 0,-34 Q30,-30 30,10 L26,90 Z" fill="#2f3d44"/>
-          <path d="M-16,20 L-4,-4 L6,14 L16,-8" stroke="#16262f" stroke-width="3.5" fill="none" stroke-linecap="round" opacity=".7"/>
-          <path d="M-14,44 L14,44 M-12,58 L12,58" stroke="#16262f" stroke-width="3" fill="none" stroke-linecap="round" opacity=".5"/>
-        </g>` },
+      { d: 0.22, svg: runestone },
       { d: 0.34, svg: beech('#253a44', [[30,700,70],[140,712,62],[250,696,72],[380,712,64],[1060,696,68],[1180,712,62],[1300,698,72],[1410,712,56]]) },
       { d: 0.46, svg: water(760) + swan(1020, 808, 1, .55) + swan(200, 792, .75, .4) },
     ],
+  },
+  // Landfall. The same shore, but Holger is standing on it, waiting to be told
+  // who you are. Only ever shown on "Hvem øver?".
+  landfall: {
+    palette: 'dawn',
+    layers: [],
   },
   // The path inland. Midday, the sea still visible behind you.
   path: {
@@ -102,6 +154,10 @@ const SCENES = {
     ],
   },
 };
+
+// Same shore, Holger where the rune stone stands.
+SCENES.landfall.layers = SCENES.shore.layers.map(
+  (layer) => (layer.svg === runestone ? { ...layer, svg: holger } : layer));
 
 const defs = `<defs>
   <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">

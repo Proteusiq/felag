@@ -453,6 +453,52 @@ a{ color:var(--parchment); text-underline-offset:3px; }
 .record-total{ display:grid; grid-template-columns:18px 1fr; grid-template-rows:auto auto; column-gap:4px; align-items:center; padding:10px; border-left:1px solid rgba(239,227,200,.1); }.record-total svg{ grid-row:1 / 3; width:18px; height:18px; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }.record-total b{ font-family:var(--display); font-size:17px; line-height:1; font-variant-numeric:tabular-nums; }.record-total small{ color:var(--parchment-dim); font-size:9px; letter-spacing:.08em; text-transform:uppercase; }.record-total.won{ color:var(--green); }.record-total.lost{ color:var(--dannebrog); }.record-total.draw{ color:var(--parchment-dim); }
 .match-feed{ display:flex; flex-direction:column; gap:7px; margin-top:16px; }.match-feed-title{ margin:0 0 1px; color:var(--parchment-dim); font-size:10px; letter-spacing:.12em; text-transform:uppercase; }.match{ display:grid; grid-template-columns:36px 1fr auto auto; align-items:center; gap:10px; padding:9px 11px; border-radius:9px; background:rgba(239,227,200,.035); border:1px solid rgba(239,227,200,.08); }.match-mark{ display:grid; place-items:center; width:31px; height:31px; color:var(--parchment-dim); }.match-mark svg{ width:25px; height:25px; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }.match.won .match-mark,.match.won em{ color:var(--green); }.match.lost .match-mark,.match.lost em{ color:var(--dannebrog); }.match.draw .match-mark,.match.draw em{ color:var(--parchment-dim); }.match b{ display:block; font-family:var(--display); font-size:15px; }.match small{ color:var(--parchment-dim); font-size:10px; }.match-score{ display:flex; align-items:baseline; gap:3px; font-variant-numeric:tabular-nums; }.match-score b{ font-size:18px; }.match-score i{ color:var(--parchment-dim); font-size:12px; font-style:normal; }.match em{ font-size:10px; font-style:normal; letter-spacing:.1em; text-transform:uppercase; }
 .scoreboard-empty{ display:flex; align-items:center; gap:10px; margin-top:16px; padding:15px; border:1px dashed rgba(239,227,200,.18); border-radius:10px; color:var(--parchment-dim); font-size:12px; line-height:1.45; }.scoreboard-empty svg{ width:28px; height:28px; flex:0 0 auto; color:var(--gold); stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }.scoreboard-empty b{ display:block; color:var(--parchment); font-family:var(--display); font-size:15px; }
+.match-more{ width:100%; margin-top:4px; padding:11px; border:1px dashed rgba(239,227,200,.2); border-radius:9px; background:transparent; color:var(--parchment-dim); font:inherit; font-size:11px; letter-spacing:.06em; cursor:pointer; transition:color .2s ease,border-color .2s ease,background .2s ease; }
+.match-more:hover,.match-more:focus-visible{ color:var(--gold); border-color:rgba(211,162,76,.45); background:rgba(211,162,76,.05); outline:none; }
+
+/* ---------- the verdict of a duel ----------
+   Two people rowed the same water, so the card leads with the banner and the
+   two numbers rather than with your score out of fifteen. You should be able
+   to tell a win from a loss from across the room, before reading a word. */
+.duel{ display:flex; flex-direction:column; align-items:center; margin:10px 0 4px; }
+.duel-banner{ display:block; width:96px; height:96px; }
+.duel-banner svg{ width:100%; height:100%; filter:drop-shadow(0 9px 14px rgba(0,0,0,.5)); }
+.duel.won .duel-banner{ animation:raise .7s var(--ease) both; }
+.duel.lost .duel-banner{ animation:strike .8s var(--ease) both; }
+.duel .banner-cloth{ transform-box:fill-box; transform-origin:0 50%; }
+.duel.won .banner-cloth{ animation:fly 3.2s ease-in-out .7s infinite; }
+.duel.won .banner-gust{ animation:gust 3.2s ease-in-out .7s infinite; }
+@keyframes raise{ from{ opacity:0; transform:translateY(22px) rotate(-9deg); } to{ opacity:1; transform:none; } }
+@keyframes strike{ 0%{ opacity:0; transform:translateY(-16px) rotate(9deg); } 60%{ opacity:1; transform:translateY(3px) rotate(-2deg); } 100%{ opacity:1; transform:none; } }
+@keyframes fly{ 0%,100%{ transform:skewY(0) scaleX(1); } 50%{ transform:skewY(-2.2deg) scaleX(.97); } }
+@keyframes gust{ 0%,100%{ opacity:.15; transform:translateX(0); } 50%{ opacity:.5; transform:translateX(4px); } }
+
+.duel-cry{ margin:12px 0 0; font-size:11px; letter-spacing:.3em; text-transform:uppercase; color:var(--parchment-dim); }
+.duel.won .duel-cry{ color:var(--gold); }
+.duel.lost .duel-cry{ color:var(--rust); }
+.duel-shout{
+  margin:5px 0 0; max-width:19ch; font-family:var(--display); font-size:clamp(25px,4.6vw,34px);
+  line-height:1.12; text-wrap:balance; text-shadow:0 2px 24px rgba(0,0,0,.5);
+}
+.duel.won .duel-shout{ color:var(--parchment); }
+.duel.lost .duel-shout{ color:#e5a892; }
+
+.duel-tally{
+  display:grid; grid-template-columns:1fr auto 1fr; align-items:center; gap:14px;
+  width:100%; max-width:340px; margin:20px 0 0; padding:14px 10px; border-radius:13px;
+  border:1px solid rgba(239,227,200,.12); background:rgba(7,13,20,.42);
+}
+.duel-tally .side{ display:flex; flex-direction:column; gap:3px; min-width:0; }
+.duel-tally small{ font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--parchment-dim); overflow:hidden; text-overflow:ellipsis; }
+.duel-tally b{ font-family:var(--display); font-size:38px; line-height:1; font-variant-numeric:tabular-nums; }
+.duel-tally i{ color:var(--parchment-dim); font-size:19px; font-style:normal; }
+/* The winning number is the loud one; the other stays legible but stands down. */
+.duel.won .side:first-child b{ color:var(--gold); }
+.duel.lost .side:last-child b{ color:var(--rust); }
+.duel.won .side:last-child b,.duel.lost .side:first-child b{ color:var(--parchment-dim); }
+.duel.draw .duel-tally b{ color:var(--green); }
+.duel-after{ margin:14px 0 0; max-width:44ch; font-size:13px; line-height:1.55; color:var(--parchment-dim); }
+@media (max-width:620px){ .duel-banner{ width:78px; height:78px; } .duel-tally b{ font-size:32px; } }
 
 @media(max-width:620px){
   .arena-choices{ grid-template-columns:1fr; }
