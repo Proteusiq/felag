@@ -600,10 +600,6 @@ function daysTo(iso) {
   return Math.round((Date.parse(`${iso}T00:00:00Z`) - today) / 86400000);
 }
 
-const longDate = (iso) => new Intl.DateTimeFormat('da-DK', {
-  weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
-}).format(new Date(`${iso}T00:00:00Z`));
-
 function renderExamDate() {
   const left = daysTo(EXAM.date);
   // Past its own date it knows only that it is out of date, so it stops
@@ -613,12 +609,15 @@ function renderExamDate() {
       <a href="${EXAM.source}" target="_blank" rel="noopener">SIRI</a>.</em>`;
     return;
   }
+  // No weekday: it is one more word between you and the date itself.
+  const when = new Intl.DateTimeFormat('da-DK', { day: 'numeric', month: 'long', year: 'numeric' })
+    .format(new Date(`${EXAM.date}T00:00:00Z`));
   $('examDate').innerHTML = `
     <span class="landing-boat" aria-hidden="true">${BOAT}</span>
     <b>${left === 0 ? 'I dag' : `${left} ${left === 1 ? 'dag' : 'dage'}`}</b>
     <em>${left === 0
-      ? 'Skibet lægger til i dag. Indfødsretsprøven er nu.'
-      : `til Indfødsretsprøven · skibet lægger til ${longDate(EXAM.date)}`}</em>`;
+      ? 'Indfødsretsprøven er i dag.'
+      : `til Indfødsretsprøven · den ${when}`}</em>`;
 }
 
 function showTraining() {
