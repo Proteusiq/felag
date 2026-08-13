@@ -18,15 +18,20 @@
   --parchment-dim:#d5c9b0;
   --gold:#d3a24c;          /* leaf on the capitals: the one accent */
   --rust:#b3552f;          /* oxide, for heat under the gold */
-  --dannebrog:#c8102e;
+  --dannebrog:#c8102e;      /* the flag's own red: for fills and marks, never text */
+  --danger:#ef8a9c;         /* the same red, lifted until it can be read at 10px */
   --green:#8fae8c;         /* the sage of a printed border */
 
-  --thor:#b3552f;
-  --freja:#7fa89f;
-  --gorm:#8a93a3;
-  --ingrid:#d3a24c;
-  --astrid:#93739f;
-  --bjorn:#d08a3a;
+  /* Each guide's colour is worn as an 11px uppercase label as well as a border
+     and a glow, so it has to survive at 11px. At full saturation Thor sat at
+     3.5:1 and Astrid at 4.2:1, both under AA, so every guide is lifted to the
+     same footing rather than only the two that failed. */
+  --thor:#e08a63;
+  --freja:#9cc2b9;
+  --gorm:#aab4c4;
+  --ingrid:#e0b45a;
+  --astrid:#b79ac2;
+  --bjorn:#e0a355;
 
   --ease:cubic-bezier(.2,.8,.3,1);
 
@@ -142,7 +147,7 @@ a{ color:var(--parchment); text-underline-offset:3px; }
   margin-left:6px; width:24px; height:24px; border-radius:50%; border:none; cursor:pointer;
   background:none; color:var(--parchment-dim); font-size:16px; line-height:1;
 }
-.profile .drop:hover{ color:var(--dannebrog); background:rgba(200,16,46,.12); }
+.profile .drop:hover{ color:var(--danger); background:rgba(200,16,46,.12); }
 
 .new-profile{ display:flex; gap:8px; margin-top:22px; width:100%; max-width:360px; }
 .new-profile input{
@@ -469,8 +474,8 @@ a{ color:var(--parchment); text-underline-offset:3px; }
 .scoreboard-head{ display:flex; align-items:end; justify-content:space-between; gap:16px; margin-bottom:13px; }.scoreboard-head p{ margin:0; color:var(--gold); font-size:10px; letter-spacing:.14em; text-transform:uppercase; }.scoreboard-head h3{ margin:2px 0 0; font-family:var(--display); font-size:22px; font-weight:600; }.scoreboard-head > span{ padding:6px 9px; border:1px solid rgba(143,174,140,.34); border-radius:20px; color:var(--green); background:rgba(143,174,140,.08); font-size:11px; white-space:nowrap; }
 .scoreboard-summary{ display:grid; grid-template-columns:1.55fr repeat(3,.7fr); overflow:hidden; border:1px solid rgba(239,227,200,.12); border-radius:12px; background:rgba(7,13,20,.43); }
 .record-hero{ display:flex; align-items:center; gap:11px; padding:14px; border-right:1px solid rgba(239,227,200,.12); background:radial-gradient(circle at 18% 30%,rgba(143,174,140,.17),transparent 43%); }.record-hero.empty{ background:radial-gradient(circle at 18% 30%,rgba(211,162,76,.16),transparent 43%); }.record-shield{ display:grid; place-items:center; width:42px; height:42px; color:var(--green); border:1px solid rgba(143,174,140,.5); border-radius:50%; background:rgba(143,174,140,.09); }.record-hero.empty .record-shield{ color:var(--gold); border-color:rgba(211,162,76,.5); background:rgba(211,162,76,.08); }.record-shield svg{ width:25px; height:25px; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }.record-hero small,.record-hero em{ display:block; color:var(--parchment-dim); font-size:10px; font-style:normal; }.record-hero b{ display:block; margin:1px 0; font-family:var(--display); font-size:27px; line-height:1; font-variant-numeric:tabular-nums; }
-.record-total{ display:grid; grid-template-columns:18px 1fr; grid-template-rows:auto auto; column-gap:4px; align-items:center; padding:10px; border-left:1px solid rgba(239,227,200,.1); }.record-total svg{ grid-row:1 / 3; width:18px; height:18px; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }.record-total b{ font-family:var(--display); font-size:17px; line-height:1; font-variant-numeric:tabular-nums; }.record-total small{ color:var(--parchment-dim); font-size:9px; letter-spacing:.08em; text-transform:uppercase; }.record-total.won{ color:var(--green); }.record-total.lost{ color:var(--dannebrog); }.record-total.draw{ color:var(--parchment-dim); }
-.match-feed{ display:flex; flex-direction:column; gap:7px; margin-top:16px; }.match-feed-title{ margin:0 0 1px; color:var(--parchment-dim); font-size:10px; letter-spacing:.12em; text-transform:uppercase; }.match{ display:grid; grid-template-columns:36px 1fr auto auto; align-items:center; gap:10px; padding:9px 11px; border-radius:9px; background:rgba(239,227,200,.035); border:1px solid rgba(239,227,200,.08); }.match-mark{ display:grid; place-items:center; width:31px; height:31px; color:var(--parchment-dim); }.match-mark svg{ width:25px; height:25px; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }.match.won .match-mark,.match.won em{ color:var(--green); }.match.lost .match-mark,.match.lost em{ color:var(--dannebrog); }.match.draw .match-mark,.match.draw em{ color:var(--parchment-dim); }.match b{ display:block; font-family:var(--display); font-size:15px; }.match small{ color:var(--parchment-dim); font-size:10px; }.match-score{ display:flex; align-items:baseline; gap:3px; font-variant-numeric:tabular-nums; }.match-score b{ font-size:18px; }.match-score i{ color:var(--parchment-dim); font-size:12px; font-style:normal; }.match em{ font-size:10px; font-style:normal; letter-spacing:.1em; text-transform:uppercase; }
+.record-total{ display:grid; grid-template-columns:18px 1fr; grid-template-rows:auto auto; column-gap:4px; align-items:center; padding:10px; border-left:1px solid rgba(239,227,200,.1); }.record-total svg{ grid-row:1 / 3; width:18px; height:18px; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }.record-total b{ font-family:var(--display); font-size:17px; line-height:1; font-variant-numeric:tabular-nums; }.record-total small{ color:var(--parchment-dim); font-size:9px; letter-spacing:.08em; text-transform:uppercase; }.record-total.won{ color:var(--green); }.record-total.lost{ color:var(--danger); }.record-total.draw{ color:var(--parchment-dim); }
+.match-feed{ display:flex; flex-direction:column; gap:7px; margin-top:16px; }.match-feed-title{ margin:0 0 1px; color:var(--parchment-dim); font-size:10px; letter-spacing:.12em; text-transform:uppercase; }.match{ display:grid; grid-template-columns:36px 1fr auto auto; align-items:center; gap:10px; padding:9px 11px; border-radius:9px; background:rgba(239,227,200,.035); border:1px solid rgba(239,227,200,.08); }.match-mark{ display:grid; place-items:center; width:31px; height:31px; color:var(--parchment-dim); }.match-mark svg{ width:25px; height:25px; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }.match.won .match-mark,.match.won em{ color:var(--green); }.match.lost .match-mark,.match.lost em{ color:var(--danger); }.match.draw .match-mark,.match.draw em{ color:var(--parchment-dim); }.match b{ display:block; font-family:var(--display); font-size:15px; }.match small{ color:var(--parchment-dim); font-size:10px; }.match-score{ display:flex; align-items:baseline; gap:3px; font-variant-numeric:tabular-nums; }.match-score b{ font-size:18px; }.match-score i{ color:var(--parchment-dim); font-size:12px; font-style:normal; }.match em{ font-size:10px; font-style:normal; letter-spacing:.1em; text-transform:uppercase; }
 .scoreboard-empty{ display:flex; align-items:center; gap:10px; margin-top:16px; padding:15px; border:1px dashed rgba(239,227,200,.18); border-radius:10px; color:var(--parchment-dim); font-size:12px; line-height:1.45; }.scoreboard-empty svg{ width:28px; height:28px; flex:0 0 auto; color:var(--gold); stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }.scoreboard-empty b{ display:block; color:var(--parchment); font-family:var(--display); font-size:15px; }
 .match-more{ width:100%; margin-top:4px; padding:11px; border:1px dashed rgba(239,227,200,.2); border-radius:9px; background:transparent; color:var(--parchment-dim); font:inherit; font-size:11px; letter-spacing:.06em; cursor:pointer; transition:color .2s ease,border-color .2s ease,background .2s ease; }
 .match-more:hover,.match-more:focus-visible{ color:var(--gold); border-color:rgba(211,162,76,.45); background:rgba(211,162,76,.05); outline:none; }
