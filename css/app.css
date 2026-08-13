@@ -11,7 +11,11 @@
    a hue picked for contrast alone. */
 :root{
   --parchment:#efe3c8;
-  --parchment-dim:#a1927a;
+  /* Secondary text, not faint text. This started at #a1927a, which cleared AA
+     on the navy at 5.6:1 and still read washed out. On a page most people are
+     reading in a second language, the tone should come from being smaller and
+     cooler than the heading, not from being hard to see. Now 10.4:1. */
+  --parchment-dim:#d5c9b0;
   --gold:#d3a24c;          /* leaf on the capitals: the one accent */
   --rust:#b3552f;          /* oxide, for heat under the gold */
   --dannebrog:#c8102e;
