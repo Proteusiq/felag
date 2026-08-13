@@ -77,7 +77,7 @@ Beyond them stand:
 - **Altinget**, the whole paper on the clock
 
 And on the road itself, the only date that matters: how many days until the ship
-puts in, and how many until the door to sign up shuts behind it.
+puts in.
 
 A challenge is a link and nothing else. The seed rebuilds the identical paper,
 in the same order, with the same option order, so the race is fair without a
@@ -121,19 +121,22 @@ server, an account or a database behind it.
 ## The tide table
 
 SIRI holds the test twice a year, in May or June and in November or December,
-and publishes the coming year's dates by 1 October. Félag carries them in one
-object, `EXAM` at the head of `js/app.js`, beside the date they were last
+and publishes the coming year's dates by 1 October. Félag carries the next one
+in a single object at the head of `js/app.js`, beside the day it was last
 checked against the source:
 
 ```js
-const EXAM = { date: '2026-11-25', signup: '2026-10-21', fee: 946, checked: '2026-08-13', ... };
+const EXAM = { date: '2026-11-25', checked: '2026-08-13', source: '…' };
 ```
 
+One line on the road says how many days remain. Not a card: three of those
+stand above it already, and a fourth would compete with the thing you came to
+click. Deadlines, fees and enrolment are SIRI's business and are left to SIRI.
+
 > [!IMPORTANT]
-> **Twice a year, somebody must look this up.** The registration deadline is
-> what people actually miss, and missing it costs six months and the fee again.
-> So the card refuses to count downwards past its own date: once `date` is in
-> the past it shows no numbers at all, only the way to
+> **Twice a year, somebody must look this up.** The line refuses to count
+> downwards past its own date: once `date` is in the past it shows no number at
+> all, only the way to
 > [SIRI's own table](https://danskogproever.dk/tilmeldingsfrister-og-proevedatoer/).
 > A confidently wrong date here is worse than no date.
 

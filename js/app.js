@@ -63,8 +63,6 @@ const RULES = { total: 45, pass: 36, values: 5, valuesPass: 4, minutes: 45 };
  */
 const EXAM = {
   date: '2026-11-25',
-  signup: '2026-10-21',
-  fee: 946,
   checked: '2026-08-13',
   source: 'https://danskogproever.dk/tilmeldingsfrister-og-proevedatoer/',
 };
@@ -606,37 +604,21 @@ const longDate = (iso) => new Intl.DateTimeFormat('da-DK', {
   weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
 }).format(new Date(`${iso}T00:00:00Z`));
 
-const inDays = (n) => (n === 0 ? 'i dag' : n === 1 ? 'i morgen' : `om ${n} dage`);
-
 function renderExamDate() {
   const left = daysTo(EXAM.date);
-  const toSignup = daysTo(EXAM.signup);
-  // Past its own date, the card knows only that it is out of date.
+  // Past its own date it knows only that it is out of date, so it stops
+  // counting and points at the table that is still right.
   if (left < 0) {
-    $('examDate').className = 'landing stale';
-    $('examDate').innerHTML = `
-      <span class="landing-boat" aria-hidden="true">${BOAT}</span>
-      <span class="landing-copy"><small>Landgangen</small>
-        <b>Datoen er ikke sat her endnu</b>
-        <em>SIRI offentliggør prøvedatoerne.
-          <a href="${EXAM.source}" target="_blank" rel="noopener">Se dem hos Dansk og Prøver</a>.</em></span>`;
+    $('examDate').innerHTML = `<em>Næste prøvedato offentliggøres af
+      <a href="${EXAM.source}" target="_blank" rel="noopener">SIRI</a>.</em>`;
     return;
   }
-  const shut = toSignup < 0;
-  $('examDate').className = 'landing';
   $('examDate').innerHTML = `
     <span class="landing-boat" aria-hidden="true">${BOAT}</span>
-    <span class="landing-copy">
-      <small>Landgangen · Indfødsretsprøven</small>
-      <b>${left === 0 ? 'I dag' : `${left} ${left === 1 ? 'dag' : 'dage'}`}</b>
-      <em>Skibet lægger til ${longDate(EXAM.date)}.</em>
-    </span>
-    <span class="landing-signup ${shut ? 'shut' : ''}">
-      <small>Tilmeldingsfrist</small>
-      <b>${shut ? 'Udløbet' : inDays(toSignup)}</b>
-      <em>${longDate(EXAM.signup)} · gebyr ${EXAM.fee} kr.</em>
-      <a href="${EXAM.source}" target="_blank" rel="noopener">Tilmeld hos SIRI</a>
-    </span>`;
+    <b>${left === 0 ? 'I dag' : `${left} ${left === 1 ? 'dag' : 'dage'}`}</b>
+    <em>${left === 0
+      ? 'Skibet lægger til i dag. Indfødsretsprøven er nu.'
+      : `til Indfødsretsprøven · skibet lægger til ${longDate(EXAM.date)}`}</em>`;
 }
 
 function showTraining() {
