@@ -97,9 +97,18 @@ the map, not to the list you did not come by.
 The Ting and the Alting are drawn open on it from the first day, because they
 are open from the first day. A locked Alting would be a lie about how this works.
 
+On a phone the map used to be withheld altogether, because fitting a
+1200-unit board into 358 pixels puts the stop names at four pixels of type and
+the stops at twelve pixels of tap target. What was unreadable there was the
+fitting, not the map: it now opens zoomed onto the stop you may actually enter,
+which brings the labels to fifteen pixels and the targets to forty-two, and you
+pan and pinch from there. A phone also has vertical room the board's proportions
+never asked for, so the window is square there rather than a letterbox.
+
 The island is inhabited, and by the same six who met you on the shore. The guide
 you chose is the figure with the gold ring at its feet, and it follows your
-pointer — but only as far as the road you have actually opened, so the leash is
+pointer, or walks to where you tap, since a touch screen has no hover for it to
+follow — but only as far as the road you have actually opened, so the leash is
 the gate made visible. The other five walk the open ground on their own, ships
 put in at the beach below Hal I, and the locked half of the island stays empty
 and still. They are the guides' own drawings reused at map scale rather than six

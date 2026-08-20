@@ -444,10 +444,16 @@ a{ color:var(--parchment); text-underline-offset:3px; }
 .map-legend i.you{ background:var(--gold); box-shadow:0 0 0 3px rgba(211,162,76,.25); }
 
 /* Eight labels in a 1200-unit box shrink to about four pixels of type on a
-   phone. A map you cannot read is not a second way through, it is a picture
-   that lies about being one, so below this width the list is the only door
-   and the toggle is not offered at all. */
-@media (max-width:760px){ #toMap{ display:none; } }
+   phone, so the map used to be withheld below this width. It is offered now
+   because it opens zoomed onto the stop you may enter rather than fitted to
+   the screen — see the opening view in map.js. Fitting the whole island on a
+   phone is what was unreadable, not the map.
+
+   And once you have stopped fitting the whole board into the window, the
+   window no longer has to be the board's shape. A phone has vertical room the
+   1200x780 ratio does not ask for, and a zoomed map is far pleasanter to pan
+   through a tall opening than a letterbox. */
+@media (max-width:760px){ .map{ aspect-ratio:1/1; } }
 
 /* ---------- Vikingheim ----------
    A WebGL canvas and nothing else. It is scenery, so it is allowed to be

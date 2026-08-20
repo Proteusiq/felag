@@ -238,7 +238,9 @@ export function render(el, stops, guide, onPick) {
     at = i;
     mine.setAttribute('transform', `translate(${marks[i].x} ${marks[i].y})`);
   };
-  stand(0);
+  // You stand where you have got to, not back on the beach you landed on six
+  // halls ago: the far end of the leash is the stop you may actually enter.
+  stand(marks.length - 1);
   const follow = (e) => {
     const p = new DOMPoint(e.clientX, e.clientY).matrixTransform(svg.getScreenCTM().inverse());
     let best = at;
@@ -250,10 +252,52 @@ export function render(el, stops, guide, onPick) {
     if (best !== at) stand(best);
   };
 
+  // The pan is held as a percentage of the window rather than in pixels, so
+  // that it survives the window being resized under it.
   const pan = el.querySelector('.map-pan');
   const apply = () => {
-    pan.style.transform = `translate(${view.x}px,${view.y}px) scale(${view.scale})`;
+    pan.style.transform = `translate(${view.x}%,${view.y}%) scale(${view.scale})`;
   };
+
+  /* A phone gives the board 358 pixels, which puts the stop names at four
+     pixels of type and the stops themselves at twelve pixels of tap target.
+     Fitting the whole island onto that screen is not a view of the map, it is
+     a picture of one. So a narrow screen opens zoomed onto the stop you may
+     actually enter, at a scale that brings the labels to about fifteen pixels
+     and the targets to the forty-four a finger needs, and pans from there.
+
+     Zoom first, then measure where the stop actually landed and slide it to
+     the middle. Measuring beats predicting: the svg letterboxes inside its
+     window by an amount that depends on both their shapes, and only the
+     browser knows it.
+
+     It has to measure more than once. The map is drawn while its section is
+     still hidden, the view transition swaps it in over the following frames,
+     and a matrix read mid-flight describes where the stop is passing through
+     rather than where it will come to rest. Since the correction is relative,
+     repeating it converges: once the transition settles the error falls to
+     nothing and this stops. It gives up rather than spinning if the map is
+     never shown at all, in which case the fitted view is a fine fallback. */
+  let tries = 0;
+  const openView = () => {
+    if (++tries > 40) return;
+    const box = el.getBoundingClientRect();
+    const ctm = svg.getScreenCTM();
+    // Both, not either: a hidden section can still hand out a screen matrix,
+    // and dividing the correction by a zero-width box turns the pan into NaN,
+    // which the browser drops on the floor as an invalid transform. That fails
+    // silently and leaves the map fitted, looking exactly like a media query.
+    if (!box.width || !ctm) return requestAnimationFrame(openView);
+    view.scale = 3.4;
+    const p = marks[marks.length - 1].matrixTransform(ctm);
+    const dx = box.x + box.width / 2 - p.x;
+    const dy = box.y + box.height / 2 - p.y;
+    view.x += (dx / box.width) * 100;
+    view.y += (dy / box.height) * 100;
+    apply();
+    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) requestAnimationFrame(openView);
+  };
+  if (innerWidth < 760) requestAnimationFrame(openView);
 
   const pick = (target) => {
     const g = target.closest('.stop');
@@ -269,30 +313,63 @@ export function render(el, stops, guide, onPick) {
     pick(e.target);
   });
 
-  // Drag to pan. Pointer events only, so a finger and a mouse take the same
-  // path and no touch handling has to exist twice.
+  const zoom = (s) => { view.scale = Math.min(4, Math.max(.6, s)); apply(); };
+
+  /* Drag to pan, two fingers to zoom. Pointer events only, so a finger and a
+     mouse take the same path and no touch handling has to exist twice. Every
+     live pointer is kept, because that is the whole of pinch detection: the
+     moment there are two of them, the gesture is a zoom and not a drag. */
+  const live = new Map();
+  const gap = () => {
+    const [a, b] = [...live.values()];
+    return Math.hypot(a.x - b.x, a.y - b.y);
+  };
   let from = null;
+  let moved = false;
+  let pinch = null;
+
   el.addEventListener('pointerdown', (e) => {
+    live.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (live.size === 2) {
+      pinch = { gap: gap(), scale: view.scale };
+      from = null;
+      return;
+    }
     if (e.target.closest('.stop')) return;
-    from = { x: e.clientX - view.x, y: e.clientY - view.y };
+    moved = false;
+    from = { x: e.clientX, y: e.clientY, vx: view.x, vy: view.y, box: el.getBoundingClientRect() };
     el.setPointerCapture(e.pointerId);
     el.classList.add('grabbing');
   });
+
   el.addEventListener('pointermove', (e) => {
+    if (live.has(e.pointerId)) live.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pinch) return zoom(pinch.scale * gap() / pinch.gap);
     // A drag is a drag. Your figure holds its ground while the map moves under
     // it, or panning would drag the two of you around together.
     if (!from) return follow(e);
-    view.x = e.clientX - from.x;
-    view.y = e.clientY - from.y;
+    moved = true;
+    view.x = from.vx + ((e.clientX - from.x) / from.box.width) * 100;
+    view.y = from.vy + ((e.clientY - from.y) / from.box.height) * 100;
     apply();
   });
-  const release = () => { from = null; el.classList.remove('grabbing'); };
+
+  const release = (e) => {
+    live.delete(e.pointerId);
+    if (live.size < 2) pinch = null;
+    // On a touch screen there is no pointer hovering for the figure to follow,
+    // so a tap on open ground has to say what a hover says on a mouse: walk to
+    // here, as far as the leash allows. A tap on a stop never reaches this,
+    // because those are let through untouched above.
+    if (from && !moved) follow(e);
+    from = null;
+    el.classList.remove('grabbing');
+  };
   el.addEventListener('pointerup', release);
   el.addEventListener('pointercancel', release);
 
   el.addEventListener('wheel', (e) => {
     e.preventDefault();
-    view.scale = Math.min(2, Math.max(0.7, view.scale * Math.exp(-e.deltaY * 0.0012)));
-    apply();
+    zoom(view.scale * Math.exp(-e.deltaY * 0.0012));
   }, { passive: false });
 }
