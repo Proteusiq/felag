@@ -391,6 +391,22 @@ a{ color:var(--parchment); text-underline-offset:3px; }
 .map .road.walked{ stroke:var(--gold); stroke-dasharray:7 8; opacity:.6; }
 
 .map .stop{ cursor:pointer; }
+/* Fitted on a phone the visible ring is a twelve-pixel target, which no
+   fingertip can hit. This is the target; the ring is only what it looks like.
+   The radius is set by the closest pair of stops rather than by what a thumb
+   deserves: Tinget and Altinget are 132 units apart, so 62 is the widest that
+   still leaves daylight between them, and it buys 37 pixels at the tightest
+   fit. Short of the 44 a fingertip wants, and the most the road can give.
+   `transparent` and not `none`, because a shape with no fill is not there as
+   far as hit-testing is concerned.
+
+   A mouse does not want it. At desktop width the same circle is 97 pixels of
+   dead ground that cannot be grabbed to drag the map, and it lights the hover
+   halo from half a stop away. A cursor already hits the 47-pixel halo without
+   help, so on a fine pointer this is not merely ignored, it is removed —
+   `pointer-events:none` would still leave it eating the drag. */
+.map .stop-hit{ fill:transparent; }
+@media (pointer:fine){ .map .stop-hit{ display:none; } }
 .map .stop-halo{ fill:rgba(7,17,29,.55); }
 .map .stop-ring{ fill:#111d24; stroke:var(--accent); stroke-width:3; }
 .map .stop-numeral{ fill:var(--parchment); font-family:var(--display); font-size:16px; text-anchor:middle; }
@@ -444,16 +460,10 @@ a{ color:var(--parchment); text-underline-offset:3px; }
 .map-legend i.you{ background:var(--gold); box-shadow:0 0 0 3px rgba(211,162,76,.25); }
 
 /* Eight labels in a 1200-unit box shrink to about four pixels of type on a
-   phone, so the map used to be withheld below this width. It is offered now
-   because it opens zoomed onto the stop you may enter rather than fitted to
-   the screen — see the opening view in map.js. Fitting the whole island on a
-   phone is what was unreadable, not the map.
-
-   And once you have stopped fitting the whole board into the window, the
-   window no longer has to be the board's shape. A phone has vertical room the
-   1200x780 ratio does not ask for, and a zoomed map is far pleasanter to pan
-   through a tall opening than a letterbox. */
-@media (max-width:760px){ .map{ aspect-ratio:1/1; } }
+   phone, so the map used to be withheld below this width. It is offered now,
+   fitted like everywhere else: the whole island first, and a pinch to read
+   any part of it. Small type is the price of an overview, and an overview is
+   what someone opening a map came for. */
 
 /* ---------- Vikingheim ----------
    A WebGL canvas and nothing else. It is scenery, so it is allowed to be

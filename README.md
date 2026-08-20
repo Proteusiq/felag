@@ -98,12 +98,20 @@ The Ting and the Alting are drawn open on it from the first day, because they
 are open from the first day. A locked Alting would be a lie about how this works.
 
 On a phone the map used to be withheld altogether, because fitting a
-1200-unit board into 358 pixels puts the stop names at four pixels of type and
-the stops at twelve pixels of tap target. What was unreadable there was the
-fitting, not the map: it now opens zoomed onto the stop you may actually enter,
-which brings the labels to fifteen pixels and the targets to forty-two, and you
-pan and pinch from there. A phone also has vertical room the board's proportions
-never asked for, so the window is square there rather than a letterbox.
+1200-unit board into 358 pixels puts the stop names at four pixels of type. It
+is offered now, and it opens fitted there as everywhere else: a map opens
+showing the whole of itself, and landing inside a corner of one you have not
+seen yet tells you nothing about where you are. Small type is the price of an
+overview and the pinch is how you read it, which is the bargain every map on a
+phone makes. Two fingers zoom, since there is no wheel, and a tap on the road
+walks your figure there, since there is no hover for it to follow.
+
+What could not stay small is the target. Fitted, the visible ring is twelve
+pixels, which no fingertip can hit, so each stop carries an invisible one set
+by the closest pair on the board — Tinget and Altinget are 132 units apart, so
+62 is the widest that still leaves daylight, and it buys 37 pixels. A mouse has
+it removed rather than ignored: at desktop width the same circle would be 97
+pixels of map that could not be grabbed to drag.
 
 The island is inhabited, and by the same six who met you on the shore. The guide
 you chose is the figure with the gold ring at its feet, and it follows your

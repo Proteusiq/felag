@@ -82,6 +82,7 @@ const node = (stop, i) => {
       style="--accent:var(${stop.accent})"
       tabindex="0" role="button" data-i="${i}"
       aria-disabled="${shut}" aria-label="${stop.aria}">
+    <circle class="stop-hit" r="62"/>
     ${stop.gate === 'open' ? '<circle class="stop-pulse" r="30"/>' : ''}
     <circle class="stop-halo" r="30"/>
     <circle class="stop-ring" r="21"/>
@@ -259,45 +260,13 @@ export function render(el, stops, guide, onPick) {
     pan.style.transform = `translate(${view.x}%,${view.y}%) scale(${view.scale})`;
   };
 
-  /* A phone gives the board 358 pixels, which puts the stop names at four
-     pixels of type and the stops themselves at twelve pixels of tap target.
-     Fitting the whole island onto that screen is not a view of the map, it is
-     a picture of one. So a narrow screen opens zoomed onto the stop you may
-     actually enter, at a scale that brings the labels to about fifteen pixels
-     and the targets to the forty-four a finger needs, and pans from there.
-
-     Zoom first, then measure where the stop actually landed and slide it to
-     the middle. Measuring beats predicting: the svg letterboxes inside its
-     window by an amount that depends on both their shapes, and only the
-     browser knows it.
-
-     It has to measure more than once. The map is drawn while its section is
-     still hidden, the view transition swaps it in over the following frames,
-     and a matrix read mid-flight describes where the stop is passing through
-     rather than where it will come to rest. Since the correction is relative,
-     repeating it converges: once the transition settles the error falls to
-     nothing and this stops. It gives up rather than spinning if the map is
-     never shown at all, in which case the fitted view is a fine fallback. */
-  let tries = 0;
-  const openView = () => {
-    if (++tries > 40) return;
-    const box = el.getBoundingClientRect();
-    const ctm = svg.getScreenCTM();
-    // Both, not either: a hidden section can still hand out a screen matrix,
-    // and dividing the correction by a zero-width box turns the pan into NaN,
-    // which the browser drops on the floor as an invalid transform. That fails
-    // silently and leaves the map fitted, looking exactly like a media query.
-    if (!box.width || !ctm) return requestAnimationFrame(openView);
-    view.scale = 3.4;
-    const p = marks[marks.length - 1].matrixTransform(ctm);
-    const dx = box.x + box.width / 2 - p.x;
-    const dy = box.y + box.height / 2 - p.y;
-    view.x += (dx / box.width) * 100;
-    view.y += (dy / box.height) * 100;
-    apply();
-    if (Math.abs(dx) > 1 || Math.abs(dy) > 1) requestAnimationFrame(openView);
-  };
-  if (innerWidth < 760) requestAnimationFrame(openView);
+  /* A map opens showing the whole of itself, on every screen. A phone briefly
+     opened zoomed onto the stop you may enter, because at 358 pixels the whole
+     island puts the stop names at four pixels of type — but landing inside a
+     corner of a map you have not seen yet tells you nothing about where you
+     are, and being able to read one label is worth less than being able to see
+     the road. The labels are decorative at this size and the pinch is how you
+     read them, which is the ordinary bargain every map on a phone makes. */
 
   const pick = (target) => {
     const g = target.closest('.stop');
