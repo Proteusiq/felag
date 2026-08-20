@@ -6,7 +6,7 @@
 
 [![Open the site](https://img.shields.io/badge/Begynd%20vandringen-proteusiq.github.io%2Ffelag-d3a24c?style=for-the-badge)](https://proteusiq.github.io/felag/)
 
-[![Version](https://img.shields.io/badge/version-0.0.11-d3a24c?style=flat-square)](https://github.com/Proteusiq/felag/releases)
+[![Version](https://img.shields.io/badge/version-0.0.12-d3a24c?style=flat-square)](https://github.com/Proteusiq/felag/releases)
 [![Questions](https://img.shields.io/badge/spørgsmål-508-223448?style=flat-square)](data/questions.jsonl)
 [![Papers](https://img.shields.io/badge/prøver-13%20(2020–2026)-223448?style=flat-square)](https://danskogproever.dk/borger/indfoedsretsproeve-statsborgerskab/forberedelse-til-indfoedsretsproeven/)
 [![Price](https://img.shields.io/badge/pris-0%20kr-8fae8c?style=flat-square)](#)
@@ -84,6 +84,35 @@ in the same order, with the same option order, so the race is fair without a
 server, an account or a database behind it.
 
     #dyst=dyst~1toqq5u~111011100111001
+
+### The same road, seen from above
+
+The list of halls is the way through. **Kortet** is the same eight stops laid on
+ground you can see across, for whoever reads a picture faster than a list. It is
+a second door and never the only one: nothing can be reached from the map that
+cannot be reached without it, and the gate rule is asked for, not copied, so the
+two cannot drift apart. Enter a hall from the map and leaving it returns you to
+the map, not to the list you did not come by.
+
+The Ting and the Alting are drawn open on it from the first day, because they
+are open from the first day. A locked Alting would be a lie about how this works.
+
+The island is inhabited, and by the same six who met you on the shore. The guide
+you chose is the figure with the gold ring at its feet, and it follows your
+pointer — but only as far as the road you have actually opened, so the leash is
+the gate made visible. The other five walk the open ground on their own, ships
+put in at the beach below Hal I, and the locked half of the island stays empty
+and still. They are the guides' own drawings reused at map scale rather than six
+new silhouettes: the figure on the road has to be recognisably the person who
+greeted you, or it is just a token.
+
+**Vikingheim** is scenery and nothing else, a settlement you can turn around in.
+It costs some 176 KB of gzipped WebGL library, which is a poor trade to make on
+a stranger's behalf, so it is offered only on a screen wide enough to be worth
+it, to a reader who has not asked for less motion, over a connection not flagged
+as metered. Where it is not offered it is absent rather than greyed out: an
+offer you cannot take is worse than no offer. The library is vendored and
+pinned, and fetched only when someone actually walks in.
 
 ## Two things the papers gave up under questioning
 
@@ -168,7 +197,8 @@ belongs to, and links back to the official question and material.
 
 The site is live at **[proteusiq.github.io/felag](https://proteusiq.github.io/felag/)**,
 so there is rarely a reason to run it locally. If you want to anyway, it is plain
-static files with no build, no bundler and no dependencies:
+static files with no build, no bundler and nothing to install. The one library it
+uses, three.js, sits vendored in `vendor/` and is never fetched from elsewhere:
 
 ```sh
 python3 -m http.server 8765
@@ -203,7 +233,10 @@ css/fonts.css            two faces, self-hosted, no third-party request
 css/app.css              tokens, the light of the hour, motion
 js/cast.js               the six guides, one shared frame
 js/scenes.js             scenes as data, drawn by one hand; Holger waits in one
+js/map.js                the eight stops as ground, and the six who walk it
+js/heim.js               Vikingheim, loaded the moment it is entered and no sooner
 js/app.js                state, routing, the halls, the law, the tide table
+vendor/three.*.min.js    three.js 0.180.0, vendored so no CDN is ever asked
 tools/content.py         uv script: fetch, read, ground in the material
 data/questions.jsonl     won from the papers, never edited by hand
 data/explanations.jsonl  written by hand, joined by id

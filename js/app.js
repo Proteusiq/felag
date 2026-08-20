@@ -9,6 +9,7 @@
 
 import { CAST, byId } from './cast.js';
 import * as scenes from './scenes.js';
+import * as saga from './map.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -66,8 +67,14 @@ const EXAM = {
   checked: '2026-08-13',
   source: 'https://danskogproever.dk/tilmeldingsfrister-og-proevedatoer/',
 };
-const SINK_AFTER_WRONG = 6;
+/* Six wrong sinks the full paper of 45. A hall of 12 or a duel of 15 kept the
+   same six, so a short crossing was over before the water ever reached the
+   gunwale. The share is what sinks you, not the count, and never fewer than
+   two: one mistake must not drown a five-question drill. */
+const SINK_SHARE = 6 / 45;
+const sinkAfter = (n) => Math.max(2, Math.round(n * SINK_SHARE));
 const SINK_AFTER_VALUE_WRONG = 2;
+const NUMERAL = ['Nul', 'Én', 'To', 'Tre', 'Fire', 'Fem', 'Seks', 'Syv', 'Otte', 'Ni', 'Ti'];
 
 const state = {
   guide: null,
@@ -270,6 +277,16 @@ const HALLS = [
 const inChapter = (n) =>
   state.bank.filter((q) => q.section === 'laeremateriale' && q.chapter === n && usable(q));
 
+/**
+ * Where a hall stands on the road: cleared behind you, open in front of you,
+ * or still shut. The gate paces the study, so this rule decides what can be
+ * entered and it must say the same thing everywhere. The list, the summary
+ * meter on the path and the saga map all ask here rather than each deriving
+ * it from `cleared` again.
+ */
+const hallState = (i, cleared = state.cleared ?? 0) =>
+  i < cleared ? 'done' : i === cleared ? 'open' : 'shut';
+
 function hallProgress(hall) {
   const stock = inChapter(hall.chapter);
   const ids = new Set(stock.map((q) => q.id));
@@ -293,10 +310,11 @@ function hallMode(hall, index) {
 function renderHalls() {
   const cleared = state.cleared ?? 0;
   $('halls').innerHTML = HALLS.map((hall, i) => {
-    const shut = i > cleared;
-    const done = i < cleared;
+    const gate = hallState(i, cleared);
+    const shut = gate === 'shut';
+    const done = gate === 'done';
     const progress = hallProgress(hall);
-    const mark = done ? ICON.done : shut ? ICON.shut : ICON.open;
+    const mark = ICON[done ? 'done' : shut ? 'shut' : 'open'];
     const label = done ? 'Port åbnet' : shut ? 'Låst' : 'Åben';
     return `<div class="hall ${done ? 'done' : ''} ${shut ? 'shut' : ''}"
         style="--accent:var(${hall.accent}); --d:${i * 0.06}s">
@@ -323,7 +341,7 @@ function renderLearningPath() {
     <span class="learning-sigil" aria-hidden="true"><svg viewBox="0 0 64 56" fill="none"><path d="M7 45c10-18 18-27 27-27 8 0 12 8 23 8"/><path d="m49 17 8 9-10 6"/><circle cx="8" cy="45" r="4"/><circle cx="20" cy="31" r="3"/><circle cx="33" cy="18" r="3"/><circle cx="46" cy="25" r="3"/></svg></span>
     <span class="learning-copy"><span class="learning-kicker">Læringsstien</span><b>De Seks Haller</b>
       <small>${cleared === HALLS.length ? 'Alle seks porte er åbnet.' : `Næste hal: ${next.da}`}</small>
-      <span class="learning-meter" aria-label="${cleared} af ${HALLS.length} porte åbnet">${HALLS.map((_, i) => `<i class="${i < cleared ? 'done' : i === cleared ? 'current' : ''}"></i>`).join('')}<em>${cleared} / ${HALLS.length} porte åbnet</em></span>
+      <span class="learning-meter" aria-label="${cleared} af ${HALLS.length} porte åbnet">${HALLS.map((_, i) => `<i class="${hallState(i, cleared)}"></i>`).join('')}<em>${cleared} / ${HALLS.length} porte åbnet</em></span>
     </span>
     <span class="learning-open">Åbn stien<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m10 5 7 7-7 7m6-7H6"/></svg></span>`;
 }
@@ -387,6 +405,11 @@ const DESTINATIONS = [
     id: 'alting', da: 'Altinget', en: 'The full test', accent: '--thor', icon: 'parliament',
     blurb: 'Hele prøven under de rigtige regler: 45 spørgsmål, 36 for at bestå.', tag: '45 spørgsmål',
   },
+  {
+    id: 'heim', da: 'Vikingheim', en: 'The settlement', accent: '--astrid', icon: 'architecture',
+    blurb: 'Bopladsen i tre dimensioner. Ingen spørgsmål, ingen prøve, bare et sted at hvile øjnene.',
+    tag: 'Et pusterum',
+  },
 ];
 
 function modeCard(mode, index) {
@@ -403,8 +426,12 @@ function modeCard(mode, index) {
 /** Each mode keeps its own place, including on the result screen. */
 const sceneFor = (mode) => (mode.ting ? 'ting' : mode.exam ? 'alting' : 'hall');
 
+/** The hall list and the saga map are two doors into the same six rooms, so
+    a hall returns through whichever one it was entered by. */
+let hallDoor = showHalls;
+
 /** Leaving a drill returns where it was started from, not to the map. */
-const leave = (mode) => mode?.hall ? showHalls()
+const leave = (mode) => mode?.hall ? hallDoor()
   : mode?.training ? showTraining()
   : mode?.ting ? showTing()
   : mode?.time ? showTime()
@@ -470,11 +497,15 @@ function weighted(list, n, rand) {
 /* ============================================================
    Views
    ============================================================ */
-const VIEWS = ['viewWho', 'viewShore', 'viewPath', 'viewTraining', 'viewHalls', 'viewTime', 'viewArena', 'viewTing', 'viewQuiz', 'viewResult'];
+const VIEWS = ['viewWho', 'viewShore', 'viewPath', 'viewTraining', 'viewHalls', 'viewMap', 'viewHeim', 'viewTime', 'viewArena', 'viewTing', 'viewQuiz', 'viewResult'];
 function go(id, scene) {
   const swap = () => {
     // The counter and clock belong to a run; nothing else should inherit them.
     if (id !== 'viewQuiz') $('hudMeta').textContent = '';
+    // Vikingheim holds a WebGL context and a render loop. Every route out of
+    // it runs through here, so tearing it down here is the only place that
+    // cannot be forgotten later.
+    if (id !== 'viewHeim') heim?.dispose();
     VIEWS.forEach((v) => { $(v).hidden = v !== id; });
     if (scene) scenes.show(scene);
     $('hud').hidden = id === 'viewShore' || id === 'viewWho' || id === 'viewPath';
@@ -588,7 +619,9 @@ function renderPath() {
   $('pathSub').textContent = c.recommends;
 
   renderLearningPath();
-  $('modes').innerHTML = DESTINATIONS.map(modeCard).join('');
+  $('modes').innerHTML = DESTINATIONS
+    .filter((d) => d.id !== 'heim' || heimWelcome())
+    .map(modeCard).join('');
   renderExamDate();
 }
 
@@ -631,12 +664,101 @@ function showTraining() {
 }
 
 function showHalls() {
+  hallDoor = showHalls;
   $('hudTitle').textContent = 'De Seks Haller';
   $('hudBackLabel').textContent = 'Tilbage til vejen';
   $('hudBack').setAttribute('aria-label', 'Tilbage til vejen');
   $('hudBack').dataset.tooltip = 'Tilbage til vejen';
   renderHalls();
   go('viewHalls', 'path');
+}
+
+/* ---------- the saga map ---------- */
+
+const GATE_LABEL = { done: 'Ryddet', open: 'Åben', shut: 'Låst' };
+
+/**
+ * The eight stops, in the order they are walked.
+ *
+ * The halls are gated: clear one and the next opens. The two assemblies are
+ * not, and must never be drawn as though they were. The papers have been open
+ * from the first day on purpose, so that someone sitting the test next week
+ * can go straight to it without first grinding six halls they have no time
+ * for. A locked Alting would be a lie about how this project works.
+ */
+function stops() {
+  const cleared = state.cleared ?? 0;
+  const assembly = (id, kind) => {
+    const mode = MODES.find((m) => m.id === id);
+    const gate = state.best[id] ? 'done' : 'open';
+    return {
+      kind, name: mode.da, accent: mode.accent, gate,
+      state: GATE_LABEL[gate],
+      aria: `${mode.da}, ${mode.en}. ${GATE_LABEL[gate]}. Altid åben.`,
+    };
+  };
+  return [
+    ...HALLS.map((hall, i) => {
+      const gate = hallState(i, cleared);
+      return {
+        kind: 'hall', numeral: hall.numeral, name: hall.da, accent: hall.accent, gate,
+        state: GATE_LABEL[gate],
+        aria: `Hal ${hall.numeral}, ${hall.da}. ${GATE_LABEL[gate]}.`,
+      };
+    }),
+    assembly('ting', 'ting'),
+    assembly('alting', 'alting'),
+  ];
+}
+
+/* ---------- Vikingheim ---------- */
+
+/**
+ * Vikingheim is scenery, and it costs about 700 KB of WebGL library to draw.
+ *
+ * That is a bad trade to make on someone else's behalf, so it is only offered
+ * when all three of these hold: the reader has not asked for less motion, the
+ * connection has not been flagged as metered, and there is a screen wide
+ * enough to be worth it. When it is not offered it is not merely disabled,
+ * it is absent — an offer you cannot take is worse than no offer.
+ */
+const heimWelcome = () => !scenes.still.matches
+  && !navigator.connection?.saveData
+  && innerWidth >= 760
+  && innerHeight >= 520;
+
+let heim = null;
+
+async function showHeim() {
+  $('hudTitle').textContent = 'Vikingheim';
+  $('hudBackLabel').textContent = 'Tilbage til vejen';
+  $('hudBack').setAttribute('aria-label', 'Tilbage til vejen');
+  $('hudBack').dataset.tooltip = 'Tilbage til vejen';
+  go('viewHeim', 'shore');
+  try {
+    heim ??= await import('./heim.js');
+    heim.mount($('heim'));
+  } catch {
+    // A settlement that will not build is not worth an error message. Say
+    // where it went, leave the road open, and never let it break the path.
+    $('heim').innerHTML = '<p class="heim-absent">Bopladsen kunne ikke bygges her. Vejen og hallerne virker som altid.</p>';
+  }
+}
+
+function showMap() {
+  hallDoor = showMap;
+  $('hudTitle').textContent = 'Kortet';
+  $('hudBackLabel').textContent = 'Tilbage til vejen';
+  $('hudBack').setAttribute('aria-label', 'Tilbage til vejen');
+  $('hudBack').dataset.tooltip = 'Tilbage til vejen';
+  saga.render($('map'), stops(), state.guide, (i) => {
+    if (i < HALLS.length) return start(null, hallMode(HALLS[i], i));
+    // The Ting teaches its principles before it tests them, the same as it
+    // does from the path; the map is another door into the room, not a
+    // shortcut past it.
+    return i === HALLS.length ? showTing() : start('alting');
+  });
+  go('viewMap', 'path');
 }
 
 /* ---------- Arena ---------- */
@@ -975,8 +1097,8 @@ function renderQuestion() {
 
 function sinkReason(run) {
   const wrong = run.marks.filter((mark) => mark === false).length;
-  if (wrong >= SINK_AFTER_WRONG) {
-    return `Seks fejl. Skibet tager for meget vand ind.`;
+  if (wrong >= sinkAfter(run.questions.length)) {
+    return `${NUMERAL[wrong] ?? wrong} fejl. Skibet tager for meget vand ind.`;
   }
 
   const valuesWrong = run.questions
@@ -1335,12 +1457,16 @@ $('modes').addEventListener('click', (e) => {
   const btn = e.target.closest('.mode');
   if (!btn) return;
   if (btn.dataset.id === 'training') return showTraining();
+  if (btn.dataset.id === 'heim') return showHeim();
   openMode(btn.dataset.id);
 });
+$('heimReset').addEventListener('click', () => heim?.reset());
 $('trainingModes').addEventListener('click', (e) => {
   const btn = e.target.closest('.mode');
   if (btn) openMode(btn.dataset.id);
 });
+$('toMap').addEventListener('click', showMap);
+$('toHalls').addEventListener('click', showHalls);
 $('halls').addEventListener('click', (e) => {
   const btn = e.target.closest('.body:not([disabled])');
   if (!btn) return;

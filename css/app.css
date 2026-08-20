@@ -294,7 +294,7 @@ a{ color:var(--parchment); text-underline-offset:3px; }
 .learning-sigil{ display:grid; place-items:center; width:62px; height:62px; color:var(--gold); border:1px solid rgba(211,162,76,.45); border-radius:50%; background:rgba(211,162,76,.07); }
 .learning-sigil svg{ width:48px; height:43px; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }.learning-sigil circle{ fill:var(--bg); }
 .learning-copy{ min-width:0; }.learning-kicker{ display:block; color:var(--gold); font-size:10px; letter-spacing:.14em; text-transform:uppercase; }.learning-copy > b{ display:block; margin-top:1px; font-family:var(--display); font-size:23px; font-weight:600; }.learning-copy > small{ display:block; margin-top:2px; color:var(--parchment-dim); font-size:12px; }
-.learning-meter{ display:flex; align-items:center; gap:5px; margin-top:12px; }.learning-meter i{ display:block; width:21px; height:5px; border-radius:5px; background:rgba(239,227,200,.16); }.learning-meter i.done{ background:var(--green); }.learning-meter i.current{ background:var(--gold); box-shadow:0 0 9px -1px var(--gold); }.learning-meter em{ margin-left:5px; color:var(--parchment-dim); font-size:11px; font-style:normal; white-space:nowrap; }
+.learning-meter{ display:flex; align-items:center; gap:5px; margin-top:12px; }.learning-meter i{ display:block; width:21px; height:5px; border-radius:5px; background:rgba(239,227,200,.16); }.learning-meter i.done{ background:var(--green); }.learning-meter i.open{ background:var(--gold); box-shadow:0 0 9px -1px var(--gold); }.learning-meter em{ margin-left:5px; color:var(--parchment-dim); font-size:11px; font-style:normal; white-space:nowrap; }
 .learning-open{ display:flex; align-items:center; gap:6px; color:var(--gold); font-family:var(--display); font-size:13px; font-weight:600; white-space:nowrap; }.learning-open svg{ width:19px; height:19px; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
 .learning-view-head{ display:flex; align-items:center; gap:16px; align-self:flex-start; }.learning-view-head .learning-sigil{ width:58px; height:58px; }.learning-view-head .learning-sigil svg{ width:43px; height:39px; }
 .training-head{ display:flex; align-items:center; gap:16px; align-self:flex-start; }.training-sigil{ display:grid; place-items:center; width:58px; height:58px; color:var(--freja); border:1px solid rgba(143,174,140,.45); border-radius:50%; background:rgba(143,174,140,.08); }.training-sigil .topic-icon{ width:32px; height:32px; }
@@ -343,6 +343,132 @@ a{ color:var(--parchment); text-underline-offset:3px; }
 .hall-progress{ display:flex; flex-wrap:wrap; gap:6px; margin-top:11px; }.hall-progress span{ padding:4px 7px; border-radius:5px; background:rgba(239,227,200,.05); color:var(--parchment-dim); font-size:10px; letter-spacing:.04em; text-transform:uppercase; }.hall-progress span:last-child{ color:var(--gold); background:rgba(211,162,76,.08); }.hall-progress b{ color:var(--parchment); font-variant-numeric:tabular-nums; }
 .topic-icon{ width:18px; height:18px; flex:0 0 auto; }
 .hall .chips .topic-icon{ color:var(--accent); }
+
+/* ---------- the saga map ----------
+   The same eight stops as the list, laid out as ground. The list is the
+   accessible route through and this is the picture, so everything here is
+   allowed to be decorative except the nodes, which are real buttons. */
+.view-swap{
+  display:inline-flex; align-items:center; gap:8px; align-self:flex-start;
+  padding:8px 14px; border-radius:20px; cursor:pointer;
+  font-family:var(--text); font-size:12px; letter-spacing:.04em; color:var(--parchment-dim);
+  background:rgba(239,227,200,.04); border:1px solid rgba(239,227,200,.14);
+  transition:color .2s var(--ease), border-color .2s var(--ease);
+}
+.view-swap:hover{ color:var(--parchment); border-color:var(--gold); }
+.view-swap svg{ width:16px; height:16px; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
+
+.map{
+  position:relative; width:100%; max-width:min(960px, 98vh); aspect-ratio:1200/780;
+  overflow:hidden; touch-action:none; cursor:grab;
+  border-radius:14px; border:1px solid rgba(239,227,200,.12);
+  background:radial-gradient(ellipse at 48% 42%,#12304a 0,#0b2135 46%,#07111d 100%);
+}
+.map.grabbing{ cursor:grabbing; }
+.map-pan{ position:absolute; inset:0; transform-origin:50% 50%; }
+.map-svg{ width:100%; height:100%; overflow:visible; }
+
+/* Everything below is scoped to .map on purpose. The first draft used a bare
+   .node and .hall on the SVG groups, which collided with the hall list's
+   .hall{animation:rise both} — a filled CSS transform silently beats an SVG
+   transform attribute, so all six halls stacked in the corner. */
+.map .land{ fill:url(#mapland); stroke:#6d7d58; stroke-width:3.5; }
+.map .sea-ring{ fill:none; stroke:#0d2438; stroke-width:26; opacity:.7; }
+.map .shore-line{ fill:none; stroke:#9c8f68; stroke-width:7; opacity:.3; }
+.map .fjord,.map .river{ fill:none; stroke:#3f7996; stroke-linecap:round; opacity:.45; }
+.map .fjord{ stroke-width:9; }
+.map .river{ stroke-width:6; }
+.map .peak{ fill:#404e47; stroke:#28322e; stroke-width:2; }
+.map .snow{ fill:#b9c4b8; }
+.map .wood{ fill:#1b3325; opacity:.8; }
+.map .region{ fill:#cdd8cb; font-family:var(--display); font-size:15px; letter-spacing:.1em; opacity:.5; text-anchor:middle; }
+.map .region-sub{ fill:#8fa39a; font-size:9px; letter-spacing:.14em; opacity:.45; text-anchor:middle; }
+.map .grain{ fill:url(#mapgrain); stroke:none; }
+.map .sea-name{ fill:#6d8ba3; font-family:var(--display); font-size:13px; letter-spacing:.22em; opacity:.4; text-anchor:middle; }
+
+.map .road{ fill:none; stroke-width:4; stroke-linecap:round; }
+.map .road.ahead{ stroke:#77899a; stroke-dasharray:6 9; opacity:.45; }
+.map .road.walked{ stroke:var(--gold); stroke-dasharray:7 8; opacity:.6; }
+
+.map .stop{ cursor:pointer; }
+.map .stop-halo{ fill:rgba(7,17,29,.55); }
+.map .stop-ring{ fill:#111d24; stroke:var(--accent); stroke-width:3; }
+.map .stop-numeral{ fill:var(--parchment); font-family:var(--display); font-size:16px; text-anchor:middle; }
+.map .stop-glyph{ fill:none; stroke:var(--accent); stroke-width:2.4; stroke-linecap:round; }
+.map .stop-name,.map .stop-state{
+  text-anchor:middle; paint-order:stroke; stroke:#07111d; stroke-linejoin:round;
+}
+.map .stop-name{ fill:var(--parchment); font-family:var(--display); font-size:14px; stroke-width:5px; }
+.map .stop-state{ fill:var(--parchment-dim); font-size:10px; letter-spacing:.1em; stroke-width:4px; }
+.map .stop.done .stop-ring{ fill:rgba(143,174,140,.14); }
+.map .stop.done .stop-state{ fill:var(--green); }
+.map .stop.shut{ opacity:.4; cursor:not-allowed; }
+.map .stop.shut .stop-ring{ stroke:rgba(239,227,200,.3); }
+.map .stop-pulse{
+  fill:var(--accent); opacity:.28;
+  transform-box:fill-box; transform-origin:center;
+  animation:mapPulse 2.4s var(--ease) infinite;
+}
+.map .stop:hover .stop-halo,.map .stop:focus-visible .stop-halo{
+  fill:color-mix(in srgb, var(--accent) 30%, transparent);
+}
+.map .stop:focus-visible{ outline:none; }
+.map .stop:focus-visible .stop-ring{ stroke:var(--parchment); stroke-width:5; }
+@keyframes mapPulse{ 0%,100%{ transform:scale(1); opacity:.28; } 50%{ transform:scale(1.45); opacity:0; } }
+
+/* The island is inhabited. None of it is clickable: a figure standing on a
+   stop must never eat the click meant for the stop. */
+.map .folk{ pointer-events:none; }
+.map .leash{ fill:none; stroke:none; }
+/* Six figures of the same size in the same style, and one of them is you. The
+   ring on the ground is the only thing saying which. */
+.map .fig-mark{ fill:rgba(211,162,76,.2); stroke:var(--gold); stroke-width:2; }
+.map .mine{ transition:transform .18s linear; }
+.map .ship-hull{ fill:#2b3a44; }
+.map .ship-mast{ stroke:#2b3a44; stroke-width:2; }
+.map .ship-sail{ fill:#ded3ba; }
+.map .ship-stripe{ stroke:#a8563f; stroke-width:2.6; }
+/* A figure sliding along a road reads as a chess piece being pushed. One unit
+   of bob turns it into someone walking. `translate` rather than `transform`
+   because the group already carries a transform attribute placing and scaling
+   the artwork, and these two compose instead of fighting. */
+.map .fig-step{ animation:mapStep .8s ease-in-out infinite; }
+@keyframes mapStep{ 50%{ translate:0 -1.6px; } }
+
+.map-legend{ display:flex; gap:16px; flex-wrap:wrap; color:var(--parchment-dim); font-size:11px; letter-spacing:.06em; }
+.map-legend span{ display:inline-flex; align-items:center; gap:6px; }
+.map-legend i{ width:9px; height:9px; border-radius:50%; }
+.map-legend i.done{ background:var(--green); }
+.map-legend i.open{ background:var(--gold); }
+.map-legend i.shut{ background:rgba(239,227,200,.28); }
+.map-legend i.you{ background:var(--gold); box-shadow:0 0 0 3px rgba(211,162,76,.25); }
+
+/* Eight labels in a 1200-unit box shrink to about four pixels of type on a
+   phone. A map you cannot read is not a second way through, it is a picture
+   that lies about being one, so below this width the list is the only door
+   and the toggle is not offered at all. */
+@media (max-width:760px){ #toMap{ display:none; } }
+
+/* ---------- Vikingheim ----------
+   A WebGL canvas and nothing else. It is scenery, so it is allowed to be
+   large, and it is focusable so the arrow keys can reach the camera. */
+.heim{
+  position:relative; width:100%; max-width:min(1000px, 150vh); aspect-ratio:16/10;
+  overflow:hidden; touch-action:none; cursor:grab;
+  border-radius:14px; border:1px solid rgba(239,227,200,.12);
+  background:#1b2436;
+  box-shadow:inset 0 0 120px 40px rgba(10,8,6,.45);
+}
+.heim:active{ cursor:grabbing; }
+.heim:focus-visible{ outline:2px solid var(--gold); outline-offset:3px; }
+.heim canvas{ display:block; width:100%; height:100%; }
+.heim-absent{ display:grid; place-items:center; height:100%; margin:0; padding:0 24px; text-align:center; color:var(--parchment-dim); font-size:14px; }
+.heim-controls{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; justify-content:center; }
+.heim-hint{ color:var(--parchment-dim); font-size:11px; letter-spacing:.04em; }
+.heim-hint kbd{
+  font:inherit; padding:1px 5px; border-radius:4px;
+  background:rgba(239,227,200,.07); border:1px solid rgba(239,227,200,.16);
+}
 .era h4{ display:flex; align-items:center; gap:9px; }
 .era h4 .topic-icon{ width:20px; height:20px; color:var(--gold); }
 

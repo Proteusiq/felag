@@ -24,10 +24,61 @@ const water = (y) => `<rect x="0" y="${y}" width="1440" height="${900 - y}" fill
   <path d="M0,${y + 42} Q120,${y + 35} 240,${y + 42} T480,${y + 42} T720,${y + 42} T960,${y + 42} T1200,${y + 42} T1440,${y + 42}"
     stroke="#253a44" stroke-width="2" fill="none" opacity=".4"/>`;
 
+/* Haze on the horizon, not darkness.
+   Distance in this landscape is carried by air, not by dimming: the far trees
+   are the same colour as the near ones with more sky in front of them. One
+   band sitting on the waterline is the whole trick. */
+const haze = (y, o = .5) => `<rect x="0" y="${y - 90}" width="1440" height="180" fill="url(#haze)" opacity="${o}"/>`;
+
+/* A sail on the horizon, cream with a red stripe, the width of a thumbnail.
+   Rides the same long clock as the swan: a session is long enough to notice
+   it has moved, never long enough to watch it move. */
+const longship = (x, y, s, o) => `<g transform="translate(${x},${y}) scale(${s})" opacity="${o}">
+  <path d="M-30,10 Q-35,0 -25,-2 L25,-2 Q35,0 30,10 Q0,17 -30,10 Z" fill="#2a3a42"/>
+  <path d="M-25,-3 Q-29,-13 -20,-15 M25,-3 Q29,-15 19,-17" stroke="#2a3a42" stroke-width="3" fill="none" stroke-linecap="round"/>
+  <rect x="-2" y="-42" width="4" height="40" fill="#2a3a42"/>
+  <rect x="-17" y="-40" width="34" height="34" fill="#ded3ba"/>
+  <rect x="-17" y="-32" width="34" height="6" fill="#a8563f"/>
+  <rect x="-17" y="-19" width="34" height="6" fill="#a8563f"/>
+  <animateTransform attributeName="transform" type="translate" additive="sum"
+    values="0 0; ${-190 * s} 0; 0 0" dur="150s" repeatCount="indefinite"/></g>`;
+
+/* The stone is the one lit thing in the landscape.
+   Every reference for this project puts a glowing monolith at the centre of
+   the settlement, and it earns its place here for a different reason: it is
+   the only object on the shore that is looking back at you. The pulse is slow
+   enough to read as breathing rather than as a notification. */
 const runestone = `<g transform="translate(700,555)">
+  <ellipse cx="0" cy="30" rx="120" ry="130" fill="url(#rune)">
+    <animate attributeName="opacity" values=".55;.9;.55" dur="7s" repeatCount="indefinite"/></ellipse>
   <path d="M-26,90 L-30,10 Q-30,-30 0,-34 Q30,-30 30,10 L26,90 Z" fill="#2f3d44"/>
-  <path d="M-16,20 L-4,-4 L6,14 L16,-8" stroke="#16262f" stroke-width="3.5" fill="none" stroke-linecap="round" opacity=".7"/>
-  <path d="M-14,44 L14,44 M-12,58 L12,58" stroke="#16262f" stroke-width="3" fill="none" stroke-linecap="round" opacity=".5"/>
+  <g stroke="#8fe8f2" stroke-linecap="round" fill="none" opacity=".7">
+    <animate attributeName="opacity" values=".45;.85;.45" dur="7s" repeatCount="indefinite"/>
+    <path d="M-16,20 L-4,-4 L6,14 L16,-8" stroke-width="3.5"/>
+    <path d="M-14,44 L14,44 M-12,58 L12,58" stroke-width="3" opacity=".65"/>
+  </g>
+</g>`;
+
+/* A log palisade, seen from inside the ring.
+   Sharpened stave tops on uneven heights, because a wall built by a village is
+   never level. Sits behind the hall so the room reads as enclosed rather than
+   as a stage set with two posts on it. */
+const palisade = (y, fill) => {
+  let out = '';
+  for (let x = -20; x < 1460; x += 34) {
+    const h = 150 + ((x * 37) % 46);
+    out += `<path d="M${x},${y} L${x},${y - h} L${x + 13},${y - h - 20} L${x + 26},${y - h} L${x + 26},${y} Z" fill="${fill}"/>`;
+  }
+  return out;
+};
+
+/* Firelight from below. Two ellipses, warm core inside a wide falloff, on a
+   deliberately uneven clock so no two fires in a scene breathe together. */
+const ember = (x, y, w, dur) => `<g>
+  <ellipse cx="${x}" cy="${y}" rx="${w}" ry="${w * .42}" fill="#ff9a44" opacity=".14">
+    <animate attributeName="opacity" values=".10;.20;.13;.18;.10" dur="${dur}s" repeatCount="indefinite"/></ellipse>
+  <ellipse cx="${x}" cy="${y}" rx="${w * .42}" ry="${w * .2}" fill="#ffd27a" opacity=".3">
+    <animate attributeName="opacity" values=".22;.38;.26;.34;.22" dur="${dur * .7}s" repeatCount="indefinite"/></ellipse>
 </g>`;
 
 /* Holger Danske, waiting at the water's edge.
@@ -94,8 +145,12 @@ const SCENES = {
       { d: 0.06, svg: `<path d="M0,590 Q200,570 420,585 T860,580 T1260,590 L1440,585 1440,900 0,900 Z" fill="#16262f"/>` },
       { d: 0.14, svg: beech('#1b2c31', [[70,630,60],[150,640,52],[240,628,58],[330,642,50],[420,626,62],[520,638,54],[900,628,56],[990,640,50],[1080,624,60],[1170,638,52],[1260,626,58],[1350,640,54]]) },
       { d: 0.22, svg: runestone },
+      { d: 0.30, svg: haze(600, .55) },
       { d: 0.34, svg: beech('#253a44', [[30,700,70],[140,712,62],[250,696,72],[380,712,64],[1060,696,68],[1180,712,62],[1300,698,72],[1410,712,56]]) },
-      { d: 0.46, svg: water(760) + swan(1020, 808, 1, .55) + swan(200, 792, .75, .4) },
+      // The horizon here is land, so a sail on it would be a ship parked on a
+      // ridge. The only water in this scene is the strait in front of you, and
+      // that is where the ship you arrived on is drawn.
+      { d: 0.46, svg: water(760) + longship(1250, 836, 1.1, .75) + swan(1020, 808, 1, .55) + swan(200, 792, .75, .4) },
     ],
   },
   // Landfall. The same shore, but Holger is standing on it, waiting to be told
@@ -109,7 +164,8 @@ const SCENES = {
     palette: 'day',
     layers: [
       { d: 0.02, svg: sky },
-      { d: 0.08, svg: water(520) },
+      { d: 0.08, svg: water(520) + longship(290, 540, .6, .3) + longship(455, 552, .46, .2) },
+      { d: 0.12, svg: haze(524, .45) },
       { d: 0.16, svg: `<path d="M0,600 Q300,575 620,596 T1160,590 L1440,600 1440,900 0,900 Z" fill="#16262f"/>` },
       { d: 0.26, svg: beech('#1d2f31', [[120,640,64],[250,652,54],[1150,640,60],[1290,652,56],[1400,644,50]]) },
       // the road itself, worn pale through the grass
@@ -124,10 +180,14 @@ const SCENES = {
     layers: [
       { d: 0.02, svg: `<rect width="1440" height="900" fill="url(#sky)"/>` },
       { d: 0.06, svg: `<circle cx="720" cy="440" r="520" fill="url(#glow)" opacity=".5"/>` },
+      { d: 0.11, svg: `<g opacity=".55">${palisade(900, '#142029')}</g>` },
       { d: 0.16, svg: `<g opacity=".5" fill="#182730">
           <rect x="70" y="120" width="34" height="780" rx="6"/><rect x="1336" y="120" width="34" height="780" rx="6"/>
           <rect x="210" y="200" width="26" height="700" rx="6"/><rect x="1204" y="200" width="26" height="700" rx="6"/>
         </g>` },
+      // The hearth is off the floor of the frame, so the room is lit from
+      // below the reader rather than from behind the text.
+      { d: 0.32, svg: ember(720, 880, 260, 4.3) },
     ],
   },
   // The Ting at dusk. Standing stones, firelight from below, you are being weighed.
@@ -138,8 +198,7 @@ const SCENES = {
       { d: 0.1, svg: `<path d="M0,640 Q360,610 720,632 T1440,626 L1440,900 0,900 Z" fill="#1b1a26"/>` },
       { d: 0.24, svg: [140,320,500,940,1120,1300].map((x, i) =>
           `<path d="M${x - 26},760 L${x - 30},${640 + (i % 3) * 26} Q${x - 30},${600 + (i % 3) * 26} ${x},${596 + (i % 3) * 26} Q${x + 30},${600 + (i % 3) * 26} ${x + 30},${640 + (i % 3) * 26} L${x + 26},760 Z" fill="#292734"/>`).join('') },
-      { d: 0.4, svg: `<ellipse cx="720" cy="800" rx="150" ry="34" fill="#c26a3c" opacity=".16"/>
-        <ellipse cx="720" cy="800" rx="70" ry="18" fill="#d3a24c" opacity=".26"/>` },
+      { d: 0.4, svg: ember(720, 800, 150, 5.2) },
     ],
   },
   // The Alting at night. The full assembly. This is the exam.
@@ -152,9 +211,9 @@ const SCENES = {
       { d: 0.14, svg: `<path d="M0,660 Q360,630 720,652 T1440,646 L1440,900 0,900 Z" fill="#12151f"/>` },
       // torches down both sides, flicker on deliberately uneven timing
       { d: 0.3, svg: [180, 400, 1040, 1260].map((x, i) =>
-          `<g><ellipse cx="${x}" cy="600" rx="46" ry="70" fill="#d3a24c" opacity=".13">
+          `<g><ellipse cx="${x}" cy="600" rx="46" ry="70" fill="#ff9a44" opacity=".13">
             <animate attributeName="opacity" values=".10;.19;.12;.17;.10" dur="${3.1 + i * 0.7}s" repeatCount="indefinite"/></ellipse>
-            <ellipse cx="${x}" cy="606" rx="9" ry="15" fill="#e0b45a" opacity=".55"/></g>`).join('') },
+            <ellipse cx="${x}" cy="606" rx="9" ry="15" fill="#ffd27a" opacity=".55"/></g>`).join('') },
     ],
   },
 };
@@ -171,16 +230,28 @@ const defs = `<defs>
     <stop offset="0%" stop-color="var(--tint)" stop-opacity=".18"/>
     <stop offset="100%" stop-color="var(--tint)" stop-opacity="0"/>
   </radialGradient>
+  <linearGradient id="haze" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="var(--tint)" stop-opacity="0"/>
+    <stop offset="50%" stop-color="var(--tint)" stop-opacity=".16"/>
+    <stop offset="100%" stop-color="var(--tint)" stop-opacity="0"/>
+  </linearGradient>
+  <radialGradient id="rune" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#8fe8f2" stop-opacity=".22"/>
+    <stop offset="60%" stop-color="#8fe8f2" stop-opacity=".06"/>
+    <stop offset="100%" stop-color="#8fe8f2" stop-opacity="0"/>
+  </radialGradient>
 </defs>`;
 
 let host = null;
 let depths = [];
 
+export const still = matchMedia('(prefers-reduced-motion: reduce)');
+
 export function mount(el) {
   host = el;
   // Pointer parallax, capped at a few pixels so it reads as depth, not as a toy.
   addEventListener('pointermove', (e) => {
-    if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    if (still.matches) return;
     const x = (e.clientX / innerWidth - .5) * 2;
     const y = (e.clientY / innerHeight - .5) * 2;
     host.querySelectorAll('.layer').forEach((g, i) => {
@@ -197,4 +268,8 @@ export function show(name) {
   host.innerHTML = `<svg viewBox="0 0 1440 900" preserveAspectRatio="xMidYMax slice"
     xmlns="http://www.w3.org/2000/svg">${defs}${
     scene.layers.map((l) => `<g class="layer">${l.svg}</g>`).join('')}</svg>`;
+  // The drifting swan, the sails and the torches are SMIL, which no CSS
+  // media query can reach. Asking the document to hold still is the only
+  // honest way to keep the reduced-motion promise for them.
+  if (still.matches) host.firstChild.pauseAnimations();
 }
