@@ -318,7 +318,7 @@ function renderHalls() {
     const progress = hallProgress(hall);
     const mark = ICON[done ? 'done' : shut ? 'shut' : 'open'];
     const label = done ? 'Port åbnet' : shut ? 'Låst' : 'Åben';
-    const places = sagasIn(hall.chapter).filter((saga) => saga.questions.length).length;
+    const { places } = sagaCounts(hall.chapter);
     return `<div class="hall ${done ? 'done' : ''} ${shut ? 'shut' : ''}"
         style="--accent:var(${hall.accent}); --d:${i * 0.06}s">
         <span class="thread"></span>
@@ -336,9 +336,17 @@ function renderHalls() {
         </button>
         <!-- Never disabled, whatever the gate says. The lock is on sitting the
              hall, not on reading the chapter, and a locked hall is exactly where
-             somebody is standing when they most need the way in to the reading. -->
+             somebody is standing when they most need the way in to the reading.
+             Given the same width as the hall's own board, because a reading room
+             that is always open should not be advertised in smaller type than
+             the door that is shut. -->
         <button class="hall-read" type="button" data-read="${i}">
-          ${ICON.book}Læs sagaen<em>${places} ${places === 1 ? 'bebyggelse' : 'bebyggelser'}</em>
+          <span class="read-mark" aria-hidden="true">${ICON.book}</span>
+          <span class="read-copy">
+            <b>Læs sagaen om ${inSentence(hall.da)}</b>
+            <small>${places} ${places === 1 ? 'bebyggelse' : 'bebyggelser'} &middot; altid åben</small>
+          </span>
+          <svg class="read-go" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m10 5 7 7-7 7m6-7H6"/></svg>
         </button>
         </span>
       </div>`;
@@ -405,7 +413,12 @@ const MODES = [
 
 const DESTINATIONS = [
   {
-    id: 'training', da: 'Træning', en: 'Practice routes', accent: '--freja', icon: 'book',
+    id: 'sagaer', da: 'Sagaerne', en: 'The reading rooms', accent: '--gorm', icon: 'book',
+    blurb: 'Lærematerialets 243 sider som noget, der kan læses: hvert kapitel lagt ud efter hvor meget der bliver spurgt om siderne.',
+    tag: 'Aldrig låst',
+  },
+  {
+    id: 'training', da: 'Træning', en: 'Practice routes', accent: '--freja', icon: 'grundtvig',
     blurb: 'Øvelse, Tidslinjen og Tinget samlet ét sted. Vælg det, du vil træne.', tag: '3 træningsrum',
   },
   {
@@ -440,6 +453,10 @@ const sceneFor = (mode) => (mode.ting ? 'ting' : mode.exam ? 'alting' : 'hall');
 /** The hall list and the saga map are two doors into the same six rooms, so
     a hall returns through whichever one it was entered by. */
 let hallDoor = showHalls;
+
+/** Sagaerne is reachable from the hall list and from the path, so leaving a
+    reading room goes back the way it was entered rather than always to one. */
+let sagaDoor = showHalls;
 
 /** Leaving a drill returns where it was started from, not to the map. */
 const leave = (mode) => mode?.hall ? hallDoor()
@@ -508,7 +525,7 @@ function weighted(list, n, rand) {
 /* ============================================================
    Views
    ============================================================ */
-const VIEWS = ['viewWho', 'viewShore', 'viewPath', 'viewTraining', 'viewHalls', 'viewSagas', 'viewMap', 'viewHeim', 'viewTime', 'viewArena', 'viewTing', 'viewQuiz', 'viewResult'];
+const VIEWS = ['viewWho', 'viewShore', 'viewPath', 'viewTraining', 'viewHalls', 'viewSagaer', 'viewSagas', 'viewMap', 'viewHeim', 'viewTime', 'viewArena', 'viewTing', 'viewQuiz', 'viewResult'];
 function go(id, scene) {
   const swap = () => {
     // The counter and clock belong to a run; nothing else should inherit them.
@@ -726,6 +743,31 @@ const placeOf = (n) => PLACES.find((p) => n >= p.from);
 const sagasIn = (chapter) => (state.sagas ?? []).filter((s) => s.chapter === chapter);
 
 /**
+ * What a chapter's reading actually amounts to, counted the way the room counts.
+ *
+ * Not `saga.questions.length`: that is the raw membership, before answers that
+ * have gone out of date are dropped and before questions teaching one fact are
+ * folded together. Advertising 129 on the door and showing 108 inside is the
+ * kind of small lie that costs trust in everything else on the page.
+ */
+function sagaCounts(chapter) {
+  const stretches = sagasIn(chapter).map((saga) =>
+    oneEach(saga.questions.map((id) => state.bankById.get(id)).filter((q) => q && usable(q))));
+  return {
+    places: stretches.filter((s) => s.length).length,
+    readings: stretches.reduce((n, s) => n + s.length, 0),
+    pages: sagasIn(chapter).reduce((n, s) => n + (s.until - s.page + 1), 0),
+  };
+}
+
+/** A hall's name dropped into the middle of a sentence. "Det danske demokrati"
+    has to lose its capital there and "Danmarks historie" has to keep it, which
+    is the whole of the rule: proper noun stays, everything else is an adjective
+    or a common noun and goes down. */
+const inSentence = (name) =>
+  name.startsWith('Danmark') ? name : name[0].toLowerCase() + name.slice(1);
+
+/**
  * Collapse questions that teach one fact into a single reading.
  *
  * The bank keys a question on its stem *and* its options, because SIRI reuses a
@@ -792,6 +834,45 @@ function told(q, missed) {
  * of the room: failing a hall opens the places those questions came from and
  * nothing else, so the reading is aimed at the gap rather than at the chapter.
  */
+/**
+ * The six chapters as reading rooms, with no gate on any of them.
+ *
+ * The hall list next door is about drilling and has to show a lock; this is the
+ * same six rooms with the lock taken off, because it is the way in for somebody
+ * who came to read rather than to be tested.
+ */
+function showSagaer() {
+  sagaDoor = showSagaer;
+  $('hudTitle').textContent = 'Sagaerne';
+  const back = 'Tilbage til vejen';
+  $('hudBackLabel').textContent = back;
+  $('hudBack').setAttribute('aria-label', back);
+  $('hudBack').dataset.tooltip = back;
+
+  $('sagaHalls').innerHTML = HALLS.map((hall, i) => {
+    const { places, readings, pages } = sagaCounts(hall.chapter);
+    return `<div class="hall" style="--accent:var(${hall.accent}); --d:${i * 0.06}s">
+        <span class="thread"></span>
+        <span class="node">${hall.numeral}</span>
+        <span class="hall-main">
+          <button class="body" type="button" data-read="${i}">
+            <span class="names">
+              <span class="da">${hall.da}</span>
+              <span class="en">${hall.en}</span>
+              <span class="state">${ICON.book}Læs</span>
+            </span>
+            <span class="hall-progress">
+              <span>Bebyggelser <b>${places}</b></span>
+              <span>Spørgsmål <b>${readings}</b></span>
+              <span>Sider <b>${pages}</b></span>
+            </span>
+          </button>
+        </span>
+      </div>`;
+  }).join('');
+  go('viewSagaer', 'path');
+}
+
 function showSagas(hall, missed = null) {
   const places = sagasIn(hall.chapter);
   const shown = places.map((saga) => {
@@ -806,7 +887,7 @@ function showSagas(hall, missed = null) {
   $('hudBackLabel').textContent = back;
   $('hudBack').setAttribute('aria-label', back);
   $('hudBack').dataset.tooltip = back;
-  $('sagasTitle').textContent = `Sagaen om ${hall.da}`;
+  $('sagasTitle').textContent = `Sagaen om ${inSentence(hall.da)}`;
 
   const total = shown.reduce((n, row) => n + row.hit.length, 0);
   $('sagasSub').innerHTML = missed
@@ -1553,7 +1634,10 @@ function finish() {
     start(mode.id, mode, ghost?.house ? houseGhost(mode.id, freshSeed) : null);
   };
   if (missed.length) {
-    $('sagaBtn').onclick = () => showSagas(mode.hall, new Set(missed.map((q) => q.id)));
+    $('sagaBtn').onclick = () => {
+      sagaDoor = hallDoor;
+      showSagas(mode.hall, new Set(missed.map((q) => q.id)));
+    };
   }
   $('shareBtn').onclick = async () => {
     // The whole challenge travels in the fragment, so nothing is stored anywhere.
@@ -1671,6 +1755,7 @@ function openMode(id) {
 $('modes').addEventListener('click', (e) => {
   const btn = e.target.closest('.mode');
   if (!btn) return;
+  if (btn.dataset.id === 'sagaer') return showSagaer();
   if (btn.dataset.id === 'training') return showTraining();
   if (btn.dataset.id === 'heim') return showHeim();
   openMode(btn.dataset.id);
@@ -1700,11 +1785,22 @@ $('places').addEventListener('toggle', (e) => {
   }
 }, true);
 
+$('sagaHalls').addEventListener('click', (e) => {
+  const read = e.target.closest('[data-read]');
+  if (read) {
+    sagaDoor = showSagaer;
+    return showSagas(HALLS[Number(read.dataset.read)]);
+  }
+});
+
 $('toMap').addEventListener('click', showMap);
 $('toHalls').addEventListener('click', showHalls);
 $('halls').addEventListener('click', (e) => {
   const read = e.target.closest('[data-read]');
-  if (read) return showSagas(HALLS[Number(read.dataset.read)]);
+  if (read) {
+    sagaDoor = showHalls;
+    return showSagas(HALLS[Number(read.dataset.read)]);
+  }
   const btn = e.target.closest('.body:not([disabled])');
   if (!btn) return;
   const i = Number(btn.dataset.i);
@@ -1735,7 +1831,8 @@ const exitRun = () => {
   const mode = state.run?.mode;
   state.run = null;
   if (mode) return leave(mode);
-  if (!$('viewSagas').hidden) return hallDoor();
+  if (!$('viewSagas').hidden) return sagaDoor();
+  if (!$('viewSagaer').hidden) { renderPath(); return go('viewPath', 'path'); }
   if (!$('viewTime').hidden || !$('viewTing').hidden) return showTraining();
   renderPath();
   go('viewPath', 'path');
