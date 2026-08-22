@@ -11,12 +11,11 @@
 {"by": "judged", "questions": ["0e4c562710", "e3bc4ad3fa"], "seen": ["2020-06#34", "2021-06#19"]}
 {"by": "judged", "questions": ["1039184b5a", "c3fa8ec2fc"], "seen": ["2020-06#1", "2021-11#15"]}
 {"by": "judged", "questions": ["1051b9935e", "76b94df0c2"], "seen": ["2020-06#13", "2023-11#15"]}
-{"by": "judged", "questions": ["1513ac9e3a", "927a82b0ed"], "seen": ["2022-11#18", "2025-11#27"]}
 {"by": "exact", "questions": ["1546f41ab3", "29d3f41247"], "seen": ["2021-06#7", "2022-11#28"]}
 {"by": "judged", "questions": ["1576cffcc6", "e1037b4de5"], "seen": ["2022-06#35", "2023-11#7"]}
 {"by": "judged", "questions": ["16b8fb6dc7", "874478990b"], "seen": ["2020-06#4", "2022-06#1"]}
 {"by": "judged", "questions": ["1958fd3272", "c54ea08847"], "seen": ["2020-11#5", "2022-11#26", "2025-05#6"]}
-{"by": "judged", "questions": ["1a56f35efe", "8ac993e911", "9a403f999c"], "seen": ["2020-06#3", "2021-11#7", "2023-05#35"]}
+{"by": "judged", "questions": ["1a56f35efe", "2d3a4cce08", "8ac993e911", "9a403f999c"], "seen": ["2020-06#3", "2021-11#7", "2023-05#35", "2026-06#7"]}
 {"by": "judged", "questions": ["1bb1c9b52c", "36f6ee57c8", "59d9af87ec", "da92c62c70"], "seen": ["2020-11#1", "2022-11#27", "2024-05#1", "2026-06#30"]}
 {"by": "judged", "questions": ["1dd914486d", "1df97b374d", "2fbb669cff"], "seen": ["2021-11#22", "2024-05#23", "2025-11#31"]}
 {"by": "exact", "questions": ["2284e1d225", "58cf22d172"], "seen": ["2021-11#18", "2024-05#20"]}
@@ -69,3 +68,26 @@
 {"by": "judged", "questions": ["c5ec4929b0", "f020f48e14"], "seen": ["2023-11#10", "2026-06#3"]}
 {"by": "judged", "questions": ["d1a0c50762", "f26ce85fe3"], "seen": ["2023-05#28", "2025-05#26"]}
 {"by": "judged", "questions": ["d70e94cf43", "ea5f072c9f"], "seen": ["2020-06#33", "2021-11#20"]}
+{"apart": ["58bb189884", "f0d651a6a5"], "why": "At bo sammen og at være gift er to betingelser i loven, der her når samme udfald."}
+{"apart": ["83a174e930", "f3eb46af0a"], "why": "Grønland og Færøerne er to steder med hvert sit indbyggertal."}
+{"apart": ["336666a655", "83a174e930"], "why": "Grønland og Færøerne er to steder med hvert sit indbyggertal."}
+{"apart": ["b7545956a9", "fa6b176667"], "why": "Arbejdere stemte Socialdemokratiet, landmænd Venstre. To grupper, to partier."}
+{"apart": ["b7545956a9", "b898c8a4b7"], "why": "Arbejdere stemte Socialdemokratiet, landmænd Venstre. To grupper, to partier."}
+{"apart": ["e2a7805487", "ef1edcdcdd"], "why": "Tobak og spiritus er to regler, der er enige om 18 år."}
+{"apart": ["9dc3571ff7", "e2a7805487"], "why": "Tobak og spiritus er to regler, der er enige om 18 år."}
+{"apart": ["9c9ed6d089", "d2c5675997"], "why": "Polen og Tyrkiet er to forskellige svar på to forskellige spørgsmål."}
+{"apart": ["91cc98ef97", "e2a7805487"], "why": "Tobak og spiritus er to regler, der er enige om 18 år."}
+{"apart": ["5d0570e248", "b3f80a9132"], "why": "Jobcentre, ældrepleje, vuggestuer og børnetandpleje er fire kommunale opgaver, ikke én kendsgerning."}
+{"apart": ["5970fe4786", "d2c5675997"], "why": "Polen og Tyrkiet er to forskellige svar på to forskellige spørgsmål."}
+{"apart": ["0dc444bb9d", "ef1edcdcdd"], "why": "Tobak og spiritus er to regler, der er enige om 18 år."}
+{"apart": ["0dc444bb9d", "9dc3571ff7"], "why": "Tobak og spiritus er to regler, der er enige om 18 år."}
+{"apart": ["0dc444bb9d", "91cc98ef97"], "why": "Tobak og spiritus er to regler, der er enige om 18 år."}
+{"apart": ["cdea40a795", "cf6e4ae0e7"], "why": "Jobcentre, ældrepleje, vuggestuer og børnetandpleje er fire kommunale opgaver, ikke én kendsgerning."}
+{"apart": ["93c5df307b", "d2c5675997"], "why": "Hvor indvandrerne kom fra i 1960'erne, og hvor nutidens indvandrere og efterkommere har oprindelse, er en strøm og en beholdning."}
+{"apart": ["8a256f475f", "f52d0c11b6"], "why": "Jobcentre, ældrepleje, vuggestuer og børnetandpleje er fire kommunale opgaver, ikke én kendsgerning."}
+{"apart": ["8a256f475f", "cdcac7ffaf"], "why": "Jobcentre, ældrepleje, vuggestuer og børnetandpleje er fire kommunale opgaver, ikke én kendsgerning."}
+{"apart": ["441ad8ce54", "5d0570e248"], "why": "Registreret partnerskab i 1989 og ægteskab i 2012 er to love og to årstal."}
+{"apart": ["2775fb8b17", "3bbaef2d94"], "why": "1924 er både Stauning som statsminister og Nina Bang som første kvindelige minister. To personer, to embeder, ét år."}
+{"apart": ["1513ac9e3a", "927a82b0ed"], "why": "Spørgsmålene har modsatte svar, ja og nej, og skal mødes hver for sig."}
+{"apart": ["45503284a4", "fa6b176667"], "why": "Arbejdere stemte Socialdemokratiet, landmænd Venstre. To grupper, to partier."}
+{"apart": ["45503284a4", "b898c8a4b7"], "why": "Arbejdere stemte Socialdemokratiet, landmænd Venstre. To grupper, to partier."}

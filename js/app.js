@@ -1601,7 +1601,10 @@ async function main() {
   // members of a group resolve to the very same array and compare identical.
   state.kin = new Map();
   for (const group of kinship ? lines(kinship) : []) {
-    for (const id of group.questions) state.kin.set(id, group.questions);
+    // The file also records pairs a human ruled must stay apart, with the
+    // reason written beside them. Those are there to stop the question being
+    // re-asked on the next rebuild; here they are simply not groups.
+    for (const id of group.questions ?? []) state.kin.set(id, group.questions);
   }
 
   const why = new Map(explanations ? lines(explanations).map((e) => [e.id, e]) : []);

@@ -192,32 +192,40 @@ and on nothing else.
 because SIRI reuses a stem with a different option set and a different correct
 answer. Two option sets are two exercises, which is right for drilling and wrong
 for reading: Vikingetid printed "Freja og Thor" twice — 2024 and 2026, one
-distractor swapped — and told you each had been asked once. `tools/kinship.py`
-groups the questions that teach one fact, and the reading room shows the
-best-explained wording with the full count beside it.
+distractor swapped — and told you each had been asked once. `data/kinship.jsonl`
+says which questions teach one fact; the room shows the best-explained wording
+with the full count beside it. 397 questions, 313 readings.
 
-Two passes, unequally trusted. **Exact** folds accents and Danish number words
-and groups on stem and answer, so "I op til ét døgn" and "I op til 1 døgn" are
-one lesson; that is string comparison and needs no review. **Judged** asks a
-local model, through Ollama, about pairs that are already lexically close and
-already in the same saga — because no string method sees that "Hvilket land blev
-erobret af Svend Tveskæg?" and "I hvilket århundrede blev England erobret?" are
-one sentence of history asked from two ends.
+Some of that is decided by string comparison: fold the accents and the Danish
+number words, and "I op til ét døgn" and "I op til 1 døgn" are one lesson. The
+rest is judgement, because no string method sees that "Hvilket land blev erobret
+af Svend Tveskæg?" and "I hvilket århundrede blev England erobret?" are one
+sentence of history asked from two ends.
 
-> [!WARNING]
-> The model proposes; it never decides. Of 73 merges it offered, review refused
-> 13, and every one was the same mistake: it read the answer instead of the
-> question. Buying tobacco and buying spirits both answer 18. Jobcentres, elder
-> care and child dentistry are all run by *kommunerne*. 1924 is both Stauning
-> taking office and Nina Bang becoming the first woman in a cabinet. Those
-> refusals live in `REFUSED` in the tool, so a rerun reproduces what was agreed
-> rather than hoping the model is lucky twice — and because kinship is
-> transitive, the build fails outright if an accepted pair ever reconnects a
-> refused one through a third question.
+> [!IMPORTANT]
+> That judgement is written by hand and joined by id, exactly like
+> `data/explanations.jsonl`, and **`tools/kinship.py` never writes it**. Deciding
+> that two questions teach the same thing is a claim about Danish history and
+> Danish law. It belongs in a file somebody signed, not in a model invoked at
+> build time — this site has no build step, no dependency and no network call,
+> and it is not growing one for this.
+
+The tool does the part that is not judgement: it proposes pairs close enough in
+wording to be worth a minute, and it checks that the committed file is whole —
+no id that has fallen out of the bank, no question in two groups, no group grown
+past four members, since kinship is transitive and a chain of near-misses will
+walk from one fact to another if nobody is watching.
+
+Refusals are recorded too, with the reason beside them, so the question is not
+re-asked on every rebuild and cannot be quietly reversed. They are where the
+work is, because the traps are quiet: tobacco and spirits both answer 18,
+jobcentre and ældrepleje and børnetandpleje are all run by *kommunerne*, and
+1924 is both Stauning taking office and Nina Bang becoming the first woman in a
+cabinet. Two facts wearing one answer, every time.
 
 A wrong split leaves a duplicate on the page. A wrong merge hides a real
 question behind an explanation that does not answer it. Only one of those is
-worth a rebuild, so the model is told to refuse on any doubt.
+worth worrying about.
 
 ## Two things the papers gave up under questioning
 
@@ -319,13 +327,9 @@ uv run tools/content.py all      # fetch the papers, then read them
 uv run tools/content.py fetch    # fetch only
 uv run tools/content.py extract  # read only
 
-uv run tools/kinship.py          # group questions that teach one fact
-uv run tools/kinship.py --review # print what the model proposed, write nothing
+uv run tools/kinship.py           # check data/kinship.jsonl is whole
+uv run tools/kinship.py --propose # print pairs nobody has ruled on yet
 ```
-
-`kinship.py` wants [Ollama](https://ollama.com) on localhost and nothing else:
-no key, no network, no cost. It runs when the bank changes, never when the site
-does — it writes a file, and the file is what ships.
 
 The source PDFs come to rest in `data/raw/` and are **never committed**. They
 weigh 29MB, they are not ours, and they can always be fetched again. What is
@@ -350,9 +354,9 @@ js/heim.js               Vikingheim, loaded the moment it is entered and no soon
 js/app.js                state, routing, the halls, the law, the tide table
 vendor/three.*.min.js    three.js 0.180.0, vendored so no CDN is ever asked
 tools/content.py         uv script: fetch, read, ground in the material
-tools/kinship.py         group questions that teach the same fact
+tools/kinship.py         propose and check kinship; never writes it
 data/sagas.jsonl         the material cut into readable stretches, derived
-data/kinship.jsonl       questions that teach one fact, proposed then reviewed
+data/kinship.jsonl       questions that teach one fact, written by hand
 data/questions.jsonl     won from the papers, never edited by hand
 data/explanations.jsonl  written by hand, joined by id
 assets/fonts/            Metamorphous for the carving, Atkinson for the reading
