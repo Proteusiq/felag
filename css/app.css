@@ -369,7 +369,9 @@ a{ color:var(--parchment); text-underline-offset:3px; }
 
 .places{ width:100%; max-width:760px; display:flex; flex-direction:column; margin-bottom:30px; }
 .place{ position:relative; display:flex; gap:16px; padding:9px 0; align-items:flex-start;
-  animation:rise .45s var(--ease) both; animation-delay:var(--d,0s); }
+  animation:rise .45s var(--ease) both; animation-delay:var(--d,0s);
+  /* clearance for the sticky HUD when a fold scrolls a settlement back into view */
+  scroll-margin-top:76px; }
 .place .thread{
   position:absolute; left:25px; top:56px; bottom:-9px; width:2px;
   background:repeating-linear-gradient(to bottom, rgba(239,227,200,.22) 0 6px, transparent 6px 12px);

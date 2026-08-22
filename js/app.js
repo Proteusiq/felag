@@ -820,12 +820,20 @@ function showSagas(hall, missed = null) {
   $('places').innerHTML = shown.map(({ saga, questions, hit }, i) => {
     const place = placeOf(questions.length);
     const open = missed || shown.length === 1 ? 'open' : '';
+    // One settlement at a time, so a chapter is a page you read rather than a
+    // mile you scroll. `name` on <details> is the browser's own accordion and
+    // needs no script; where it is not supported the panels simply stay
+    // independent, which is what they were before.
+    //
+    // Not in focus mode. There the room is already only the questions you got
+    // wrong, so there is nothing to shorten and everything to compare.
+    const group = missed ? '' : `name="saga-${hall.chapter}"`;
     return `<div class="place ${place.kind}" style="--accent:var(${hall.accent}); --d:${i * 0.05}s">
         <span class="thread"></span>
         <span class="node" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"
           stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
           stroke-linejoin="round">${place.glyph}</svg></span>
-        <details class="body" ${open}>
+        <details class="body" ${group} ${open}>
           <summary>
             <span class="names">
               <span class="da">${saga.title}</span>
@@ -1672,6 +1680,26 @@ $('trainingModes').addEventListener('click', (e) => {
   const btn = e.target.closest('.mode');
   if (btn) openMode(btn.dataset.id);
 });
+/* Opening a settlement folds whichever was open, and when that one sat higher up
+   the page everything below it slides up — including the panel just opened. Left
+   alone that is an 828px jump on a 806px screen, so the thing you asked to read
+   leaves the top of the window as it opens. The browser owns the folding, so the
+   correction has to live here. Only when it has actually gone above the top: a
+   panel still in view is better left where it is than scrolled at.
+
+   `toggle` does not bubble, hence the capture. The clearance under the sticky
+   HUD is CSS's `scroll-margin-top`, not arithmetic. */
+$('places').addEventListener('toggle', (e) => {
+  const panel = e.target;
+  if (!panel.open || !panel.closest?.('.place')) return;
+  if (panel.getBoundingClientRect().top < 0) {
+    panel.closest('.place').scrollIntoView({
+      block: 'start',
+      behavior: scenes.still.matches ? 'auto' : 'smooth',
+    });
+  }
+}, true);
+
 $('toMap').addEventListener('click', showMap);
 $('toHalls').addEventListener('click', showHalls);
 $('halls').addEventListener('click', (e) => {
