@@ -331,6 +331,9 @@ uv run tools/kinship.py           # check data/kinship.jsonl is whole
 uv run tools/kinship.py --propose # print pairs nobody has ruled on yet
 ```
 
+`AGENTS.md` has the whole sequence for when SIRI publishes a new paper, and the
+rule for ruling on the pairs `--propose` turns up.
+
 The source PDFs come to rest in `data/raw/` and are **never committed**. They
 weigh 29MB, they are not ours, and they can always be fetched again. What is
 kept is what was won from them.
