@@ -677,6 +677,48 @@ def locate(entries: list[Entry]) -> None:
             entry.passage, entry.page, entry.chapter = None, None, None
 
 
+def adopt_written_pages(entries: list[Entry]) -> int:
+    """Let a hand-checked page citation overrule the located guess, everywhere.
+
+    locate() finds a page by TF-IDF and is right most of the time; where it is
+    not, a human has written the real page into data/explanations.jsonl and the
+    app has always shown that one. Until now only the app knew: the timeline and
+    the reading rooms went on grouping by the guess, so a question could be filed
+    under Kold krig while citing page 194 in Kongehuset, which is exactly what
+    "Hvilket år blev Margrethe d. 2. dronning af Danmark?" did.
+
+    131 of 397 disagree, so this is not a rounding error in the corpus. Applied
+    here, once, before anything is grouped, rather than in each thing that groups.
+    The chapter is recomputed from the corrected page for the same reason: a page
+    that moves to another chapter has moved to another hall.
+    """
+    if not EXPLANATIONS.exists() or not MATERIAL.exists():
+        return 0
+
+    written = {}
+    for line in EXPLANATIONS.read_text("utf-8").splitlines():
+        if line.strip():
+            record = json.loads(line)
+            if record.get("page"):
+                written[record["id"]] = record["page"]
+
+    with pymupdf.open(MATERIAL) as doc:
+        chapters = sorted(
+            (start, title) for _, title, start in doc.get_toc()
+            if start > 0 and re.match(r"^\d+\.\s*Kapitel", title.strip()))
+
+    moved = 0
+    for entry in entries:
+        page = written.get(entry.id)
+        if not page or page == entry.page:
+            continue
+        entry.page = page
+        entry.chapter = max((n for n, (start, _) in enumerate(chapters, 1)
+                             if page >= start), default=None)
+        moved += 1
+    return moved
+
+
 def fetch(force: bool = False) -> int:
     """Discover PDFs on the page and download them.
 
@@ -776,6 +818,9 @@ def extract() -> int:
 
     entries, rejected = build()
     locate(entries)
+    # Before anything groups by page: the written citation wins over the guess.
+    if moved := adopt_written_pages(entries):
+        print(f"\n{moved} questions moved to their hand-checked page")
 
     # The timeline is derived, so it is regenerated rather than hand-kept.
     if periods := eras():

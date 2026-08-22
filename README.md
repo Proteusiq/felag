@@ -188,6 +188,37 @@ of the 327 are trimmed and the other 85 are left exactly as they were written.
 Fail a hall and the room opens on the settlements your wrong answers came from,
 and on nothing else.
 
+**One lesson, once.** The bank keys a question on its stem *and* its options,
+because SIRI reuses a stem with a different option set and a different correct
+answer. Two option sets are two exercises, which is right for drilling and wrong
+for reading: Vikingetid printed "Freja og Thor" twice — 2024 and 2026, one
+distractor swapped — and told you each had been asked once. `tools/kinship.py`
+groups the questions that teach one fact, and the reading room shows the
+best-explained wording with the full count beside it.
+
+Two passes, unequally trusted. **Exact** folds accents and Danish number words
+and groups on stem and answer, so "I op til ét døgn" and "I op til 1 døgn" are
+one lesson; that is string comparison and needs no review. **Judged** asks a
+local model, through Ollama, about pairs that are already lexically close and
+already in the same saga — because no string method sees that "Hvilket land blev
+erobret af Svend Tveskæg?" and "I hvilket århundrede blev England erobret?" are
+one sentence of history asked from two ends.
+
+> [!WARNING]
+> The model proposes; it never decides. Of 73 merges it offered, review refused
+> 13, and every one was the same mistake: it read the answer instead of the
+> question. Buying tobacco and buying spirits both answer 18. Jobcentres, elder
+> care and child dentistry are all run by *kommunerne*. 1924 is both Stauning
+> taking office and Nina Bang becoming the first woman in a cabinet. Those
+> refusals live in `REFUSED` in the tool, so a rerun reproduces what was agreed
+> rather than hoping the model is lucky twice — and because kinship is
+> transitive, the build fails outright if an accepted pair ever reconnects a
+> refused one through a third question.
+
+A wrong split leaves a duplicate on the page. A wrong merge hides a real
+question behind an explanation that does not answer it. Only one of those is
+worth a rebuild, so the model is told to refuse on any doubt.
+
 ## Two things the papers gave up under questioning
 
 > [!IMPORTANT]
@@ -287,7 +318,14 @@ dependencies inline, after PEP 723, so there is nothing to install beforehand.
 uv run tools/content.py all      # fetch the papers, then read them
 uv run tools/content.py fetch    # fetch only
 uv run tools/content.py extract  # read only
+
+uv run tools/kinship.py          # group questions that teach one fact
+uv run tools/kinship.py --review # print what the model proposed, write nothing
 ```
+
+`kinship.py` wants [Ollama](https://ollama.com) on localhost and nothing else:
+no key, no network, no cost. It runs when the bank changes, never when the site
+does — it writes a file, and the file is what ships.
 
 The source PDFs come to rest in `data/raw/` and are **never committed**. They
 weigh 29MB, they are not ours, and they can always be fetched again. What is
@@ -312,7 +350,9 @@ js/heim.js               Vikingheim, loaded the moment it is entered and no soon
 js/app.js                state, routing, the halls, the law, the tide table
 vendor/three.*.min.js    three.js 0.180.0, vendored so no CDN is ever asked
 tools/content.py         uv script: fetch, read, ground in the material
+tools/kinship.py         group questions that teach the same fact
 data/sagas.jsonl         the material cut into readable stretches, derived
+data/kinship.jsonl       questions that teach one fact, proposed then reviewed
 data/questions.jsonl     won from the papers, never edited by hand
 data/explanations.jsonl  written by hand, joined by id
 assets/fonts/            Metamorphous for the carving, Atkinson for the reading

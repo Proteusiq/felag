@@ -725,6 +725,38 @@ const placeOf = (n) => PLACES.find((p) => n >= p.from);
 
 const sagasIn = (chapter) => (state.sagas ?? []).filter((s) => s.chapter === chapter);
 
+/**
+ * Collapse questions that teach one fact into a single reading.
+ *
+ * The bank keys a question on its stem *and* its options, because SIRI reuses a
+ * stem with a different option set and a different correct answer. Two option
+ * sets are two exercises, so that is right for drilling and wrong here: with it,
+ * Vikingetid printed "Freja og Thor" twice, once for 2024 and once for 2026 with
+ * one distractor swapped, and told you each had been asked once.
+ *
+ * Which wording leads is decided by which carries the fullest explanation, and
+ * the whole entry comes from that one question — never a sentence from one and
+ * an answer from another. The count is unioned over the members actually shown,
+ * so "stillet 3 gange" is a claim the page can back up.
+ */
+function oneEach(questions) {
+  const taken = new Set();
+  const out = [];
+  for (const q of questions) {
+    const group = state.kin?.get(q.id);
+    if (!group) { out.push(q); continue; }
+    if (taken.has(group)) continue;
+    taken.add(group);
+    const kin = group.map((id) => state.bankById.get(id)).filter((x) => x && usable(x));
+    if (!kin.length) continue;
+    const lead = kin.reduce((best, x) =>
+      (x.explain?.length ?? 0) > (best.explain?.length ?? 0) ? x : best, kin[0]);
+    const asked = [...new Set(kin.flatMap((x) => x.seen))].sort();
+    out.push({ ...lead, seen: asked });
+  }
+  return out;
+}
+
 /** One question, laid out to be read: the answer leads, the explanation
     carries it, and SIRI's own wording is kept as the provenance underneath.
 
@@ -762,9 +794,9 @@ function told(q, missed) {
  */
 function showSagas(hall, missed = null) {
   const places = sagasIn(hall.chapter);
-  const bank = new Map(state.bank.map((q) => [q.id, q]));
   const shown = places.map((saga) => {
-    const questions = saga.questions.map((id) => bank.get(id)).filter((q) => q && usable(q));
+    const questions = oneEach(
+      saga.questions.map((id) => state.bankById.get(id)).filter((q) => q && usable(q)));
     const hit = missed ? questions.filter((q) => missed.has(q.id)) : questions;
     return { saga, questions, hit };
   }).filter((row) => !missed || row.hit.length);
@@ -1551,19 +1583,26 @@ async function main() {
   const lines = (t) => t.split('\n').filter(Boolean).map((l) => JSON.parse(l));
   const grab = (p) => fetch(p).then((r) => (r.ok ? r.text() : '')).catch(() => '');
 
-  const [questions, explanations, currency, principles, eras, sagaList, sources] = await Promise.all([
+  const [questions, explanations, currency, principles, eras, sagaList, kinship, sources] = await Promise.all([
     fetch('./data/questions.jsonl').then((r) => r.text()),
     grab('./data/explanations.jsonl'),
     grab('./data/currency.jsonl'),
     grab('./data/principles.jsonl'),
     grab('./data/eras.jsonl'),
     grab('./data/sagas.jsonl'),
+    grab('./data/kinship.jsonl'),
     grab('./data/sources.json'),
   ]);
   state.sources = sources ? JSON.parse(sources) : {};
   state.principles = principles ? lines(principles) : [];
   state.eras = eras ? lines(eras) : [];
   state.sagas = sagaList ? lines(sagaList) : [];
+  // Read as id -> the group it belongs to, so a lookup is one step and two
+  // members of a group resolve to the very same array and compare identical.
+  state.kin = new Map();
+  for (const group of kinship ? lines(kinship) : []) {
+    for (const id of group.questions) state.kin.set(id, group.questions);
+  }
 
   const why = new Map(explanations ? lines(explanations).map((e) => [e.id, e]) : []);
   const age = new Map(currency ? lines(currency).map((e) => [e.id, e]) : []);
@@ -1576,6 +1615,7 @@ async function main() {
     const now = age.get(q.id);
     return now ? { ...merged, status: now.status, currency: now.note } : merged;
   });
+  state.bankById = new Map(state.bank.map((q) => [q.id, q]));
 
   // Anyone who used the app before profiles existed keeps their progress.
   const legacy = localStorage.getItem(LEGACY);
