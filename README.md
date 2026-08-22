@@ -75,6 +75,7 @@ Beyond them stand:
 - **Dysten**, a race against Bjørn or against a friend, settled under a raised banner or a struck one, with both scores side by side
 - **Tinget**, the five values questions, taught as ten principles rather than drilled
 - **Altinget**, the whole paper on the clock
+- **Sagaerne**, the læremateriale itself, cut into 57 stretches and sized by how much of the exam came off each one
 
 And on the road itself, the only date that matters: how many days until the ship
 puts in.
@@ -130,6 +131,62 @@ it, to a reader who has not asked for less motion, over a connection not flagged
 as metered. Where it is not offered it is absent rather than greyed out: an
 offer you cannot take is worse than no offer. The library is vendored and
 pinned, and fetched only when someone actually walks in.
+
+## Sagaerne, where the reading is done
+
+The halls ask. The læremateriale answers, and it is 243 pages long, so the
+question is which of them are worth an evening. Félag reads the book by its own
+typography rather than by guessing at its text: 38pt is a section number, 29pt
+its title, 24pt a subsection, 13pt in the heading face a heading, and 13pt in
+the text face a table caption that only looks like one. That yields **57
+stretches**, each holding the questions drawn from its pages, and every one of
+the 397 læremateriale questions lands in exactly one.
+
+A stretch is drawn as a settlement, and its size is how much of the exam came
+off those pages. That is not decoration. The material is steeply uneven:
+
+```
+top 10 pages of 243 -> 22 in 100 questions
+top 50 pages        -> 61 in 100
+98 pages            -> never examined once in thirteen papers
+```
+
+| | | |
+|---|---|---|
+| **By** | 20+ spørgsmål | Kold krig og velfærd holds 20 in seven pages |
+| **Købstad** | 12–19 | |
+| **Landsby** | 6–11 | |
+| **Gård** | 1–5 | |
+| **Ødegård** | none | the pages nobody has ever been asked about |
+
+*Ødegård* is what a farm was called when it was left standing empty after the
+plague. The pages are there and nobody lives on them. Saying which those are is
+worth as much to somebody studying against a clock as anything else here, and it
+is the one thing a page count cannot tell you.
+
+Where a section is too long to sit down with, it is cut at its own headings, and
+a stretch too small to be an evening's reading folds into the one before it. What
+it may not do is fold quietly: a block named only after its first heading would
+leave *Offentlighed* standing over værnepligt, borgerligt ombud and straf, so
+every folded stretch says what it swallowed.
+
+> [!IMPORTANT]
+> **Nothing here is gated.** The six halls lock to pace the drilling. A free
+> study aid that refuses to let you read chapter four until you have passed
+> chapter three would be a strange thing to ship, so the way into the reading
+> sits on every hall card at full strength, including the locked ones. A locked
+> door is exactly where somebody is standing when they most need it.
+
+Nothing in the room is written for the room, either. Every question already
+carries the answer SIRI gave, a hand-written explanation and the page it came
+from, so a saga is that same material laid out to be read instead of answered.
+Where an explanation opens by restating the answer the heading has just given,
+the repeat comes off — but only when the answer ends in a full stop of its own.
+*Susanne Bier instruerede Hævnen* must not become *Instruerede Hævnen*, so 242
+of the 327 are trimmed and the other 85 are left exactly as they were written.
+
+Fail a hall and the room opens on the settlements your wrong answers came from,
+and on nothing else.
 
 ## Two things the papers gave up under questioning
 
@@ -255,6 +312,7 @@ js/heim.js               Vikingheim, loaded the moment it is entered and no soon
 js/app.js                state, routing, the halls, the law, the tide table
 vendor/three.*.min.js    three.js 0.180.0, vendored so no CDN is ever asked
 tools/content.py         uv script: fetch, read, ground in the material
+data/sagas.jsonl         the material cut into readable stretches, derived
 data/questions.jsonl     won from the papers, never edited by hand
 data/explanations.jsonl  written by hand, joined by id
 assets/fonts/            Metamorphous for the carving, Atkinson for the reading

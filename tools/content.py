@@ -206,6 +206,30 @@ def papers() -> list[Path]:
 
 MATERIAL = RAW / "laeremateriale-til-indfoedsretsproeven.pdf"
 ERAS = Path("data/eras.jsonl")
+SAGAS = Path("data/sagas.jsonl")
+
+# The material lays out its own hierarchy in type, and reading the type is exact
+# where a regex over shouted text is a guess:
+#
+#   38pt Palatino-Bold        section number      "1.2"
+#   29pt DINNextLTPro-Bold    section title       "VIKINGETID (ca. 750-1050)"
+#   24pt Palatino-Bold        subsection number   "1.2.1"
+#   13pt DINNextLTPro-Medium  a heading, or a section's opening paragraph
+#   13pt DINNextLTPro-Regular a table caption, which is not a heading at all
+#   10.5pt                    body
+#
+# The font is what separates "NYT POLITISK OPBRUD" from "OVERSIGT OVER PARTIER I
+# FOLKETINGET ... (ANGIVET EFTER STEMMEANDEL):", which is set at the same size
+# and shouted just as loudly. The opening paragraphs share the heading's font and
+# are turned away by their sentence case instead.
+SECTION_NUMBER, SECTION_TITLE, HEADING = 38.0, 29.0, 13.0
+HEADING_FONT = "DINNextLTPro-Medium"
+
+# Under this a saga is not a sitting's reading, it is a stub, so it folds into
+# the stretch before it. What it cannot do is fold silently: a block named only
+# after its first heading would be lying about the six that follow, so each one
+# declares what it swallowed.
+SAGA_FLOOR = 6
 
 # Chapter 1's section titles carry their own date ranges, so the timeline builds
 # itself from the material rather than from anything invented here. The formats
@@ -215,15 +239,35 @@ ERA_TITLE = re.compile(
     r"(\d{3,4})\s*(?:[-\u2013]\s*(\d{2,4})?)?\s*\)\s*$")
 
 # The titles are set in capitals, so lowercasing them loses the proper nouns.
-KEEP_CAPITAL = {"danmark", "tyskland", "europa", "sverige", "norge", "island",
-                "grønland", "færøerne", "usa", "eu", "nato", "fn"}
+KEEP_CAPITAL = {"danmark", "danmarks", "tyskland", "europa", "sverige", "norge", "island",
+                "grønland", "færøerne", "usa", "eu", "nato", "fn", "københavn", "jylland",
+                "sjælland", "fyn", "norden", "afrika", "ef", "ddr", "nordamerika",
+                "slesvig", "holsten", "england", "frankrig", "rusland", "kina", "grundtvig",
+                "christian", "frederik", "margrethe", "maj", "verdenskrig", "europarådet"}
+# A word carrying an internal full stop is an initialism the material writes out
+# in full: N.F.S. Grundtvig must not come back as "N.f.s.".
+INITIALISM = re.compile(r"\w\.\w")
 
 
 def sentence_case(shouted: str) -> str:
-    words = [w.capitalize() if w.lower().strip(",.") in KEEP_CAPITAL else w.lower()
-             for w in shouted.split()]
-    return " ".join(words).capitalize() if not words else (
-        " ".join([words[0][:1].upper() + words[0][1:]] + words[1:]))
+    """Set a shouted heading back in sentence case without eating proper nouns.
+
+    Danish is full of three-letter words that look exactly like initialisms once
+    a heading is in capitals, so "keep anything short and upper-case" turns
+    DET DANSKE FLAG into "DET danske flag". Only two things are kept: a word
+    with a full stop inside it, and a name this file knows by name.
+    """
+    words = []
+    for word in shouted.split():
+        if INITIALISM.search(word):
+            words.append(word)
+        elif word.lower().strip(",.:;()") in KEEP_CAPITAL:
+            words.append(word.capitalize())
+        else:
+            words.append(word.lower())
+    if not words:
+        return shouted
+    return " ".join([words[0][:1].upper() + words[0][1:]] + words[1:])
 
 # Danish function words carry no signal and would swamp the scoring.
 STOPWORDS = frozenset("""
@@ -437,6 +481,106 @@ def tidy(passage: str) -> str:
     return re.sub(r"^(\S+)\s+\1\b", r"\1", passage.strip())
 
 
+def headings(doc: pymupdf.Document) -> list[tuple[int, float, str, str]]:
+    """Every line set larger than the body, with the type it was set in.
+
+    One pass. The material is 243 pages and 14 MB, so everything downstream
+    works from this list rather than opening the book again.
+    """
+    found = []
+    for number, page in enumerate(doc, 1):
+        for block in page.get_text("dict")["blocks"]:
+            for line in block.get("lines", ()):
+                spans = line["spans"]
+                text = "".join(s["text"] for s in spans).replace("\u00ad", "").strip()
+                if not text or round(max(s["size"] for s in spans), 1) < HEADING:
+                    continue
+                found.append((number, round(max(s["size"] for s in spans), 1),
+                              spans[0]["font"], re.sub(r"\s+", " ", text)))
+    return found
+
+
+def shouted(text: str) -> bool:
+    """Headings are set in capitals; a section's opening paragraph is not."""
+    letters = [c for c in text if c.isalpha()]
+    return bool(letters) and sum(c.isupper() for c in letters) / len(letters) > 0.7
+
+
+def sagas(entries: list[Entry]) -> list[dict]:
+    """The material cut into stretches worth reading in one sitting.
+
+    A saga is a section of the læremateriale, or one of the headed stretches
+    inside a section when the section is too long to sit down with. Both come
+    from the book's own typography, so nothing about the shape of this is
+    invented here: SIRI decided where the headings fall, and this only reads
+    them.
+
+    Stretches holding fewer than SAGA_FLOOR questions fold into the one before,
+    because a stub is not a sitting's reading. A folded block names what it
+    swallowed rather than keeping only its first heading, which would leave
+    "Offentlighed" quietly standing over værnepligt, borgerligt ombud and straf.
+
+    Sagas with no questions at all are kept, not dropped. Ninety-eight of the
+    243 pages have never been examined in thirteen papers, and saying which is
+    worth as much to somebody studying against a clock as anything else here.
+    """
+    if not MATERIAL.exists():
+        return []
+
+    with pymupdf.open(MATERIAL) as doc:
+        last_page = doc.page_count
+        lines = headings(doc)
+
+    sections: list[dict] = []
+    for page, size, _font, text in lines:
+        if size == SECTION_NUMBER and re.fullmatch(r"\d+\.\d+", text):
+            sections.append({"section": text, "page": page, "title": []})
+        elif size == SECTION_TITLE and sections and sections[-1]["page"] == page:
+            sections[-1]["title"].append(text)      # the title wraps over lines
+    for section in sections:
+        section["title"] = " ".join(section["title"])
+    for i, section in enumerate(sections):
+        section["until"] = sections[i + 1]["page"] - 1 if i + 1 < len(sections) else last_page
+
+    cuts = [(page, text) for page, size, font, text in lines
+            if size == HEADING and font == HEADING_FONT and shouted(text) and len(text) < 80]
+
+    def held(part: dict) -> list[str]:
+        return sorted(e.id for e in entries
+                      if e.section is Section.LAEREMATERIALE and e.page
+                      and part["page"] <= e.page <= part["until"])
+
+    found: list[dict] = []
+    for section in sections:
+        parts = [{"title": section["title"], "page": section["page"], "covers": []}]
+        parts += [{"title": text, "page": page, "covers": []}
+                  for page, text in cuts if section["page"] < page <= section["until"]]
+        for i, part in enumerate(parts):
+            part["until"] = parts[i + 1]["page"] - 1 if i + 1 < len(parts) else section["until"]
+
+        merged: list[dict] = []
+        for part in parts:
+            if merged and len(held(merged[-1])) < SAGA_FLOOR:
+                merged[-1]["until"] = part["until"]
+                merged[-1]["covers"].append(part["title"])
+            else:
+                merged.append(part)
+        # A runt at the end has nothing after it to fold into, so it folds back.
+        while len(merged) > 1 and len(held(merged[-1])) < SAGA_FLOOR:
+            tail = merged.pop()
+            merged[-1]["until"] = tail["until"]
+            merged[-1]["covers"] += [tail["title"], *tail["covers"]]
+
+        found += [{**part,
+                   "chapter": int(section["section"].split(".")[0]),
+                   "section": section["section"],
+                   "title": sentence_case(part["title"]),
+                   "covers": [sentence_case(c) for c in part["covers"]],
+                   "questions": held(part)}
+                  for part in merged]
+    return found
+
+
 def eras() -> list[dict]:
     """Chapter 1's periods, with the pages each one covers."""
     if not MATERIAL.exists():
@@ -644,6 +788,16 @@ def extract() -> int:
             encoding="utf-8")
         covered = sum(len(e["questions"]) for e in periods)
         print(f"\neras: {len(periods)} periods covering {covered} chapter-1 questions")
+
+    # The reading rooms, likewise derived rather than hand-kept.
+    if reading := sagas(entries):
+        SAGAS.write_text(
+            "".join(json.dumps(s, ensure_ascii=False, sort_keys=True) + "\n" for s in reading),
+            encoding="utf-8")
+        settled = [s for s in reading if s["questions"]]
+        print(f"sagas: {len(reading)} stretches, {len(settled)} with questions, "
+              f"{len(reading) - len(settled)} never examined, "
+              f"{sum(len(s['questions']) for s in reading)} questions placed")
     BANK.parent.mkdir(parents=True, exist_ok=True)
     BANK.write_text("".join(e.as_json() + "\n" for e in entries), encoding="utf-8")
     report(entries)

@@ -190,6 +190,8 @@ const ICON = {
     <path d="M3.2 8.4 6.4 11.6 12.8 4.8"/></svg>`,
   chevron: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
     <path d="M4 6.5 8 10.5 12 6.5"/></svg>`,
+  book: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M2 3c2-.8 4-.5 6 1v9c-2-1.5-4-1.8-6-1V3Zm12 0c-2-.8-4-.5-6 1v9c2-1.5 4-1.8 6-1V3Z"/></svg>`,
 };
 
 /* One visual vocabulary from map to question. The same emblem follows a topic
@@ -316,10 +318,12 @@ function renderHalls() {
     const progress = hallProgress(hall);
     const mark = ICON[done ? 'done' : shut ? 'shut' : 'open'];
     const label = done ? 'Port åbnet' : shut ? 'Låst' : 'Åben';
+    const places = sagasIn(hall.chapter).filter((saga) => saga.questions.length).length;
     return `<div class="hall ${done ? 'done' : ''} ${shut ? 'shut' : ''}"
         style="--accent:var(${hall.accent}); --d:${i * 0.06}s">
         <span class="thread"></span>
         <span class="node">${done ? ICON.done : hall.numeral}</span>
+        <span class="hall-main">
         <button class="body" type="button" data-i="${i}" ${shut ? 'disabled' : ''}>
           <span class="names">
            <span class="da">${hall.da}</span>
@@ -330,6 +334,13 @@ function renderHalls() {
             <span>${progress.total} spørgsmål</span></span>
           <span class="hall-progress"><span>Set <b>${progress.seen}</b></span><span>Rigtige <b>${progress.correct}</b></span><span>Tilbage <b>${progress.left}</b></span></span>
         </button>
+        <!-- Never disabled, whatever the gate says. The lock is on sitting the
+             hall, not on reading the chapter, and a locked hall is exactly where
+             somebody is standing when they most need the way in to the reading. -->
+        <button class="hall-read" type="button" data-read="${i}">
+          ${ICON.book}Læs sagaen<em>${places} ${places === 1 ? 'bebyggelse' : 'bebyggelser'}</em>
+        </button>
+        </span>
       </div>`;
   }).join('');
 }
@@ -497,7 +508,7 @@ function weighted(list, n, rand) {
 /* ============================================================
    Views
    ============================================================ */
-const VIEWS = ['viewWho', 'viewShore', 'viewPath', 'viewTraining', 'viewHalls', 'viewMap', 'viewHeim', 'viewTime', 'viewArena', 'viewTing', 'viewQuiz', 'viewResult'];
+const VIEWS = ['viewWho', 'viewShore', 'viewPath', 'viewTraining', 'viewHalls', 'viewSagas', 'viewMap', 'viewHeim', 'viewTime', 'viewArena', 'viewTing', 'viewQuiz', 'viewResult'];
 function go(id, scene) {
   const swap = () => {
     // The counter and clock belong to a run; nothing else should inherit them.
@@ -671,6 +682,141 @@ function showHalls() {
   $('hudBack').dataset.tooltip = 'Tilbage til vejen';
   renderHalls();
   go('viewHalls', 'path');
+}
+
+/* ============================================================
+   Sagaerne · the reading room
+
+   The drill asks; the saga tells. Nothing in here is written for
+   the room: every question already carries the answer SIRI gave,
+   a hand-written explanation and the page it was drawn from, so
+   a saga is that same material laid out to be read rather than
+   answered. Inventing prose for a study aid that promises "kun
+   svar der er givet" is the one thing this project must not do.
+
+   It is never gated. The six halls lock to pace the drilling; a
+   free study aid that refuses to let you read chapter four until
+   you have passed chapter three would be a strange thing to ship.
+
+   A saga is drawn as a settlement, and how big the settlement is
+   comes from how many of the exam's questions were drawn from
+   those pages. That is not decoration: the material is steeply
+   uneven, six stretches hold a quarter of the paper, and 98 of
+   the 243 pages have never been examined at all. Those stand as
+   ødegårde, the word for a farm left empty after the plague. The
+   pages are there and nobody lives on them, which is worth more
+   to somebody studying against a clock than a footnote would be.
+   ============================================================ */
+
+const PLACES = [
+  { from: 20, kind: 'by', da: 'By',
+    glyph: `<path d="M3 21h18M5 21V9l4-3 4 3v12M13 21v-9l3-2 3 2v9"/><path d="M7 12h2m-2 3h2m8-1h2m-2 3h2"/>` },
+  { from: 12, kind: 'kobstad', da: 'Købstad',
+    glyph: `<path d="M3 21h18M5 21v-8l4-3 4 3v8"/><path d="M15 21v-9l3-2 3 2v9M18 7V4m-1.5 1.5h3"/>` },
+  { from: 6, kind: 'landsby', da: 'Landsby',
+    glyph: `<path d="M3 21h18M6 21v-6l3-2 3 2v6M14 21v-4l3-2 3 2v4"/>` },
+  { from: 1, kind: 'gaard', da: 'Gård',
+    glyph: `<path d="M3 21h18M5 21v-7l7-4 7 4v7"/><path d="M10 21v-5h4v5"/>` },
+  { from: 0, kind: 'oede', da: 'Ødegård',
+    glyph: `<path d="M3 21h18"/><path d="M6 21v-6l3-2 1 .6M18 21v-5l-2-1.4" stroke-dasharray="2.6 2.2"/><path d="M13 21v-2.5"/>` },
+];
+
+const placeOf = (n) => PLACES.find((p) => n >= p.from);
+
+const sagasIn = (chapter) => (state.sagas ?? []).filter((s) => s.chapter === chapter);
+
+/** One question, laid out to be read: the answer leads, the explanation
+    carries it, and SIRI's own wording is kept as the provenance underneath.
+
+    Several explanations open by restating the answer, which reads fine under a
+    quiz card that has not said it yet and reads as a stutter under a heading
+    that just did. The heading has already said it, so the repeat comes off —
+    but only when the answer is a whole sentence of its own. Where the answer is
+    the subject the sentence goes on to use, cutting it leaves a fragment:
+    "Susanne Bier instruerede Hævnen" becomes "Instruerede Hævnen", and "Nuuk,
+    tidligere kaldet Godthåb" becomes a comma with nothing in front of it. A
+    full stop after the answer is the only safe seam, and it covers 242 of the
+    327 that repeat; the other 85 are left exactly as they were written. */
+function told(q, missed) {
+  const times = q.seen.length;
+  const lead = q.answer.replace(/\.$/, '');
+  let why = q.explain ?? '';
+  if (why.toLowerCase().startsWith(lead.toLowerCase()) && why[lead.length] === '.') {
+    why = why.slice(lead.length + 1).trim() || why;
+  }
+  return `<article class="told ${missed ? 'missed' : ''}">
+      <p class="told-a">${q.answer}${missed ? '<em>du missede den</em>' : ''}</p>
+      ${why ? `<p class="told-why">${why}</p>` : ''}
+      <p class="told-src">Spurgt: &ldquo;${q.q}&rdquo;
+        &middot; ${q.page ? materialLink(q.page) : ''}
+        &middot; ${times === 1 ? 'stillet én gang' : `stillet ${times} gange`}</p>
+    </article>`;
+}
+
+/**
+ * The chapter as a road of settlements, largest meaning most examined.
+ *
+ * `missed` is the set of question ids just got wrong, which is the whole point
+ * of the room: failing a hall opens the places those questions came from and
+ * nothing else, so the reading is aimed at the gap rather than at the chapter.
+ */
+function showSagas(hall, missed = null) {
+  const places = sagasIn(hall.chapter);
+  const bank = new Map(state.bank.map((q) => [q.id, q]));
+  const shown = places.map((saga) => {
+    const questions = saga.questions.map((id) => bank.get(id)).filter((q) => q && usable(q));
+    const hit = missed ? questions.filter((q) => missed.has(q.id)) : questions;
+    return { saga, questions, hit };
+  }).filter((row) => !missed || row.hit.length);
+
+  $('hudTitle').textContent = `Sagaen · ${hall.da}`;
+  const back = 'Tilbage til De Seks Haller';
+  $('hudBackLabel').textContent = back;
+  $('hudBack').setAttribute('aria-label', back);
+  $('hudBack').dataset.tooltip = back;
+  $('sagasTitle').textContent = `Sagaen om ${hall.da}`;
+
+  const total = shown.reduce((n, row) => n + row.hit.length, 0);
+  $('sagasSub').innerHTML = missed
+    ? `Du missede <b>${total}</b> ${total === 1 ? 'spørgsmål' : 'spørgsmål'} i
+       ${shown.length} ${shown.length === 1 ? 'bebyggelse' : 'bebyggelser'}.
+       Læs dem her, og tag hallen igen når du er klar.`
+    : `Kapitlet ligger som ${places.length} bebyggelser langs vejen. Jo større stedet,
+       jo mere er der spurgt om de sider. Alt er åbent fra første dag &mdash;
+       det her er læsestof, ikke en prøve.`;
+
+  $('places').innerHTML = shown.map(({ saga, questions, hit }, i) => {
+    const place = placeOf(questions.length);
+    const open = missed || shown.length === 1 ? 'open' : '';
+    return `<div class="place ${place.kind}" style="--accent:var(${hall.accent}); --d:${i * 0.05}s">
+        <span class="thread"></span>
+        <span class="node" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="1.5" stroke-linecap="round"
+          stroke-linejoin="round">${place.glyph}</svg></span>
+        <details class="body" ${open}>
+          <summary>
+            <span class="names">
+              <span class="da">${saga.title}</span>
+              <span class="state">${place.da}${ICON.chevron}</span>
+            </span>
+            <span class="place-meta">
+              <span>${questions.length ? `${questions.length} spørgsmål` : 'aldrig spurgt om'}</span>
+              <span>side ${saga.page}${saga.until > saga.page ? `\u2013${saga.until}` : ''}</span>
+              ${missed ? `<span class="lost">${hit.length} du missede</span>` : ''}
+            </span>
+            ${saga.covers.length
+              ? `<span class="covers">Rummer også ${saga.covers.join(' &middot; ')}</span>`
+              : ''}
+          </summary>
+          ${hit.length
+            ? hit.map((q) => told(q, missed?.has(q.id))).join('')
+            : `<p class="told-none">Ingen af prøvens spørgsmål er hentet herfra i de tretten
+               prøver siden 2020. Siderne er værd at kende, men de er ikke det, du falder på.</p>`}
+        </details>
+      </div>`;
+  }).join('');
+
+  go('viewSagas', 'hall');
 }
 
 /* ---------- the saga map ---------- */
@@ -1319,6 +1465,13 @@ function finish() {
     : `<div class="score ${passed === false ? 'fail' : 'pass'}">${score} / ${questions.length}</div>
        <p class="verdict">${label}</p>`;
 
+  // Failing a hall is the moment the reading is worth most, and the gap is
+  // already known precisely: these are the ones just got wrong. The room opens
+  // on those pages alone rather than on the whole chapter.
+  const missed = mode.hall && passed === false
+    ? questions.filter((_, i) => marks[i] === false)
+    : [];
+
   $('resultCard').innerHTML = `
     <p class="lead">${mode.da}</p>
     ${verdict}
@@ -1337,6 +1490,12 @@ function finish() {
       : `<p class="note">${score === questions.length
           ? 'Fejlfrit. Tag Altinget, når du er klar til hele prøven.'
           : 'Gennemgå de forkerte, og tag den igen. Spørgsmålene blandes hver gang.'}</p>`}
+    ${missed.length ? `<button class="read-back" id="sagaBtn" type="button">
+      <span class="read-sigil" aria-hidden="true">${ICON.book}</span>
+      <span><b>Læs sagaen om det, du missede</b><small>${missed.length}
+        ${missed.length === 1 ? 'spørgsmål' : 'spørgsmål'} · med forklaring og sidehenvisning</small></span>
+      <svg class="challenge-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m10 5 7 7-7 7m6-7H6"/></svg>
+    </button>` : ''}
     <div class="actions">
       <button class="btn primary" id="againBtn" type="button"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 11a8 8 0 1 0 2 5M20 4v7h-7"/></svg>${ghost ? (ghost.house ? 'Kræv omkamp' : 'Sejl igen') : 'Få nye spørgsmål'}</button>
       <button class="challenge-btn" id="shareBtn" type="button" data-tooltip="Din danske viking får det samme sæt spørgsmål og kan slå din score.">
@@ -1353,6 +1512,9 @@ function finish() {
     const freshSeed = Date.now() >>> 0;
     start(mode.id, mode, ghost?.house ? houseGhost(mode.id, freshSeed) : null);
   };
+  if (missed.length) {
+    $('sagaBtn').onclick = () => showSagas(mode.hall, new Set(missed.map((q) => q.id)));
+  }
   $('shareBtn').onclick = async () => {
     // The whole challenge travels in the fragment, so nothing is stored anywhere.
     const link = `${location.origin}${location.pathname}#dyst=${packRun(finished)}`;
@@ -1389,17 +1551,19 @@ async function main() {
   const lines = (t) => t.split('\n').filter(Boolean).map((l) => JSON.parse(l));
   const grab = (p) => fetch(p).then((r) => (r.ok ? r.text() : '')).catch(() => '');
 
-  const [questions, explanations, currency, principles, eras, sources] = await Promise.all([
+  const [questions, explanations, currency, principles, eras, sagaList, sources] = await Promise.all([
     fetch('./data/questions.jsonl').then((r) => r.text()),
     grab('./data/explanations.jsonl'),
     grab('./data/currency.jsonl'),
     grab('./data/principles.jsonl'),
     grab('./data/eras.jsonl'),
+    grab('./data/sagas.jsonl'),
     grab('./data/sources.json'),
   ]);
   state.sources = sources ? JSON.parse(sources) : {};
   state.principles = principles ? lines(principles) : [];
   state.eras = eras ? lines(eras) : [];
+  state.sagas = sagaList ? lines(sagaList) : [];
 
   const why = new Map(explanations ? lines(explanations).map((e) => [e.id, e]) : []);
   const age = new Map(currency ? lines(currency).map((e) => [e.id, e]) : []);
@@ -1468,6 +1632,8 @@ $('trainingModes').addEventListener('click', (e) => {
 $('toMap').addEventListener('click', showMap);
 $('toHalls').addEventListener('click', showHalls);
 $('halls').addEventListener('click', (e) => {
+  const read = e.target.closest('[data-read]');
+  if (read) return showSagas(HALLS[Number(read.dataset.read)]);
   const btn = e.target.closest('.body:not([disabled])');
   if (!btn) return;
   const i = Number(btn.dataset.i);
@@ -1498,6 +1664,7 @@ const exitRun = () => {
   const mode = state.run?.mode;
   state.run = null;
   if (mode) return leave(mode);
+  if (!$('viewSagas').hidden) return hallDoor();
   if (!$('viewTime').hidden || !$('viewTing').hidden) return showTraining();
   renderPath();
   go('viewPath', 'path');
