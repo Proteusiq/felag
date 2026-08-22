@@ -6,7 +6,7 @@
 
 [![Open the site](https://img.shields.io/badge/Begynd%20vandringen-proteusiq.github.io%2Ffelag-d3a24c?style=for-the-badge)](https://proteusiq.github.io/felag/)
 
-[![Version](https://img.shields.io/badge/version-0.0.12-d3a24c?style=flat-square)](https://github.com/Proteusiq/felag/releases)
+[![Version](https://img.shields.io/badge/version-0.0.13-d3a24c?style=flat-square)](https://github.com/Proteusiq/felag/releases)
 [![Questions](https://img.shields.io/badge/spørgsmål-508-223448?style=flat-square)](data/questions.jsonl)
 [![Papers](https://img.shields.io/badge/prøver-13%20(2020–2026)-223448?style=flat-square)](https://danskogproever.dk/borger/indfoedsretsproeve-statsborgerskab/forberedelse-til-indfoedsretsproeven/)
 [![Price](https://img.shields.io/badge/pris-0%20kr-8fae8c?style=flat-square)](#)
@@ -134,98 +134,40 @@ pinned, and fetched only when someone actually walks in.
 
 ## Sagaerne, where the reading is done
 
-The halls ask. The læremateriale answers, and it is 243 pages long, so the
-question is which of them are worth an evening. Félag reads the book by its own
-typography rather than by guessing at its text: 38pt is a section number, 29pt
-its title, 24pt a subsection, 13pt in the heading face a heading, and 13pt in
-the text face a table caption that only looks like one. That yields **57
-stretches**, each holding the questions drawn from its pages, and every one of
-the 397 læremateriale questions lands in exactly one.
+The halls ask; the læremateriale answers, and it is 243 pages. Félag reads the
+book by its own typography rather than by guessing at its text — 38pt is a
+section number, 13pt in the heading face a heading, 13pt in the text face a
+table caption that only looks like one — and cuts it into **57 stretches**, each
+holding the questions drawn from its pages. All 397 land in exactly one.
 
-A stretch is drawn as a settlement, and its size is how much of the exam came
-off those pages. That is not decoration. The material is steeply uneven:
+Each stretch is a settlement sized by how much of the exam came off those pages,
+because the material is steeply uneven: ten pages of 243 hold 22 questions in
+every 100, and 98 pages have never been examined at all. Those stand as
+**ødegårde**, the word for a farm left empty after the plague. The pages are
+there and nobody lives on them, which is worth knowing when you are studying
+against a clock.
 
-```
-top 10 pages of 243 -> 22 in 100 questions
-top 50 pages        -> 61 in 100
-98 pages            -> never examined once in thirteen papers
-```
-
-| | | |
-|---|---|---|
-| **By** | 20+ spørgsmål | Kold krig og velfærd holds 20 in seven pages |
-| **Købstad** | 12–19 | |
-| **Landsby** | 6–11 | |
-| **Gård** | 1–5 | |
-| **Ødegård** | none | the pages nobody has ever been asked about |
-
-*Ødegård* is what a farm was called when it was left standing empty after the
-plague. The pages are there and nobody lives on them. Saying which those are is
-worth as much to somebody studying against a clock as anything else here, and it
-is the one thing a page count cannot tell you.
-
-Where a section is too long to sit down with, it is cut at its own headings, and
-a stretch too small to be an evening's reading folds into the one before it. What
-it may not do is fold quietly: a block named only after its first heading would
-leave *Offentlighed* standing over værnepligt, borgerligt ombud and straf, so
-every folded stretch says what it swallowed.
-
-> [!IMPORTANT]
-> **Nothing here is gated.** The six halls lock to pace the drilling. A free
-> study aid that refuses to let you read chapter four until you have passed
-> chapter three would be a strange thing to ship, so the way into the reading
-> sits on every hall card at full strength, including the locked ones. A locked
-> door is exactly where somebody is standing when they most need it.
-
-Nothing in the room is written for the room, either. Every question already
-carries the answer SIRI gave, a hand-written explanation and the page it came
-from, so a saga is that same material laid out to be read instead of answered.
-Where an explanation opens by restating the answer the heading has just given,
-the repeat comes off — but only when the answer ends in a full stop of its own.
-*Susanne Bier instruerede Hævnen* must not become *Instruerede Hævnen*, so 242
-of the 327 are trimmed and the other 85 are left exactly as they were written.
-
-Fail a hall and the room opens on the settlements your wrong answers came from,
-and on nothing else.
+| By | Købstad | Landsby | Gård | Ødegård |
+|---|---|---|---|---|
+| 20+ | 12–19 | 6–11 | 1–5 | never asked |
 
 **One lesson, once.** The bank keys a question on its stem *and* its options,
-because SIRI reuses a stem with a different option set and a different correct
-answer. Two option sets are two exercises, which is right for drilling and wrong
-for reading: Vikingetid printed "Freja og Thor" twice — 2024 and 2026, one
-distractor swapped — and told you each had been asked once. `data/kinship.jsonl`
-says which questions teach one fact; the room shows the best-explained wording
-with the full count beside it. 397 questions, 313 readings.
-
-Some of that is decided by string comparison: fold the accents and the Danish
-number words, and "I op til ét døgn" and "I op til 1 døgn" are one lesson. The
-rest is judgement, because no string method sees that "Hvilket land blev erobret
-af Svend Tveskæg?" and "I hvilket århundrede blev England erobret?" are one
-sentence of history asked from two ends.
+since SIRI reuses a stem with a different option set and a different answer.
+That is right for drilling and wrong for reading: Vikingetid printed "Freja og
+Thor" twice, 2024 and 2026 with one distractor swapped, each claiming to have
+been asked once. `data/kinship.jsonl` says which questions teach one fact — 397
+questions, 313 readings. It is written by hand and joined by id like
+`data/explanations.jsonl`, because deciding that two questions teach the same
+thing is a claim about Danish history and law, not a string operation.
+`tools/kinship.py` proposes and checks; it never writes it. `AGENTS.md` has the
+rule, and the traps, which are always two facts wearing one answer.
 
 > [!IMPORTANT]
-> That judgement is written by hand and joined by id, exactly like
-> `data/explanations.jsonl`, and **`tools/kinship.py` never writes it**. Deciding
-> that two questions teach the same thing is a claim about Danish history and
-> Danish law. It belongs in a file somebody signed, not in a model invoked at
-> build time — this site has no build step, no dependency and no network call,
-> and it is not growing one for this.
-
-The tool does the part that is not judgement: it proposes pairs close enough in
-wording to be worth a minute, and it checks that the committed file is whole —
-no id that has fallen out of the bank, no question in two groups, no group grown
-past four members, since kinship is transitive and a chain of near-misses will
-walk from one fact to another if nobody is watching.
-
-Refusals are recorded too, with the reason beside them, so the question is not
-re-asked on every rebuild and cannot be quietly reversed. They are where the
-work is, because the traps are quiet: tobacco and spirits both answer 18,
-jobcentre and ældrepleje and børnetandpleje are all run by *kommunerne*, and
-1924 is both Stauning taking office and Nina Bang becoming the first woman in a
-cabinet. Two facts wearing one answer, every time.
-
-A wrong split leaves a duplicate on the page. A wrong merge hides a real
-question behind an explanation that does not answer it. Only one of those is
-worth worrying about.
+> **Nothing here is gated.** The halls lock to pace the drilling. A study aid
+> that refuses to let you read chapter four until you have passed chapter three
+> would be a strange thing to ship, so the way into the reading sits on every
+> hall card at full strength, locked ones included. Fail a hall and the room
+> opens on the settlements your wrong answers came from, and no others.
 
 ## Two things the papers gave up under questioning
 

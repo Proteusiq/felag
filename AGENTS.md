@@ -27,6 +27,33 @@ Break any of these and the project stops being what it claims to be.
 5. **Reading is never gated.** The six halls lock to pace drilling. Sagaerne is
    open from day one, including for locked halls.
 
+## The harness does the judging
+
+Some of the work here cannot be done by a script and must not be done by the
+site. Which questions teach the same fact, whether an answer has gone stale,
+what an explanation should say — those are claims about Danish history and
+Danish law, and they need a reader.
+
+That reader is an agent tool: opencode, driving a frontier model, run against
+this repo by hand when the material changes. Never a model the project calls
+itself. The division is fixed:
+
+| | does |
+|---|---|
+| `tools/` | the mechanical part — parse, locate, propose, check. Deterministic, offline, no key. |
+| the harness | the judgement — read the proposals, rule on them, write the reason down. |
+| `git` | holds the verdict. The committed file is the authority, not the model that suggested it. |
+
+So a model may *propose* and may never *decide*. Anything it suggests lands in a
+file with a reason beside it, gets read in review, and is reversible by editing
+that file rather than by rerunning anything. When this was first built the model
+offered 73 merges and 13 were wrong — every one the same mistake, reading the
+answer instead of the question — which is the whole argument for this shape.
+
+Practically, working a batch looks like: run `--propose`, read every pair, apply
+the rule below, append the verdicts, run the check, and put the reasoning in the
+commit body so the next session can disagree with it on the evidence.
+
 ## When a new exam is published
 
 SIRI adds a paper roughly twice a year. The whole sequence:
