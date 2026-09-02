@@ -235,6 +235,12 @@ const topicIcon = (key, className = '') => {
 
 const topicLabel = (key) => (TOPIC[key] ?? TOPIC.modern)[0];
 
+/* The numbers below are the læremateriale's own section starts, so they move
+   whenever SIRI reissues it — every August. The August 2026 edition grew from
+   243 to 246 pages and pushed every section from 1.7 onwards down by one, and
+   everything from 6.7 onwards down by three. Get these wrong and a question
+   keeps its hall but lands under the wrong settlement and the wrong emblem,
+   which is silent: nothing throws, the page just files Grønland under Norden. */
 function topicKey(question) {
   const page = question.page ?? 0;
   if (question.section === 'vaerdier') return 'justice';
@@ -243,21 +249,21 @@ function topicKey(question) {
     if (page <= 9) return 'viking';
     if (page <= 12) return 'medieval';
     if (page <= 18) return 'crown';
-    if (page <= 25) return 'war';
-    if (page <= 36) return 'industry';
+    if (page <= 26) return 'war';
+    if (page <= 37) return 'industry';
     return 'modern';
   }
-  if (question.chapter === 2) return page < 95 ? 'democracy' : 'justice';
-  if (question.chapter === 3) return page < 113 ? 'welfare' : page < 116 ? 'business' : 'labour';
-  if (question.chapter === 4) return page < 130 ? 'europe' : page < 135 ? 'globe' : 'defence';
-  if (question.chapter === 5) return page < 152 ? 'book' : page < 157 ? 'art' : page < 160 ? 'music' : page < 163 ? 'architecture' : page < 167 ? 'stage' : 'film';
-  if (page < 189) return 'land';
-  if (page < 190) return 'flag';
-  if (page < 192) return 'crown';
-  if (page < 205) return 'realm';
-  if (page < 226) return 'grundtvig';
-  if (page < 235) return 'equality';
-  if (page < 239) return 'health';
+  if (question.chapter === 2) return page < 96 ? 'democracy' : 'justice';
+  if (question.chapter === 3) return page < 114 ? 'welfare' : page < 117 ? 'business' : 'labour';
+  if (question.chapter === 4) return page < 131 ? 'europe' : page < 136 ? 'globe' : 'defence';
+  if (question.chapter === 5) return page < 153 ? 'book' : page < 158 ? 'art' : page < 161 ? 'music' : page < 164 ? 'architecture' : page < 168 ? 'stage' : 'film';
+  if (page < 190) return 'land';
+  if (page < 191) return 'flag';
+  if (page < 193) return 'crown';
+  if (page < 208) return 'realm';
+  if (page < 229) return 'grundtvig';
+  if (page < 238) return 'equality';
+  if (page < 242) return 'health';
   return 'climate';
 }
 
