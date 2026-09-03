@@ -442,7 +442,7 @@ const MODES = [
 const DESTINATIONS = [
   {
     id: 'sagaer', da: 'Sagaerne', en: 'The reading rooms', accent: '--gorm', icon: 'book',
-    blurb: 'Lærematerialets 243 sider som noget, der kan læses: hvert kapitel lagt ud efter hvor meget der bliver spurgt om siderne.',
+    blurb: 'Forklaringer fra lærematerialet: hvert kapitel lagt ud efter hvor meget SIRI har spurgt om siderne.',
     tag: 'Aldrig låst',
   },
   {
@@ -742,7 +742,7 @@ function showHalls() {
    comes from how many of the exam's questions were drawn from
    those pages. That is not decoration: the material is steeply
    uneven, six stretches hold a quarter of the paper, and 98 of
-   the 243 pages have never been examined at all. Those stand as
+   the 246 pages have never been examined at all. Those stand as
    ødegårde, the word for a farm left empty after the plague. The
    pages are there and nobody lives on them, which is worth more
    to somebody studying against a clock than a footnote would be.
@@ -777,7 +777,7 @@ function sagaCounts(chapter) {
   const stretches = sagasIn(chapter).map((saga) =>
     oneEach(saga.questions.map((id) => state.bankById.get(id)).filter((q) => q && usable(q))));
   return {
-    places: stretches.filter((s) => s.length).length,
+    places: stretches.length,
     readings: stretches.reduce((n, s) => n + s.length, 0),
     pages: sagasIn(chapter).reduce((n, s) => n + (s.until - s.page + 1), 0),
   };
@@ -820,6 +820,11 @@ function oneEach(questions) {
     out.push({ ...lead, seen: asked });
   }
   return out;
+}
+
+function readingWasMissed(question, missed) {
+  return missed.has(question.id)
+    || (state.kin?.get(question.id) ?? []).some((id) => missed.has(id));
 }
 
 /** One question, laid out to be read: the answer leads, the explanation
@@ -886,7 +891,7 @@ function showSagaer() {
             </span>
             <span class="hall-progress">
               <span>Bebyggelser <b>${places}</b></span>
-              <span>Spørgsmål <b>${readings}</b></span>
+              <span>Læsninger <b>${readings}</b></span>
               <span>Sider <b>${pages}</b></span>
             </span>
           </button>
@@ -901,7 +906,7 @@ function showSagas(hall, missed = null) {
   const shown = places.map((saga) => {
     const questions = oneEach(
       saga.questions.map((id) => state.bankById.get(id)).filter((q) => q && usable(q)));
-    const hit = missed ? questions.filter((q) => missed.has(q.id)) : questions;
+    const hit = missed ? questions.filter((q) => readingWasMissed(q, missed)) : questions;
     return { saga, questions, hit };
   }).filter((row) => !missed || row.hit.length);
 
@@ -914,7 +919,7 @@ function showSagas(hall, missed = null) {
 
   const total = shown.reduce((n, row) => n + row.hit.length, 0);
   $('sagasSub').innerHTML = missed
-    ? `Du missede <b>${total}</b> ${total === 1 ? 'spørgsmål' : 'spørgsmål'} i
+    ? `Dine fejl samles i <b>${total}</b> ${total === 1 ? 'forklaring' : 'forklaringer'} fra
        ${shown.length} ${shown.length === 1 ? 'bebyggelse' : 'bebyggelser'}.
        Læs dem her, og tag hallen igen når du er klar.`
     : `Kapitlet ligger som ${places.length} bebyggelser langs vejen. Jo større stedet,
@@ -944,7 +949,7 @@ function showSagas(hall, missed = null) {
               <span class="state">${place.da}${ICON.chevron}</span>
             </span>
             <span class="place-meta">
-              <span>${questions.length ? `${questions.length} spørgsmål` : 'aldrig spurgt om'}</span>
+              <span>${questions.length ? `${questions.length} ${questions.length === 1 ? 'læsning' : 'læsninger'}` : 'aldrig spurgt om'}</span>
               <span>side ${saga.page}${saga.until > saga.page ? `\u2013${saga.until}` : ''}</span>
               ${missed ? `<span class="lost">${hit.length} du missede</span>` : ''}
             </span>
@@ -953,9 +958,9 @@ function showSagas(hall, missed = null) {
               : ''}
           </summary>
           ${hit.length
-            ? hit.map((q) => told(q, missed?.has(q.id))).join('')
-            : `<p class="told-none">Ingen af prøvens spørgsmål er hentet herfra i de tretten
-               prøver siden 2020. Siderne er værd at kende, men de er ikke det, du falder på.</p>`}
+            ? hit.map((q) => told(q, missed ? readingWasMissed(q, missed) : false)).join('')
+            : `<p class="told-none">Ingen af prøvens spørgsmål er hentet herfra i de ${state.paperCount}
+                prøver siden 2020. Siderne er værd at kende, men de er ikke det, du falder på.</p>`}
         </details>
       </div>`;
   }).join('');
@@ -1466,7 +1471,7 @@ function paperLink(tag) {
 function materialLink(page) {
   const url = state.sources?.[MATERIAL_URL];
   const label = `Læremateriale til Indfødsretsprøven, side ${page}`;
-  return url ? `<a href="${url}" target="_blank" rel="noopener">${label}</a>` : label;
+  return url ? `<a href="${url}#page=${page}" target="_blank" rel="noopener">${label}</a>` : label;
 }
 
 /**
@@ -1753,6 +1758,7 @@ async function main() {
   });
   state.bankById = new Map(state.bank.map((q) => [q.id, q]));
   const papers = new Set(state.bank.flatMap((q) => q.seen.map((seen) => seen.split('#')[0])));
+  state.paperCount = papers.size;
   $('welcomeQuestions').textContent = state.bank.length.toLocaleString('da-DK');
   $('welcomeQuestionCopy').textContent = `${state.bank.length.toLocaleString('da-DK')} rigtige spørgsmål`;
   $('welcomePapers').textContent = papers.size.toLocaleString('da-DK');
@@ -1849,6 +1855,9 @@ $('sagaHalls').addEventListener('click', (e) => {
 
 $('toMap').addEventListener('click', showMap);
 $('toHalls').addEventListener('click', showHalls);
+$('mapOut').addEventListener('click', () => saga.zoomBy(.8));
+$('mapReset').addEventListener('click', () => saga.resetView());
+$('mapIn').addEventListener('click', () => saga.zoomBy(1.25));
 $('halls').addEventListener('click', (e) => {
   const read = e.target.closest('[data-read]');
   if (read) {

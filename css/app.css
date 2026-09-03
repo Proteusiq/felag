@@ -479,6 +479,7 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
   transition:transform .25s var(--ease), border-color .25s ease;
 }
 .hall:not(.shut) .body:hover{ transform:translateX(4px); border-color:var(--accent); }
+.hall:not(.shut) .body:focus-visible{ outline:2px solid var(--accent); outline-offset:3px; border-color:var(--accent); }
 .hall.shut .body{ cursor:not-allowed; opacity:.5; }
 .hall .names{ display:flex; align-items:baseline; gap:9px; flex-wrap:wrap; }
 .hall .da{ font-family:var(--display); font-weight:600; font-size:17px; }
@@ -568,6 +569,11 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
   background:linear-gradient(180deg,rgba(34,52,72,.72),rgba(15,26,36,.72));
   border:1px solid rgba(239,227,200,.09);
 }
+.place .body[open]{
+  border-color:color-mix(in srgb,var(--accent) 45%,rgba(239,227,200,.12));
+  background:radial-gradient(circle at 100% 0,rgba(211,162,76,.08),transparent 35%),linear-gradient(180deg,rgba(39,57,76,.88),rgba(14,25,35,.9));
+  box-shadow:0 18px 34px -28px #000;
+}
 .place.oede .body{ background:rgba(15,26,36,.5); }
 .place .body summary{ cursor:pointer; list-style:none; }
 .place .body summary::-webkit-details-marker{ display:none; }
@@ -605,7 +611,9 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
 .told-none{ margin:14px 0 0; font-size:13.5px; line-height:1.65; color:var(--parchment-dim); font-style:italic; }
 
 .places-legend i.by{ background:var(--gold); box-shadow:0 0 9px -1px var(--gold); }
+.places-legend i.kobstad{ background:rgba(211,162,76,.72); }
 .places-legend i.landsby{ background:rgba(239,227,200,.45); }
+.places-legend i.gaard{ background:rgba(239,227,200,.2); }
 .places-legend i.oede{ background:transparent; border:1px dashed rgba(239,227,200,.35); }
 
 /* The way back into the reading, offered where it lands hardest: the screen
@@ -638,10 +646,14 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
 }
 .view-swap:hover{ color:var(--parchment); border-color:var(--gold); }
 .view-swap svg{ width:16px; height:16px; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }
+.map-toolbar{ display:flex; align-items:center; justify-content:space-between; gap:12px; width:100%; max-width:min(960px,98vh); }
+.map-controls{ display:flex; align-items:center; border:1px solid rgba(239,227,200,.14); border-radius:20px; overflow:hidden; }
+.map-controls button{ min-width:38px; min-height:36px; padding:0 11px; border:0; border-left:1px solid rgba(239,227,200,.12); color:var(--parchment-dim); background:rgba(239,227,200,.04); font:inherit; font-size:12px; cursor:pointer; }
+.map-controls button:first-child{ border-left:0; }.map-controls button:hover,.map-controls button:focus-visible{ color:var(--gold); background:rgba(211,162,76,.09); outline:2px solid var(--gold); outline-offset:-3px; }
 
 .map{
   position:relative; width:100%; max-width:min(960px, 98vh); aspect-ratio:1200/780;
-  overflow:hidden; touch-action:none; cursor:grab;
+  overflow:hidden; touch-action:pan-y; cursor:grab;
   border-radius:14px; border:1px solid rgba(239,227,200,.12);
   background:radial-gradient(ellipse at 48% 42%,#12304a 0,#0b2135 46%,#07111d 100%);
 }
@@ -1228,6 +1240,7 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
    button 1275px down, so nobody saw it. Shorter cards, and once a guide is
    chosen the action follows you down the page. */
 @media (max-width:620px){
+  .map-toolbar{ align-items:flex-start; flex-direction:column; }
   .stage{ padding:28px 16px 24px; }
   .subtitle{ margin-bottom:26px; }
   .char{ padding:10px 6px 12px; border-radius:12px; }

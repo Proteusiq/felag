@@ -190,6 +190,17 @@ const defs = `<defs>
 </defs>`;
 
 let view = { scale: 1, x: 0, y: 0 };
+let controls = null;
+let listeners = null;
+
+export function resetView() {
+  view = { scale: 1, x: 0, y: 0 };
+  controls?.apply();
+}
+
+export function zoomBy(factor) {
+  controls?.zoom(view.scale * factor);
+}
 
 /**
  * Draw the map into `el`, with `guide` as the figure you steer, and call
@@ -198,6 +209,9 @@ let view = { scale: 1, x: 0, y: 0 };
  * road, not wherever it was left panned.
  */
 export function render(el, stops, guide, onPick) {
+  listeners?.abort();
+  listeners = new AbortController();
+  const { signal } = listeners;
   view = { scale: 1, x: 0, y: 0 };
   const me = CAST.find((c) => c.id === guide) ?? CAST[0];
   el.innerHTML = `<div class="map-pan">
@@ -274,15 +288,16 @@ export function render(el, stops, guide, onPick) {
     onPick(Number(g.dataset.i));
   };
 
-  el.addEventListener('click', (e) => pick(e.target));
+  el.addEventListener('click', (e) => pick(e.target), { signal });
   el.addEventListener('keydown', (e) => {
     if (e.key !== 'Enter' && e.key !== ' ') return;
     if (!e.target.closest?.('.stop')) return;
     e.preventDefault();
     pick(e.target);
-  });
+  }, { signal });
 
   const zoom = (s) => { view.scale = Math.min(4, Math.max(.6, s)); apply(); };
+  controls = { apply, zoom };
 
   /* Drag to pan, two fingers to zoom. Pointer events only, so a finger and a
      mouse take the same path and no touch handling has to exist twice. Every
@@ -309,7 +324,7 @@ export function render(el, stops, guide, onPick) {
     from = { x: e.clientX, y: e.clientY, vx: view.x, vy: view.y, box: el.getBoundingClientRect() };
     el.setPointerCapture(e.pointerId);
     el.classList.add('grabbing');
-  });
+  }, { signal });
 
   el.addEventListener('pointermove', (e) => {
     if (live.has(e.pointerId)) live.set(e.pointerId, { x: e.clientX, y: e.clientY });
@@ -321,7 +336,7 @@ export function render(el, stops, guide, onPick) {
     view.x = from.vx + ((e.clientX - from.x) / from.box.width) * 100;
     view.y = from.vy + ((e.clientY - from.y) / from.box.height) * 100;
     apply();
-  });
+  }, { signal });
 
   const release = (e) => {
     live.delete(e.pointerId);
@@ -334,11 +349,12 @@ export function render(el, stops, guide, onPick) {
     from = null;
     el.classList.remove('grabbing');
   };
-  el.addEventListener('pointerup', release);
-  el.addEventListener('pointercancel', release);
+  el.addEventListener('pointerup', release, { signal });
+  el.addEventListener('pointercancel', release, { signal });
 
   el.addEventListener('wheel', (e) => {
+    if (!e.ctrlKey && !e.metaKey) return;
     e.preventDefault();
     zoom(view.scale * Math.exp(-e.deltaY * 0.0012));
-  }, { passive: false });
+  }, { passive: false, signal });
 }
