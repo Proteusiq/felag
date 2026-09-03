@@ -69,6 +69,8 @@ html,body{
 body{ display:flex; flex-direction:column; min-height:100vh; min-height:100dvh; }
 
 a{ color:var(--parchment); text-underline-offset:3px; }
+button:focus-visible,a:focus-visible,input:focus-visible,summary:focus-visible{ outline:2px solid var(--gold); outline-offset:3px; }
+body:has(#viewQuiz:not([hidden])) .credit{ display:none; }
 
 /* ---------- scene ---------- */
 .scene{ position:fixed; inset:0; z-index:0; pointer-events:none; }
@@ -778,30 +780,32 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
   font:inherit; padding:1px 5px; border-radius:4px;
   background:rgba(239,227,200,.07); border:1px solid rgba(239,227,200,.16);
 }
-.era h4{ display:flex; align-items:center; gap:9px; }
-.era h4 .topic-icon{ width:20px; height:20px; color:var(--gold); }
+.era-title{ display:flex; align-items:center; gap:9px; font-family:var(--display); font-weight:600; font-size:16px; }
+.era-title .topic-icon{ width:20px; height:20px; color:var(--gold); }
 
 .modes{ display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px; width:100%; max-width:860px; }
 .mode{
   --accent:var(--parchment);
-  text-align:left; padding:20px 22px; border-radius:13px; cursor:pointer;
+  position:relative; overflow:hidden; text-align:left; padding:20px 22px; border-radius:13px; cursor:pointer;
   background:linear-gradient(180deg,rgba(34,52,72,.72),rgba(15,26,36,.72));
   border:1px solid rgba(239,227,200,.1); color:inherit; font:inherit;
   transition:transform .25s var(--ease), border-color .25s ease;
   animation:rise .5s var(--ease) both; animation-delay:var(--d,0s);
 }
+.mode::before{ content:''; position:absolute; inset:0 0 auto; height:2px; background:var(--accent); opacity:.65; }
 .mode:hover{ transform:translateY(-4px); border-color:var(--accent); }
 .mode:focus-visible{ outline:2px solid var(--gold); outline-offset:3px; }
-.mode h3{ display:flex; align-items:center; gap:8px; font-family:var(--display); font-weight:600; font-size:19px; margin:0 0 2px; }
-.mode h3 .topic-icon{ color:var(--accent); width:23px; height:23px; }
+.mode-title{ display:flex; align-items:center; gap:8px; font-family:var(--display); font-weight:600; font-size:19px; margin:0 0 2px; }
+.mode-title .topic-icon{ color:var(--accent); width:23px; height:23px; }
 /* Optical sizing: the shield and parliament paths fill more of their viewBox
    than the Training book, so their SVG canvases are smaller to match its ink. */
-.mode h3 .mode-icon.dyst{ width:20px; height:20px; }
-.mode h3 .mode-icon.alting{ width:23.5px; height:23.5px; }
+.mode-title .mode-icon.dyst{ width:20px; height:20px; }
+.mode-title .mode-icon.alting{ width:23.5px; height:23.5px; }
 .mode .en{ font-size:12px; color:var(--parchment-dim); font-style:italic; }
 .mode p{ font-size:13px; line-height:1.55; color:var(--parchment-dim); margin:10px 0 0; }
 .mode .tag{ display:inline-block; margin-top:12px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); }
 .mode .best{ margin-left:auto; font-family:var(--text); font-size:11px; color:var(--parchment-dim); font-variant-numeric:tabular-nums; }
+.mode[data-id="heim"]{ grid-column:1/-1; background:radial-gradient(circle at 85% 50%,rgba(183,154,194,.12),transparent 25%),linear-gradient(180deg,rgba(34,52,72,.72),rgba(15,26,36,.72)); }
 
 /* ---------- the date everything is actually for ----------
    Deliberately not a card. The page already has three of them above it, and a
@@ -855,11 +859,12 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
   transition:transform .25s var(--ease), border-color .25s ease;
 }
 .era .body:hover:not(:disabled){ transform:translateX(4px); border-color:var(--gold); }
+.era .body:focus-visible:not(:disabled){ outline:2px solid var(--gold); outline-offset:3px; border-color:var(--gold); }
 .era .body:disabled{ cursor:default; opacity:.45; }
-.era h4{ font-family:var(--display); font-weight:600; font-size:16px; margin:0; }
 .era .weight{ display:flex; align-items:center; gap:9px; margin-top:9px; }
 .era .weight i{ height:4px; border-radius:2px; background:var(--gold); opacity:.55; }
 .era .weight span{ font-size:11px; color:var(--parchment-dim); letter-spacing:.05em; text-transform:uppercase; }
+.era-action{ display:block; margin-top:8px; color:var(--gold); font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; }
 
 @media (max-width:620px){
   .era .axis{ flex-basis:58px; }
@@ -934,7 +939,7 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
 
 .duel-cry{ margin:12px 0 0; font-size:11px; letter-spacing:.3em; text-transform:uppercase; color:var(--parchment-dim); }
 .duel.won .duel-cry{ color:var(--gold); }
-.duel.lost .duel-cry{ color:var(--rust); }
+.duel.lost .duel-cry{ color:var(--danger); }
 .duel-shout{
   margin:5px 0 0; max-width:19ch; font-family:var(--display); font-size:clamp(25px,4.6vw,34px);
   line-height:1.12; text-wrap:balance; text-shadow:0 2px 24px rgba(0,0,0,.5);
@@ -953,7 +958,7 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
 .duel-tally i{ color:var(--parchment-dim); font-size:19px; font-style:normal; }
 /* The winning number is the loud one; the other stays legible but stands down. */
 .duel.won .side:first-child b{ color:var(--gold); }
-.duel.lost .side:last-child b{ color:var(--rust); }
+.duel.lost .side:last-child b{ color:var(--danger); }
 .duel.won .side:last-child b,.duel.lost .side:first-child b{ color:var(--parchment-dim); }
 .duel.draw .duel-tally b{ color:var(--green); }
 .duel-after{ margin:14px 0 0; max-width:44ch; font-size:13px; line-height:1.55; color:var(--parchment-dim); }
@@ -989,20 +994,21 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
   background:none; border:none; color:inherit; font:inherit; cursor:pointer;
 }
 .principle > button:hover{ background:rgba(239,227,200,.03); }
-.principle h4{
+.principle > button:focus-visible{ outline:2px solid var(--gold); outline-offset:-3px; background:rgba(211,162,76,.05); }
+.principle-title{
   font-family:var(--display);
   font-weight:600; font-size:17px; margin:0 0 5px; display:flex; align-items:baseline; gap:9px;
 }
-.principle h4 .n{ font-size:12px; color:var(--gold); letter-spacing:.1em; }
-.principle h4 .count{ margin-left:auto; font-size:11px; color:var(--parchment-dim); letter-spacing:.06em; text-transform:uppercase; }
-.principle h4 .chev{ display:inline-flex; color:var(--parchment-dim); transition:transform .25s var(--ease), color .25s ease; }
-.principle h4 .chev svg{ width:16px; height:16px; }
-.principle.open h4 .chev{ transform:rotate(180deg); color:var(--gold); }
+.principle-title .n{ font-size:12px; color:var(--gold); letter-spacing:.1em; }
+.principle-title .count{ margin-left:auto; font-size:11px; color:var(--parchment-dim); letter-spacing:.06em; text-transform:uppercase; }
+.principle-title .chev{ display:inline-flex; color:var(--parchment-dim); transition:transform .25s var(--ease), color .25s ease; }
+.principle-title .chev svg{ width:16px; height:16px; }
+.principle.open .principle-title .chev{ transform:rotate(180deg); color:var(--gold); }
 .principle .rule{ font-size:14px; line-height:1.6; color:var(--parchment); margin:0; }
 .principle .more{ padding:0 20px 18px; border-top:1px solid rgba(239,227,200,.1); }
 .principle .more p{ font-size:14px; line-height:1.7; color:var(--parchment-dim); margin:14px 0 0; }
 .principle .more .btn{ margin-top:14px; padding:10px 22px; }
-.principle.open h4 .count{ color:var(--gold); }
+.principle.open .principle-title .count{ color:var(--gold); }
 
 /* ---------- quiz ---------- */
 .quiz{ max-width:660px; margin:0 auto; }
@@ -1117,6 +1123,8 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
 .opt.hit em{ border-color:var(--green); background:var(--green); color:#0f1a24; }
 .opt.miss{ border-color:var(--dannebrog); background:rgba(200,16,46,.1); animation:shake .32s ease; }
 .opt.miss em{ border-color:var(--dannebrog); background:var(--dannebrog); color:#fff; }
+.opt-result{ margin-left:auto; color:var(--green); font-size:10px; letter-spacing:.08em; text-transform:uppercase; }
+.opt-result.wrong{ color:#ffd4da; }
 @keyframes shake{ 0%,100%{transform:none} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
 
 /* ---------- the panel that opens once you have answered ----------
@@ -1124,6 +1132,10 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
    A relic marks it, the passage explains it, and the provenance line
    says when SIRI actually asked it. */
 .why{ margin-top:18px; padding-top:18px; border-top:1px solid rgba(239,227,200,.12); animation:rise .4s var(--ease) both; }
+.why:focus{ outline:none; }
+.why .answer-result{ display:inline-flex; margin:0 0 12px; padding:4px 8px; border-radius:4px; font-size:10px; font-weight:700; letter-spacing:.1em; text-transform:uppercase; }
+.why .answer-result.right{ color:#d9ead7; background:rgba(143,174,140,.18); }
+.why .answer-result.wrong{ color:#ffd4da; background:rgba(200,16,46,.18); }
 .why .lbl{
   display:flex; align-items:center; gap:9px; margin:0 0 10px;
   font-family:var(--display);
@@ -1168,14 +1180,14 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
   box-shadow:inset 0 1px rgba(255,255,255,.06),0 8px 17px -13px #000; transition:transform .2s var(--ease),color .2s ease,border-color .2s ease,background .2s ease;
 }
 .quiz-nav-icon svg{ width:25px; height:25px; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
-.quiz-nav-icon.exit:hover{ color:var(--parchment); border-color:var(--parchment-dim); transform:translateX(-3px); }.quiz-nav-icon.next{ color:var(--gold); border-color:rgba(211,162,76,.5); background:radial-gradient(circle at 35% 30%,rgba(211,162,76,.2),rgba(211,162,76,.04)); }.quiz-nav-icon.next:hover:not(:disabled){ color:var(--parchment); border-color:var(--gold); transform:translateX(3px); }.quiz-nav-icon:active:not(:disabled){ transform:scale(.93); }.quiz-nav-icon:disabled{ cursor:default; opacity:.35; }
+.quiz-nav-icon.exit:hover{ color:var(--parchment); border-color:var(--parchment-dim); transform:translateX(-3px); }.quiz-nav-icon.next{ display:flex; width:auto; min-width:142px; padding:0 18px; border-radius:28px; color:var(--gold); border-color:rgba(211,162,76,.5); background:radial-gradient(circle at 35% 30%,rgba(211,162,76,.2),rgba(211,162,76,.04)); }.quiz-nav-icon.next span{ font:700 11px/1 var(--text); letter-spacing:.08em; text-transform:uppercase; }.quiz-nav-icon.next:hover:not(:disabled){ color:var(--parchment); border-color:var(--gold); transform:translateX(3px); }.quiz-nav-icon:active:not(:disabled){ transform:scale(.93); }.quiz-nav-icon:disabled{ cursor:default; opacity:.35; }
 
 /* ---------- result ---------- */
 .result{ text-align:center; max-width:560px; }
 .result .lead{ text-transform:uppercase; letter-spacing:.16em; font-size:12px; color:var(--parchment-dim); margin:0; }
 .result .score{ font-family:var(--display); font-weight:700; font-size:52px; margin:8px 0 2px; font-variant-numeric:tabular-nums; }
 .result .score.pass{ color:var(--green); }
-.result .score.fail{ color:var(--rust); }
+.result .score.fail{ color:var(--danger); }
 .result .verdict{ font-family:var(--display); font-style:italic; font-size:18px; margin:6px 0 0; }
 .result p.note{ font-size:14px; line-height:1.6; color:var(--parchment-dim); margin:14px 0 0; }
 .result .gate{ margin-top:18px; padding:12px 14px; border-radius:9px; font-size:13px; line-height:1.5; border:1px solid rgba(239,227,200,.14); background:rgba(239,227,200,.04); }
@@ -1187,17 +1199,19 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
    background:radial-gradient(circle at 50% 0%,rgba(211,162,76,.22),transparent 60%),linear-gradient(160deg,rgba(105,55,32,.6),rgba(20,32,44,.9));
    box-shadow:inset 0 1px rgba(255,255,255,.08),0 16px 34px -22px rgba(211,162,76,.7); animation:prize-rise .5s var(--ease) both;
  }
- .result .prize-sigil{ display:grid; place-items:center; width:52px; height:52px; color:#eccb8a; border-radius:50%; border:1px solid rgba(236,203,138,.5); background:rgba(34,21,14,.5); animation:prize-glow 2.4s ease-in-out infinite; }
- .result .prize-sigil svg{ width:34px; height:34px; stroke:currentColor; stroke-width:1.5; stroke-linejoin:round; fill:rgba(236,203,138,.15); }
+ .result .prize-guide{ position:relative; display:block; width:88px; height:105px; margin-top:-10px; }
+ .result .prize-guide::after{ content:''; position:absolute; left:20%; right:20%; bottom:4px; height:10px; border-radius:50%; background:var(--accent); opacity:.2; filter:blur(5px); }
+ .result .prize-guide svg{ position:relative; z-index:1; width:100%; height:100%; filter:drop-shadow(0 8px 9px rgba(0,0,0,.45)); }
  .result .prize b{ font-family:var(--display); font-size:21px; color:var(--gold); }
  .result .prize>span{ max-width:42ch; font-size:14px; line-height:1.6; color:var(--parchment); }
- .result .prize-go{ margin:6px 0 0; display:inline-flex; align-items:center; gap:9px; padding:14px 26px; white-space:nowrap; }
+ .result .prize-go{ max-width:100%; margin:6px 0 0; display:inline-flex; align-items:center; justify-content:center; gap:9px; padding:14px 26px; text-align:center; }
  .result .prize-go .mode-icon{ width:22px; height:22px; }
  @keyframes prize-rise{ from{ opacity:0; transform:translateY(12px) scale(.97); } to{ opacity:1; transform:none; } }
- @keyframes prize-glow{ 0%,100%{ box-shadow:0 0 0 0 rgba(236,203,138,0); } 50%{ box-shadow:0 0 22px -2px rgba(236,203,138,.55); } }
- @media (prefers-reduced-motion:reduce){ .result .prize,.result .prize-sigil{ animation:none; } }
+ @media (prefers-reduced-motion:reduce){ .result .prize{ animation:none; } }
 .result .actions{ display:grid; grid-template-columns:auto minmax(250px,1fr); gap:10px; align-items:center; width:100%; margin-top:24px; }
-.result .actions .btn.primary{ margin:0; padding:14px 25px; white-space:nowrap; }
+.result .actions .btn.primary{ margin:0; padding:14px 25px; }
+.journey-next{ display:flex; align-items:center; gap:12px; width:100%; margin-top:18px; padding:14px 16px; color:var(--parchment); text-align:left; border:1px solid rgba(143,174,140,.5); border-radius:12px; background:linear-gradient(135deg,rgba(143,174,140,.15),rgba(20,32,44,.9)); cursor:pointer; transition:transform .2s var(--ease),border-color .2s ease; }
+.journey-next:hover,.journey-next:focus-visible{ transform:translateY(-2px); border-color:var(--green); }.journey-next span{ min-width:0; }.journey-next small{ display:block; color:var(--green); font-size:9px; letter-spacing:.12em; text-transform:uppercase; }.journey-next b{ display:block; margin-top:3px; font-family:var(--display); font-size:16px; font-weight:600; }
 .challenge-btn{ display:flex; align-items:center; gap:10px; min-height:61px; padding:9px 13px; color:var(--parchment); text-align:left; cursor:pointer; border:1px solid rgba(211,162,76,.55); border-radius:12px; background:radial-gradient(circle at 20% 25%,rgba(211,162,76,.2),transparent 32%),linear-gradient(135deg,rgba(105,55,32,.85),rgba(20,32,44,.95)); box-shadow:inset 0 1px rgba(255,255,255,.08),0 13px 26px -18px rgba(0,0,0,.9); transition:transform .2s var(--ease),border-color .2s ease,box-shadow .2s ease; }
 .challenge-btn:hover,.challenge-btn:focus-visible{ border-color:var(--gold); box-shadow:0 15px 29px -17px rgba(211,162,76,.75); outline:none; transform:translateY(-2px); }.challenge-btn:active{ transform:translateY(1px); }
 .challenge-sigil{ display:grid; place-items:center; width:39px; height:39px; flex:0 0 auto; color:#eccb8a; border:1px solid rgba(236,203,138,.45); border-radius:50%; background:rgba(34,21,14,.48); }.challenge-sigil svg{ width:28px; height:28px; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }.challenge-btn b{ display:block; font-family:var(--display); font-size:16px; font-weight:600; }.challenge-btn small{ display:block; margin-top:2px; color:var(--parchment-dim); font-size:11px; }.challenge-arrow{ width:20px; height:20px; margin-left:auto; stroke:var(--gold); stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
@@ -1267,7 +1281,7 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
     animation:fade .35s var(--ease) both;
   }
   /* room for it, so it covers neither the last card nor the footer */
-  body:has(#beginBtn:not(:disabled)) .foot{ padding-bottom:86px; }
+  body:has(#viewShore:not([hidden]) #beginBtn:not(:disabled)) .foot{ padding-bottom:86px; }
 
   .card{ padding:20px 16px; }
   .q{ font-size:17px; }

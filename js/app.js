@@ -72,11 +72,6 @@ const EXAM = {
   checked: '2026-08-13',
   source: 'https://danskogproever.dk/tilmeldingsfrister-og-proevedatoer/',
 };
-/* Ungraded crossings keep a little drama. Graded crossings sink only when a
-   pass is mathematically impossible; ending earlier would change SIRI's rules. */
-const SINK_SHARE = 6 / 45;
-const sinkAfter = (n) => Math.max(2, Math.round(n * SINK_SHARE));
-const SINK_AFTER_VALUE_WRONG = 2;
 const NUMERAL = ['Nul', 'Én', 'To', 'Tre', 'Fire', 'Fem', 'Seks', 'Syv', 'Otte', 'Ni', 'Ti'];
 
 const state = {
@@ -400,7 +395,7 @@ const MODES = [
   {
     id: 'ovelse', da: 'Øvelse', en: 'Practice', accent: '--freja', icon: 'grundtvig',
     blurb: 'Tilfældige spørgsmål fra lærematerialet, vægtet efter hvor ofte SIRI faktisk har stillet dem.',
-    tag: 'Ubegrænset', training: true,
+    tag: '15 spørgsmål pr. omgang', training: true,
     build: (rand) => weighted(pool('laeremateriale'), 15, rand),
   },
   {
@@ -468,7 +463,7 @@ function modeCard(mode, index) {
   const best = state.best[mode.id];
   return `<button class="mode" type="button" data-id="${mode.id}"
       style="--accent:var(${mode.accent}); --d:${index * 0.08}s">
-      <h3>${topicIcon(mode.icon, `mode-icon ${mode.id}`)}${mode.da} ${best ? `<span class="best">bedste ${best}</span>` : ''}</h3>
+      <span class="mode-title">${topicIcon(mode.icon, `mode-icon ${mode.id}`)}${mode.da} ${best ? `<span class="best">bedste ${best}</span>` : ''}</span>
       <span class="en">${mode.en}</span>
       <p>${mode.blurb}</p>
       <span class="tag">${mode.tag}</span>
@@ -485,6 +480,7 @@ let hallDoor = showHalls;
 /** Sagaerne is reachable from the hall list and from the path, so leaving a
     reading room goes back the way it was entered rather than always to one. */
 let sagaDoor = showHalls;
+let resultMode = null;
 
 /** Leaving a drill returns where it was started from, not to the map. */
 const leave = (mode) => mode?.hall ? hallDoor()
@@ -557,7 +553,10 @@ const VIEWS = ['viewWho', 'viewShore', 'viewPath', 'viewTraining', 'viewHalls', 
 function go(id, scene) {
   const swap = () => {
     // The counter and clock belong to a run; nothing else should inherit them.
-    if (id !== 'viewQuiz') $('hudMeta').textContent = '';
+    if (id !== 'viewQuiz') {
+      $('hudMeta').textContent = '';
+      $('hudMeta').removeAttribute('aria-label');
+    }
     // Vikingheim holds a WebGL context and a render loop. Every route out of
     // it runs through here, so tearing it down here is the only place that
     // cannot be forgotten later.
@@ -565,10 +564,18 @@ function go(id, scene) {
     VIEWS.forEach((v) => { $(v).hidden = v !== id; });
     if (scene) scenes.show(scene);
     $('hud').hidden = id === 'viewShore' || id === 'viewWho' || id === 'viewPath';
-    scrollTo({ top: 0, behavior: 'instant' });
+    scrollTo({ top: 0, behavior: 'auto' });
+    requestAnimationFrame(() => {
+      if (!$('welcome').hidden) return;
+      const heading = $(id).querySelector('h1,h2');
+      if (!heading) return;
+      heading.tabIndex = -1;
+      heading.focus({ preventScroll: true });
+      document.title = `${heading.textContent.trim()} | Félag`;
+    });
   };
   // Native view transitions; browsers without it simply get the swap.
-  document.startViewTransition ? document.startViewTransition(swap) : swap();
+  document.startViewTransition && !scenes.still.matches ? document.startViewTransition(swap) : swap();
 }
 
 /* ---------- who is studying ---------- */
@@ -613,7 +620,7 @@ function useProfile(name, { guest = false } = {}) {
   if (!guest) localStorage.setItem(ACTIVE_PROFILE, state.profile.slug);
   $('foot').hidden = false;
   $('whoNow').textContent = state.profile.name;
-  $('soundToggle').textContent = state.sound ? 'Lyd til' : 'Lyd fra';
+  $('soundToggle').textContent = state.sound ? 'Lyd: til' : 'Lyd: fra';
   $('soundToggle').setAttribute('aria-pressed', String(state.sound));
   renderShore();
   if (state.pendingChallenge) {
@@ -1030,6 +1037,8 @@ async function showHeim() {
   $('hudBack').setAttribute('aria-label', 'Tilbage til vejen');
   $('hudBack').dataset.tooltip = 'Tilbage til vejen';
   go('viewHeim', 'shore');
+  $('heim').setAttribute('aria-busy', 'true');
+  $('heim').innerHTML = '<p class="heim-absent">Bopladsen bygges…</p>';
   try {
     heim ??= await import('./heim.js');
     heim.mount($('heim'));
@@ -1037,6 +1046,8 @@ async function showHeim() {
     // A settlement that will not build is not worth an error message. Say
     // where it went, leave the road open, and never let it break the path.
     $('heim').innerHTML = '<p class="heim-absent">Bopladsen kunne ikke bygges her. Vejen og hallerne virker som altid.</p>';
+  } finally {
+    $('heim').removeAttribute('aria-busy');
   }
 }
 
@@ -1154,7 +1165,7 @@ function recordBattle(opponent, mine, theirs, sunk) {
     theirs,
     result,
     sunk: Boolean(sunk),
-    date: new Intl.DateTimeFormat('da-DK', { day: 'numeric', month: 'short' }).format(new Date()),
+    date: new Intl.DateTimeFormat('da-DK', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date()),
   }, ...(state.battles ?? [])].slice(0, 30);
   return result;
 }
@@ -1178,11 +1189,12 @@ function showTime() {
         <span class="knot"></span>
         <span class="axis"><b>${span}</b><span>${years}</span></span>
         <button class="body" type="button" data-i="${i}" ${stock ? '' : 'disabled'}>
-          <h4>${topicIcon(topicKey({ chapter: 1, page: era.page }))}${era.title}</h4>
+          <span class="era-title">${topicIcon(topicKey({ chapter: 1, page: era.page }))}${era.title}</span>
           <span class="weight">
             <i style="width:${Math.round((stock / most) * 100)}px"></i>
             <span>${stock ? `${stock} spørgsmål` : 'ingen spørgsmål'}</span>
           </span>
+          ${stock ? '<span class="era-action">Øv perioden</span>' : ''}
         </button>
       </div>`;
   }).join('');
@@ -1206,15 +1218,18 @@ function showTing() {
   $('hudBackLabel').textContent = 'Tilbage til Træning';
   $('hudBack').setAttribute('aria-label', 'Tilbage til Træning');
   $('hudBack').dataset.tooltip = 'Tilbage til Træning';
-  $('principles').innerHTML = state.principles.map((p, i) => `
+  $('principles').innerHTML = state.principles.map((p, i) => {
+    const count = p.questions.filter((id) => usable(byQuestion(id))).length;
+    return `
     <div class="principle" data-id="${p.id}" style="--d:${i * 0.05}s">
       <button type="button" aria-expanded="false">
-        <h4><span class="n">${String(i + 1).padStart(2, '0')}</span>${p.title}
-          <span class="count">${p.questions.length} spørgsmål</span>
-          <span class="chev">${ICON.chevron}</span></h4>
+        <span class="principle-title"><span class="n">${String(i + 1).padStart(2, '0')}</span>${p.title}
+          <span class="count">${count} spørgsmål</span>
+          <span class="chev">${ICON.chevron}</span></span>
         <p class="rule">${p.rule}</p>
       </button>
-    </div>`).join('');
+    </div>`;
+  }).join('');
   go('viewTing', 'ting');
 }
 
@@ -1225,11 +1240,12 @@ function togglePrinciple(el) {
   if (!open) return;
 
   const p = state.principles.find((x) => x.id === el.dataset.id);
+  const count = p.questions.filter((id) => usable(byQuestion(id))).length;
   const more = document.createElement('div');
   more.className = 'more';
   more.innerHTML = `<p>${p.detail}</p>
     <button class="btn primary" type="button" data-practice="${p.id}">
-      Øv ${p.questions.length} spørgsmål</button>`;
+      Øv ${count} spørgsmål</button>`;
   el.append(more);
 }
 
@@ -1260,6 +1276,7 @@ function start(modeId, override, ghost) {
   const seed = ghost?.seed ?? (Date.now() >>> 0);
   const questions = mode.build(rng(seed)).map((q) => present(q, seed));
   if (!questions.length) return;
+  resultMode = null;
 
   state.run = {
     mode, seed, questions, i: 0, marks: Array(questions.length).fill(null),
@@ -1281,8 +1298,9 @@ function tick() {
   if (!run?.deadline) return;
   const left = run.deadline - Date.now();
   if (left <= 0) return finish();
-  $('hudMeta').textContent =
-    `${String(Math.floor(left / 60000)).padStart(2, '0')}:${String(Math.floor(left / 1000) % 60).padStart(2, '0')}`;
+  const clock = `${String(Math.floor(left / 60000)).padStart(2, '0')}:${String(Math.floor(left / 1000) % 60).padStart(2, '0')}`;
+  $('hudMeta').textContent = `${run.i + 1} / ${run.questions.length} · ${clock}`;
+  $('hudMeta').setAttribute('aria-label', `Spørgsmål ${run.i + 1} af ${run.questions.length}. Tid tilbage ${clock}.`);
   setTimeout(tick, 1000);
 }
 
@@ -1311,7 +1329,7 @@ function modeById(id) {
   if (id?.startsWith('hal-')) {
     const n = Number(id.slice(4));
     const i = HALLS.findIndex((h) => h.chapter === n);
-    return i < 0 ? null : hallMode(HALLS[i], i);
+    return i < 0 || hallState(i) === 'shut' ? null : hallMode(HALLS[i], i);
   }
   if (id?.startsWith('tid-')) {
     const era = state.eras.find((e) => e.page === Number(id.slice(4)));
@@ -1331,7 +1349,7 @@ function houseGhost(modeId, seed, accuracy = 0.72) {
            marks: Array.from({ length: 64 }, () => rand() < accuracy) };
 }
 
-/** Advance the crossing. One stroke of the oars per question answered. */
+/** Advance the crossing by correct answers; the duel is a race on accuracy. */
 function renderRow(stroke) {
   const { marks, i, ghost } = state.run;
   const row = $('row');
@@ -1345,11 +1363,7 @@ function renderRow(stroke) {
   const answered = marks.filter((m) => m !== null).length;
   const mine = marks.filter(Boolean).length;
 
-  // One answer is one pull of the oars. Accuracy belongs in the wake markers;
-  // it must not leave the boat frozen at the shore after a wrong answer. Store
-  // a plain percentage rather than relying on CSS multiplication, which is not
-  // consistent across mobile engines.
-  row.style.setProperty('--p', `${2 + (answered / marks.length) * 90}%`);
+  row.style.setProperty('--p', `${2 + (mine / marks.length) * 90}%`);
 
   if (ghost) {
     const theirs = ghost.marks.slice(0, answered).filter(Boolean).length;
@@ -1367,10 +1381,17 @@ function renderRow(stroke) {
 function renderQuestion() {
   const run = state.run;
   const q = run.questions[run.i];
-  const letters = ['A', 'B', 'C'];
+  const letters = q.options.map((_, index) => String.fromCharCode(65 + index));
   const topic = topicKey(q);
+  const topicName = q.section === 'aktuelt'
+    ? `Aktuelt fra ${sitting(q.seen.at(-1))}`
+    : topicLabel(topic);
 
-  if (!run.deadline) $('hudMeta').textContent = `${run.i + 1} / ${run.questions.length}`;
+  if (!run.deadline) {
+    $('hudMeta').textContent = `${run.i + 1} / ${run.questions.length}`;
+    $('hudMeta').setAttribute('aria-label', `Spørgsmål ${run.i + 1} af ${run.questions.length}.`);
+  }
+  $('quizStatus').textContent = '';
   renderRow();
   $('quizNext').disabled = true;
   const nextLabel = run.i === run.questions.length - 1 ? 'Læg til ved land' : 'Sejl videre';
@@ -1379,8 +1400,8 @@ function renderQuestion() {
   $('quizNext').dataset.tooltip = nextLabel;
 
   $('quizCard').innerHTML = `
-    <div class="q-topic">${topicIcon(topic)}<span>${topicLabel(topic)}</span></div>
-    <p class="q">${q.q}</p>
+    <div class="q-topic">${topicIcon(topic)}<span>${topicName}</span></div>
+    <h2 class="q" id="questionTitle" tabindex="-1">${q.q}</h2>
     ${q.options.map((o, n) => `
       <button class="opt" type="button" data-n="${n}" style="--d:${n * 0.05}s">
         <em>${letters[n]}</em><span>${o}</span>
@@ -1388,25 +1409,18 @@ function renderQuestion() {
 
   $('quizCard').querySelectorAll('.opt').forEach((btn) =>
     btn.addEventListener('click', () => answer(Number(btn.dataset.n)), { once: true }));
+  requestAnimationFrame(() => $('questionTitle').focus({ preventScroll: true }));
 }
 
 function sinkReason(run) {
+  if (!run.mode.hall && !run.mode.gate) return null;
   const wrong = run.marks.filter((mark) => mark === false).length;
-  const pass = run.mode.exam
-    ? RULES.pass
-    : run.mode.hall
+  const pass = run.mode.hall
     ? Math.ceil(run.questions.length * HALL_PASS)
-    : run.mode.gate?.need;
-  const fatal = pass ? run.questions.length - pass + 1 : sinkAfter(run.questions.length);
+    : run.mode.gate.need;
+  const fatal = run.questions.length - pass + 1;
   if (wrong >= fatal) {
     return `${NUMERAL[wrong] ?? wrong} fejl. Skibet tager for meget vand ind.`;
-  }
-
-  const valuesWrong = run.questions
-    .filter((question, index) => question.section === 'vaerdier' && run.marks[index] === false)
-    .length;
-  if (valuesWrong >= SINK_AFTER_VALUE_WRONG) {
-    return `To fejl i værdispørgsmålene. Tinget lader dig ikke passere.`;
   }
   return null;
 }
@@ -1428,17 +1442,24 @@ function answer(chosen) {
   const opts = [...$('quizCard').querySelectorAll('.opt')];
   opts.forEach((b) => { b.disabled = true; });
   opts[q.answerAt].classList.add('hit');
-  if (!right) opts[chosen].classList.add('miss');
+  opts[q.answerAt].insertAdjacentHTML('beforeend', '<strong class="opt-result">Rigtigt svar</strong>');
+  if (!right) {
+    opts[chosen].classList.add('miss');
+    opts[chosen].insertAdjacentHTML('beforeend', '<strong class="opt-result wrong">Dit svar</strong>');
+  }
   right ? sfx.hit() : sunk ? sfx.sink() : sfx.miss();
   renderRow(right ? 'stroke' : 'miss');
 
-  $('quizCard').append(buildWhy(q, right));
+  $('quizStatus').textContent = right ? 'Rigtigt.' : `Forkert. Det rigtige svar er ${q.answer}.`;
+  const why = buildWhy(q, right);
+  $('quizCard').append(why);
+  why.tabIndex = -1;
+  why.focus({ preventScroll: true });
   if (sunk) {
-    $('quizNext').disabled = true;
-    $('quizNextLabel').textContent = 'Skibet synker';
-    $('quizNext').setAttribute('aria-label', 'Skibet synker');
-    $('quizNext').dataset.tooltip = 'Skibet synker';
-    setTimeout(() => finish(), 1200);
+    $('quizNext').disabled = false;
+    $('quizNextLabel').textContent = 'Se resultat';
+    $('quizNext').setAttribute('aria-label', 'Se resultat');
+    $('quizNext').dataset.tooltip = 'Se resultat';
     return;
   }
   $('quizNext').disabled = false;
@@ -1523,6 +1544,7 @@ function buildWhy(q, right) {
   const why = document.createElement('div');
   why.className = 'why';
   why.innerHTML = `
+    <p class="answer-result ${right ? 'right' : 'wrong'}">${right ? 'Rigtigt' : `Forkert · Det rigtige svar er ${q.answer}`}</p>
     <p class="lbl">${topicIcon(topic)}Forklaring · ${topicLabel(topic)}</p>
     ${body}
     ${dating(q)}
@@ -1538,6 +1560,7 @@ function buildWhy(q, right) {
 
 function next() {
   const run = state.run;
+  if (run.sunk) return finish();
   if (run.i >= run.questions.length - 1) return finish();
   run.i++;
   renderQuestion();
@@ -1612,7 +1635,7 @@ function finish() {
     ? `<div class="duel ${battleResult}">
         <span class="duel-banner">${BANNER[battleResult]}</span>
         <p class="duel-cry">${cry}</p>
-        <p class="duel-shout">${shout}</p>
+        <h2 class="duel-shout">${shout}</h2>
         <div class="duel-tally">
           <span class="side"><small>Dig</small><b>${score}</b></span>
           <i aria-hidden="true">–</i>
@@ -1620,8 +1643,8 @@ function finish() {
         </div>
         <p class="duel-after">${aftermath}</p>
       </div>`
-    : `<div class="score ${passed === false ? 'fail' : 'pass'}">${score} / ${questions.length}</div>
-       <p class="verdict">${label}</p>`;
+    : `<div class="score ${passed === false ? 'fail' : 'pass'}">${score} / ${sunk ? answered : questions.length}</div>
+       <h2 class="verdict">${label}</h2>`;
 
   // Failing a hall is the moment the reading is worth most, and the gap is
   // already known precisely: these are the ones just got wrong. The room opens
@@ -1629,6 +1652,10 @@ function finish() {
   const missed = mode.hall && passed === false
     ? questions.filter((_, i) => marks[i] === false)
     : [];
+  const nextHall = mode.hall && passed && mode.index < HALLS.length - 1
+    ? HALLS[mode.index + 1]
+    : null;
+  const guide = byId(state.guide) ?? CAST[0];
 
   $('resultCard').innerHTML = `
     <p class="lead">${mode.da}</p>
@@ -1639,13 +1666,13 @@ function finish() {
       ? ''
       : mode.hall
       ? `${wonAll ? `<div class="prize">
-          <span class="prize-sigil" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none"><path d="M24 4l5 11 12 1-9 8 3 12-11-6-11 6 3-12-9-8 12-1z"/></svg></span>
+          <span class="prize-guide" aria-hidden="true" style="--accent:var(${guide.accent})">${guide.svg}</span>
           <b>Alle seks porte er åbnet!</b>
-          <span>Du har gennemført hele Læringsstien og læst hele sagaen. Nu venter Altinget — hele prøven på tid, under de rigtige regler.</span>
+          <span>Du har bestået alle seks haller sammen med ${guide.name}. Nu venter Altinget — hele prøven på tid, under de rigtige regler.</span>
           <button class="btn primary prize-go" id="altingBtn" type="button">${topicIcon('parliament', 'mode-icon alting')}Tag Altinget nu — 45 spørgsmål</button>
         </div>` : ''}
         <p class="note">${passed
-          ? (wonAll ? 'Den sidste hal er ryddet. Sagaen er fuldført.' : 'Porten er åbnet. Den næste hal kan nu besøges.')
+          ? (wonAll ? 'Den sidste port er åbnet. Læringsstien er gennemført.' : 'Porten er åbnet. Den næste hal kan nu besøges.')
           : sunk
           ? 'Du nåede ikke frem denne gang. Brug forklaringerne og prøv hallen igen.'
           : `Du skal have ${Math.ceil(questions.length * HALL_PASS)} af ${questions.length} for at rydde hallen. Spørgsmålene blandes hver gang.`}</p>`
@@ -1654,6 +1681,10 @@ function finish() {
       : `<p class="note">${score === questions.length
           ? 'Fejlfrit. Tag Altinget, når du er klar til hele prøven.'
           : 'Gennemgå de forkerte, og tag den igen. Spørgsmålene blandes hver gang.'}</p>`}
+    ${nextHall ? `<button class="journey-next" id="nextHallBtn" type="button">
+      <span><small>Næste skridt</small><b>Hal ${nextHall.numeral} · ${nextHall.da}</b></span>
+      <svg class="challenge-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m10 5 7 7-7 7m6-7H6"/></svg>
+    </button>` : ''}
     ${missed.length ? `<button class="read-back" id="sagaBtn" type="button">
       <span class="read-sigil" aria-hidden="true">${ICON.book}</span>
       <span><b>Læs sagaen om det, du missede</b><small>${missed.length}
@@ -1671,6 +1702,7 @@ function finish() {
     <p class="share-note" id="shareNote" role="status" aria-live="polite" hidden></p>`;
 
   $('hudMeta').textContent = '';
+  resultMode = mode;
   go('viewResult', sceneFor(mode));
   $('againBtn').onclick = () => {
     const freshSeed = Date.now() >>> 0;
@@ -1684,6 +1716,9 @@ function finish() {
   }
   if (wonAll) {
     $('altingBtn').onclick = () => start('alting');
+  }
+  if (nextHall) {
+    $('nextHallBtn').onclick = () => start(null, hallMode(nextHall, mode.index + 1));
   }
   $('shareBtn').onclick = async () => {
     // The whole challenge travels in the fragment, so nothing is stored anywhere.
@@ -1758,11 +1793,15 @@ async function main() {
   });
   state.bankById = new Map(state.bank.map((q) => [q.id, q]));
   const papers = new Set(state.bank.flatMap((q) => q.seen.map((seen) => seen.split('#')[0])));
+  const values = state.bank.filter((q) => q.section === 'vaerdier');
   state.paperCount = papers.size;
   $('welcomeQuestions').textContent = state.bank.length.toLocaleString('da-DK');
   $('welcomeQuestionCopy').textContent = `${state.bank.length.toLocaleString('da-DK')} rigtige spørgsmål`;
+  $('shoreQuestionCount').textContent = `${state.bank.length.toLocaleString('da-DK')} rigtige spørgsmål`;
   $('welcomePapers').textContent = papers.size.toLocaleString('da-DK');
   $('welcomeHalls').textContent = HALLS.length.toLocaleString('da-DK');
+  $('valuesAsked').textContent = values.reduce((count, q) => count + q.seen.length, 0).toLocaleString('da-DK');
+  $('valuesUnique').textContent = values.length.toLocaleString('da-DK');
 
   // Anyone who used the app before profiles existed keeps their progress.
   const legacy = localStorage.getItem(LEGACY);
@@ -1892,8 +1931,11 @@ $('eras').addEventListener('click', (e) => {
 $('quizNext').addEventListener('click', next);
 const exitRun = () => {
   const mode = state.run?.mode;
+  if (state.run && state.run.marks.some((mark) => mark !== null)
+      && !confirm('Forlad denne omgang? Dine svar i omgangen bliver ikke gemt.')) return;
   state.run = null;
   if (mode) return leave(mode);
+  if (!$('viewResult').hidden && resultMode) return leave(resultMode);
   if (!$('viewSagas').hidden) return sagaDoor();
   if (!$('viewSagaer').hidden) { renderPath(); return go('viewPath', 'path'); }
   if (!$('viewTime').hidden || !$('viewTing').hidden) return showTraining();
@@ -1904,7 +1946,7 @@ $('quizExit').addEventListener('click', exitRun);
 $('hudBack').addEventListener('click', exitRun);
 $('soundToggle').addEventListener('click', (e) => {
   state.sound = !state.sound;
-  e.target.textContent = state.sound ? 'Lyd til' : 'Lyd fra';
+  e.target.textContent = state.sound ? 'Lyd: til' : 'Lyd: fra';
   e.target.setAttribute('aria-pressed', String(state.sound));
   save();
   tone(600, 0.1);

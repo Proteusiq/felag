@@ -465,7 +465,7 @@ export function mount(container) {
 
   /* ---------- interaction ---------- */
   let drag = null;
-  let autoRotate = true;
+  let autoRotate = false;
 
   const onDown = (e) => {
     drag = { x: e.clientX, y: e.clientY };
