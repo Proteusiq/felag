@@ -567,6 +567,9 @@ export function mount(container) {
       Object.assign(cam, { targetAzimuth: HOME.azimuth, targetElevation: HOME.elevation, targetDist: HOME.dist });
       autoRotate = false;
     },
+    zoom(factor) {
+      cam.targetDist = Math.min(52, Math.max(12, cam.targetDist * factor));
+    },
   };
 }
 
@@ -577,4 +580,8 @@ export function dispose() {
 
 export function reset() {
   live?.reset();
+}
+
+export function zoom(factor) {
+  live?.zoom(factor);
 }

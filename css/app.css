@@ -74,7 +74,7 @@ body:has(#viewQuiz:not([hidden])) .credit{ display:none; }
 
 /* ---------- scene ---------- */
 .scene{ position:fixed; inset:0; z-index:0; pointer-events:none; }
-.credit{ position:fixed; top:8px; right:12px; z-index:30; margin:0; font-size:11px; letter-spacing:.04em; color:var(--parchment-dim); display:flex; align-items:center; gap:7px; }
+.credit{ position:fixed; top:max(8px,env(safe-area-inset-top)); right:max(12px,env(safe-area-inset-right)); z-index:30; margin:0; font-size:11px; letter-spacing:.04em; color:var(--parchment-dim); display:flex; align-items:center; gap:7px; }
 .credit a{ color:var(--parchment-dim); text-decoration:none; display:inline-flex; align-items:center; }
 .credit a:hover,.credit a:focus-visible{ color:var(--gold); }
 .scene svg{ width:100%; height:100%; display:block; }
@@ -85,6 +85,8 @@ body:has(#viewQuiz:not([hidden])) .credit{ display:none; }
   position:fixed; inset:0; z-index:40; min-height:100vh; min-height:100dvh;
   display:grid; grid-template-rows:auto 1fr auto; overflow:auto; isolation:isolate;
   padding:30px clamp(24px,5vw,72px) 0;
+  padding-left:max(clamp(24px,5vw,72px),env(safe-area-inset-left));
+  padding-right:max(clamp(24px,5vw,72px),env(safe-area-inset-right));
   background:
     radial-gradient(circle at 72% 34%,rgba(211,162,76,.12),transparent 24%),
     linear-gradient(90deg,rgba(7,15,20,.9) 0%,rgba(9,19,25,.72) 48%,rgba(8,17,23,.56) 100%);
@@ -214,6 +216,7 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
 }
 @media (max-width:560px){
   .welcome{ padding:20px 18px 0; }
+  .welcome{ padding-left:max(18px,env(safe-area-inset-left)); padding-right:max(18px,env(safe-area-inset-right)); }
   .welcome-nav{ align-items:flex-start; }
   .brand-mark{ width:40px; height:40px; }.brand-mark svg{ width:26px; height:26px; }
   .welcome-brand b{ font-size:18px; }.welcome-brand small{ font-size:7px; }
@@ -239,6 +242,7 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
   backdrop-filter:blur(8px);
   border-bottom:1px solid rgba(239,227,200,.1);
 }
+.hud{ padding-left:max(18px,env(safe-area-inset-left)); padding-right:max(18px,env(safe-area-inset-right)); }
 .hud-title{ font-family:var(--display); font-weight:600; font-size:15px; }
 .hud-meta{ margin-left:auto; font-size:12px; color:var(--parchment-dim); font-variant-numeric:tabular-nums; }
 .hud-back{
@@ -254,7 +258,7 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
    mobile start button lives in here, and its own z-index cannot climb out of
    this stacking context, so the stage itself has to sit higher or the footer
    swallows the taps. */
-.stage{ position:relative; z-index:2; flex:1; width:100%; max-width:1120px; margin:0 auto; padding:44px 20px 32px; }
+.stage{ position:relative; z-index:2; flex:1; width:100%; max-width:1120px; margin:0 auto; padding:44px max(20px,env(safe-area-inset-right)) 32px max(20px,env(safe-area-inset-left)); }
 /* fill-mode is backwards, not both: 'both' leaves an identity transform on the
    element after the entrance finishes, and any transform makes it a containing
    block for position:fixed children. That silently trapped the mobile start
@@ -301,7 +305,7 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
 .profile b{ font-family:var(--display); font-weight:600; font-size:16px; }
 .profile small{ display:block; font-size:11px; color:var(--parchment-dim); letter-spacing:.04em; }
 .profile-row .drop{
-  position:absolute; right:10px; width:30px; height:30px; border-radius:50%; border:none; cursor:pointer;
+  position:absolute; right:8px; width:36px; height:36px; border-radius:50%; border:none; cursor:pointer;
   background:none; color:var(--parchment-dim); font-size:16px; line-height:1;
 }
 .profile-row .drop:hover,.profile-row .drop:focus-visible{ color:var(--danger); background:rgba(200,16,46,.12); outline:2px solid var(--danger); outline-offset:2px; }
@@ -1224,7 +1228,7 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
 
 /* ---------- footer / boot ---------- */
 .foot{
-  position:relative; z-index:1; padding:0 18px max(20px,env(safe-area-inset-bottom)); color:var(--parchment-dim);
+  position:relative; z-index:1; padding:0 max(18px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left)); color:var(--parchment-dim);
   background:linear-gradient(180deg,transparent,rgba(6,12,19,.28)); border-top:1px solid rgba(239,227,200,.1);
 }
 .foot::before{ content:''; position:absolute; top:-1px; left:50%; width:min(360px,58vw); height:1px; transform:translateX(-50%); background:linear-gradient(90deg,transparent,var(--gold),transparent); }
@@ -1233,7 +1237,7 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
 .foot-promise b{ display:block; color:var(--parchment); font-family:var(--display); font-size:14px; font-weight:600; }
 .foot-knot{ display:grid; place-items:center; width:31px; height:31px; flex:0 0 auto; color:var(--gold); border:1px solid rgba(211,162,76,.38); border-radius:50%; background:rgba(211,162,76,.06); }
 .foot-knot svg{ width:20px; height:20px; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; }
-.foot .who{ display:flex; align-items:baseline; justify-content:center; gap:5px; white-space:nowrap; font-size:11px; }
+.foot .who{ display:flex; align-items:baseline; justify-content:center; gap:5px; flex-wrap:wrap; font-size:11px; }
 .foot .who > span{ color:var(--gold); font-family:var(--display); font-size:12px; font-style:italic; }
 .foot .who b{ color:var(--parchment); font-weight:600; }
 .foot-actions{ display:flex; justify-content:flex-end; gap:0; }
@@ -1255,7 +1259,7 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
    chosen the action follows you down the page. */
 @media (max-width:620px){
   .map-toolbar{ align-items:flex-start; flex-direction:column; }
-  .stage{ padding:28px 16px 24px; }
+  .stage{ padding:28px max(16px,env(safe-area-inset-right)) 24px max(16px,env(safe-area-inset-left)); }
   .subtitle{ margin-bottom:26px; }
   .char{ padding:10px 6px 12px; border-radius:12px; }
   .char figure{ aspect-ratio:1/0.78; }
@@ -1316,6 +1320,16 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
   .foot-promise{ text-align:left; }
   .foot-actions{ flex-wrap:wrap; justify-content:center; }
   .foot-control{ padding:2px 8px; }
+}
+
+@media (max-width:400px){
+  .new-profile{ align-items:stretch; flex-direction:column; }
+  .new-profile .btn.primary{ width:100%; justify-content:center; }
+}
+
+@media (pointer:coarse){
+  .hud-back,.view-swap,.foot .linklike{ min-width:44px; min-height:44px; }
+  .foot-control{ padding-block:0; }
 }
 
 @media (prefers-reduced-motion:reduce){

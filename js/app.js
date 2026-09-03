@@ -461,9 +461,12 @@ const DESTINATIONS = [
 
 function modeCard(mode, index) {
   const best = state.best[mode.id];
+  const scoringMode = MODES.find((item) => item.id === mode.id) ?? mode;
+  const total = scoringMode.exam ? RULES.total
+    : scoringMode.gate?.of ?? (scoringMode.duel || scoringMode.training ? 15 : null);
   return `<button class="mode" type="button" data-id="${mode.id}"
       style="--accent:var(${mode.accent}); --d:${index * 0.08}s">
-      <span class="mode-title">${topicIcon(mode.icon, `mode-icon ${mode.id}`)}${mode.da} ${best ? `<span class="best">bedste ${best}</span>` : ''}</span>
+      <span class="mode-title">${topicIcon(mode.icon, `mode-icon ${mode.id}`)}${mode.da} ${Number.isFinite(best) ? `<span class="best">bedste ${best}${total ? `/${total}` : ''}</span>` : ''}</span>
       <span class="en">${mode.en}</span>
       <p>${mode.blurb}</p>
       <span class="tag">${mode.tag}</span>
@@ -1154,7 +1157,13 @@ function renderBattles() {
       ${rest ? `<button class="match-more" id="battleMore" type="button">Rul tavlen længere tilbage · ${rest} ${rest === 1 ? 'kamp' : 'kampe'} mere</button>` : ''}`
     : `<div class="scoreboard-empty">${RESULT_MARK.won}<span><b>Skjoldtavlen venter.</b> Vælg Bjørn eller kast handsken til en dansk viking.</span></div>`;
   const more = document.getElementById('battleMore');
-  if (more) more.onclick = () => { battlesShown += BATTLE_PAGE; renderBattles(); };
+  if (more) more.onclick = () => {
+    battlesShown += BATTLE_PAGE;
+    renderBattles();
+    const target = document.getElementById('battleMore') ?? $('scoreboardTitle');
+    target.tabIndex = -1;
+    target.focus();
+  };
 }
 
 function recordBattle(opponent, mine, theirs, sunk) {
@@ -1860,6 +1869,8 @@ $('modes').addEventListener('click', (e) => {
   openMode(btn.dataset.id);
 });
 $('heimReset').addEventListener('click', () => heim?.reset());
+$('heimOut').addEventListener('click', () => heim?.zoom(1.15));
+$('heimIn').addEventListener('click', () => heim?.zoom(.85));
 $('trainingModes').addEventListener('click', (e) => {
   const btn = e.target.closest('.mode');
   if (btn) openMode(btn.dataset.id);
@@ -1946,12 +1957,13 @@ $('quizExit').addEventListener('click', exitRun);
 $('hudBack').addEventListener('click', exitRun);
 $('soundToggle').addEventListener('click', (e) => {
   state.sound = !state.sound;
-  e.target.textContent = state.sound ? 'Lyd: til' : 'Lyd: fra';
-  e.target.setAttribute('aria-pressed', String(state.sound));
+  e.currentTarget.textContent = state.sound ? 'Lyd: til' : 'Lyd: fra';
+  e.currentTarget.setAttribute('aria-pressed', String(state.sound));
   save();
   tone(600, 0.1);
 });
 $('resetBtn').addEventListener('click', () => {
+  if (!state.profile) return;
   const who = state.profile?.name ?? '';
   if (!confirm(`Nulstil al fremgang for ${who}?`)) return;
   store().removeItem(state.profile.key);

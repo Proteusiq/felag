@@ -320,7 +320,11 @@
     <div class="heim" id="heim" tabindex="0" role="img"
          aria-label="Et roterende billede af en vikingeboplads på en ø: langhuse bag en palisade, et langskib ved broen og en lysende runesten. Brug piletasterne til at dreje."></div>
     <div class="heim-controls">
-      <button class="view-swap" id="heimReset" type="button">Nulstil udsigten</button>
+      <div class="map-controls" aria-label="Vikingheims zoom">
+        <button id="heimOut" type="button" aria-label="Zoom ud">−</button>
+        <button id="heimReset" type="button">Nulstil udsigten</button>
+        <button id="heimIn" type="button" aria-label="Zoom ind">+</button>
+      </div>
       <span class="heim-hint">Piletaster drejer · <kbd>+</kbd> og <kbd>−</kbd> zoomer</span>
     </div>
   </section>
