@@ -160,6 +160,7 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
 .welcome-start svg{ width:21px; height:21px; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
 .welcome-start:hover,.welcome-start:focus-visible{ outline:2px solid var(--parchment); outline-offset:4px; transform:translateY(-3px); filter:brightness(1.07); box-shadow:0 20px 40px -16px rgba(211,162,76,.9); }
 .welcome-free{ color:var(--parchment-dim); font-size:11px; letter-spacing:.06em; }
+.welcome-free a{ color:inherit; }
 
 .welcome-journey{
   position:relative; min-width:0; padding:30px 30px 27px; border:1px solid rgba(239,227,200,.2); border-radius:2px;
@@ -174,12 +175,16 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
 .welcome-journey h2{ margin:0; font-family:var(--display); font-size:30px; line-height:1.15; font-weight:600; }
 .journey-line{ position:relative; display:flex; justify-content:space-between; align-items:center; margin:34px 2px 17px; }
 .journey-path{ position:absolute; left:0; right:0; top:50%; height:1px; background:linear-gradient(90deg,var(--gold),rgba(239,227,200,.2)); }
-.journey-line i{
+.journey-line button{
   position:relative; z-index:1; display:grid; place-items:center; width:31px; height:31px;
   border:1px solid rgba(239,227,200,.28); border-radius:50%; background:#14252b;
-  color:var(--parchment-dim); font:normal 9px/1 var(--display);
+  color:var(--parchment-dim); font:normal 9px/1 var(--display); cursor:pointer;
+  transition:transform .2s var(--ease),border-color .2s ease,background .2s ease,color .2s ease;
 }
-.journey-line i.active{ width:38px; height:38px; color:#16242a; border-color:#edcb8d; background:var(--gold); box-shadow:0 0 24px rgba(211,162,76,.38); }
+.journey-line button:hover:not(:disabled),.journey-line button:focus-visible{ transform:translateY(-2px); border-color:var(--gold); outline:2px solid var(--gold); outline-offset:3px; }
+.journey-line button.active{ width:38px; height:38px; color:#16242a; border-color:#edcb8d; background:var(--gold); box-shadow:0 0 24px rgba(211,162,76,.38); }
+.journey-line button.done{ color:var(--gold); border-color:var(--gold); }
+.journey-line button:disabled{ cursor:not-allowed; opacity:.42; }
 .journey-caption{ display:flex; justify-content:space-between; gap:20px; color:var(--parchment); font-size:12px; }
 .journey-caption span:last-child{ text-align:right; }
 .journey-caption small{ display:block; margin-bottom:3px; color:var(--parchment-dim); font-size:8px; letter-spacing:.16em; text-transform:uppercase; }
@@ -218,7 +223,7 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
   .welcome-actions{ margin-top:27px; }.welcome-start{ width:100%; justify-content:space-between; }
   .welcome-free{ width:100%; text-align:center; }
   .welcome-journey{ padding:24px 20px 21px; }.welcome-journey h2{ font-size:25px; }
-  .journey-line{ margin-top:26px; }.journey-line i{ width:27px; height:27px; }.journey-line i.active{ width:33px; height:33px; }
+  .journey-line{ margin-top:26px; }.journey-line button{ width:27px; height:27px; }.journey-line button.active{ width:33px; height:33px; }
   .welcome-facts{ gap:12px; padding:17px 0 20px; text-align:center; }
   .welcome-facts strong{ font-size:20px; }.welcome-facts span{ font-size:9px; }
 }
@@ -274,16 +279,18 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
 .subtitle{ max-width:480px; text-align:center; font-size:15px; line-height:1.55; color:var(--parchment-dim); margin:0 0 40px; }
 
 /* ---------- who is studying ---------- */
-.profiles{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center; width:100%; max-width:560px; }
+.profiles{ display:flex; flex-wrap:wrap; gap:10px; justify-content:center; width:100%; max-width:620px; }
+.profile-row{ position:relative; display:flex; align-items:center; }
 .profile{
   position:relative; display:flex; align-items:center; gap:10px;
-  padding:12px 16px 12px 13px; border-radius:12px; cursor:pointer; font:inherit; color:inherit;
+  padding:12px 48px 12px 13px; border-radius:12px; cursor:pointer; font:inherit; color:inherit;
   background:linear-gradient(180deg,rgba(34,52,72,.75),rgba(15,26,36,.75));
   border:1px solid rgba(239,227,200,.12);
   transition:transform .22s var(--ease), border-color .22s ease;
   animation:rise .4s var(--ease) both; animation-delay:var(--d,0s);
 }
 .profile:hover{ transform:translateY(-3px); border-color:var(--gold); }
+.profile:focus-visible{ outline:2px solid var(--gold); outline-offset:3px; }
 .profile .mark{
   width:34px; height:34px; border-radius:50%; flex:0 0 auto; display:grid; place-items:center;
   font-family:var(--display); font-weight:700; font-size:15px;
@@ -291,15 +298,17 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
 }
 .profile b{ font-family:var(--display); font-weight:600; font-size:16px; }
 .profile small{ display:block; font-size:11px; color:var(--parchment-dim); letter-spacing:.04em; }
-.profile .drop{
-  margin-left:6px; width:24px; height:24px; border-radius:50%; border:none; cursor:pointer;
+.profile-row .drop{
+  position:absolute; right:10px; width:30px; height:30px; border-radius:50%; border:none; cursor:pointer;
   background:none; color:var(--parchment-dim); font-size:16px; line-height:1;
 }
-.profile .drop:hover{ color:var(--danger); background:rgba(200,16,46,.12); }
+.profile-row .drop:hover,.profile-row .drop:focus-visible{ color:var(--danger); background:rgba(200,16,46,.12); outline:2px solid var(--danger); outline-offset:2px; }
 
-.new-profile{ display:flex; gap:8px; margin-top:22px; width:100%; max-width:360px; }
+.new-profile{ display:flex; align-items:flex-end; gap:8px; margin-top:22px; width:100%; max-width:390px; }
+.profile-field{ flex:1; min-width:0; }
+.profile-field>span{ display:block; margin:0 0 6px 2px; color:var(--parchment-dim); font-size:11px; letter-spacing:.08em; }
 .new-profile input{
-  flex:1; font:inherit; font-size:15px; padding:12px 14px; border-radius:3px;
+  width:100%; font:inherit; font-size:15px; padding:12px 14px; border-radius:3px;
   background:rgba(239,227,200,.05); border:1px solid rgba(239,227,200,.18); color:var(--parchment);
 }
 .new-profile input::placeholder{ color:var(--parchment-dim); }

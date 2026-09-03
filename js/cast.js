@@ -68,7 +68,7 @@ export const CAST = [
     id: 'freja', name: 'Freja', style: 'Fortælling', accent: '--freja',
     quote: 'Lad os se, hvor historien fører os hen.',
     strength: 'Styrke: nysgerrighed.',
-    recommends: 'Freja peger på Øvelse. Følg spørgsmålene, og lad sammenhængene dukke op.',
+    recommends: 'Freja peger på Træning. Vælg Øvelse, følg spørgsmålene, og lad sammenhængene dukke op.',
     svg: rig({
       blink: 1.7, breath: .6,
       // tallest, slenderest, flowing cloak
@@ -91,7 +91,7 @@ export const CAST = [
     id: 'gorm', name: 'Gorm', style: 'Ro', accent: '--gorm',
     quote: 'Ingen grund til at skynde sig. Vi når det.',
     strength: 'Styrke: disciplin.',
-    recommends: 'Gorm peger på Øvelse. Lidt hver dag slår alt andet.',
+    recommends: 'Gorm peger på Træning. Vælg Øvelse; lidt hver dag slår alt andet.',
     svg: rig({
       blink: 3.1, breath: 1.4,
       // solid, upright, planted on the staff
@@ -115,7 +115,7 @@ export const CAST = [
     id: 'ingrid', name: 'Ingrid', style: 'Læring', accent: '--ingrid',
     quote: 'Lad os forstå det, der betyder noget.',
     strength: 'Styrke: forståelse.',
-    recommends: 'Ingrid peger på Tinget. Værdispørgsmålene handler om principper, ikke udenadslære.',
+    recommends: 'Ingrid peger på Træning. Begynd med Tinget; værdispørgsmålene handler om principper, ikke udenadslære.',
     svg: rig({
       blink: 2.3, breath: 2.1,
       // balanced, layered, mid-explanation
@@ -141,7 +141,7 @@ export const CAST = [
     id: 'astrid', name: 'Astrid', style: 'Erindring', accent: '--astrid',
     quote: 'Giv mig en kendsgerning. Jeg giver dig en historie.',
     strength: 'Styrke: at gøre viden mindeværdig.',
-    recommends: 'Astrid peger på Øvelse. Hun hænger hvert svar op på noget, du kan huske.',
+    recommends: 'Astrid peger på Træning. Vælg Øvelse; hun hænger hvert svar op på noget, du kan huske.',
     svg: rig({
       blink: 4.4, breath: 1.1,
       // asymmetric flowing hem, storyteller's raised hand

@@ -54,7 +54,7 @@
 
 <div class="scene" id="scene" aria-hidden="true"></div>
 
-<section class="welcome" id="welcome" aria-labelledby="welcomeTitle">
+<section class="welcome" id="welcome" role="main" aria-labelledby="welcomeTitle">
   <header class="welcome-nav">
     <a class="welcome-brand" href="#welcomeTitle" aria-label="Félag, forsiden">
       <span class="brand-mark" aria-hidden="true">
@@ -79,7 +79,7 @@
       </p>
       <h1 id="welcomeTitle">Kend Danmark.<br><em>Bestå prøven.</em></h1>
       <p class="welcome-lead">
-        Træn med 508 rigtige spørgsmål fra SIRIs tidligere prøver. Officielle svar,
+        Træn med <span id="welcomeQuestionCopy">rigtige spørgsmål</span> fra SIRIs tidligere prøver. Officielle svar,
         forklaringer fra lærematerialet og hele prøven på tid.
       </p>
       <div class="welcome-actions">
@@ -87,24 +87,24 @@
           <span>Begynd vandringen</span>
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 5 7 7-7 7m6-7H4"/></svg>
         </button>
-        <span class="welcome-free">Gratis · ingen login · ingen reklamer</span>
+        <span class="welcome-free">Gratis · ingen login · ingen reklamer · <a href="https://danskogproever.dk/borger/indfoedsretsproeve-statsborgerskab/forberedelse-til-indfoedsretsproeven/" target="_blank" rel="noopener">SIRIs kilder</a></span>
       </div>
     </div>
 
     <aside class="welcome-journey" aria-label="Læringssti med seks haller">
       <p>Din læringssti</p>
       <h2>Seks haller.<br>Ét mål.</h2>
-      <div class="journey-line" aria-hidden="true">
+      <div class="journey-line">
         <span class="journey-path"></span>
-        <i class="active"><b>I</b></i>
-        <i><b>II</b></i>
-        <i><b>III</b></i>
-        <i><b>IV</b></i>
-        <i><b>V</b></i>
-        <i><b>VI</b></i>
+        <button class="active" type="button" data-welcome-hall="0"><b>I</b></button>
+        <button type="button" data-welcome-hall="1"><b>II</b></button>
+        <button type="button" data-welcome-hall="2"><b>III</b></button>
+        <button type="button" data-welcome-hall="3"><b>IV</b></button>
+        <button type="button" data-welcome-hall="4"><b>V</b></button>
+        <button type="button" data-welcome-hall="5"><b>VI</b></button>
       </div>
       <div class="journey-caption">
-        <span><small>Begynd her</small>Danmarks historie</span>
+        <span><small id="welcomeIdentity">Begynd her</small><span id="welcomeHallName">Danmarks historie</span></span>
         <span><small>Målet</small>Altinget</span>
       </div>
     </aside>
@@ -154,8 +154,9 @@
     <div class="profiles" id="profiles"></div>
 
     <form class="new-profile" id="newProfile" autocomplete="off">
-      <input id="profileName" type="text" maxlength="24" required
-             placeholder="Dit navn" aria-label="Navn på ny profil" />
+      <label class="profile-field" for="profileName"><span>Dit navn</span>
+        <input id="profileName" type="text" maxlength="24" required placeholder="Skriv dit navn" />
+      </label>
       <button class="btn primary" type="submit"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Tilføj</button>
     </form>
 
@@ -415,7 +416,7 @@
 
 </main>
 
-<footer class="foot">
+<footer class="foot" id="foot" hidden>
   <div class="foot-inner">
     <span class="foot-promise">
       <span class="foot-knot" aria-hidden="true">
@@ -432,7 +433,7 @@
   </div>
 </footer>
 
-<div class="boot" id="boot"><span class="boot-spin" aria-hidden="true"></span>Henter spørgsmål…</div>
+<div class="boot" id="boot" role="status"><span class="boot-spin" aria-hidden="true"></span>Henter spørgsmål…</div>
 
 <script type="module" src="./js/app.js"></script>
 </body>

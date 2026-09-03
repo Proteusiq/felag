@@ -32,6 +32,7 @@ const $ = (id) => document.getElementById(id);
    nothing.
    ============================================================ */
 const ROSTER = 'felag.people';
+const ACTIVE_PROFILE = 'felag.active';
 const LEGACY = 'felag.v1';
 const keyFor = (slug) => `felag.v1.${slug}`;
 const slugify = (name) =>
@@ -44,6 +45,10 @@ function people() {
 }
 function remember(list) {
   try { localStorage.setItem(ROSTER, JSON.stringify(list)); } catch { /* ignore */ }
+}
+function activePerson() {
+  const slug = localStorage.getItem(ACTIVE_PROFILE);
+  return people().find((name) => slugify(name) === slug) ?? null;
 }
 
 /* ---------- exam rules, straight from SIRI ----------
@@ -83,6 +88,7 @@ const state = {
   sound: false,
   run: null,
 };
+let welcomeHall = null;
 
 /* ============================================================
    Persistence
@@ -369,6 +375,24 @@ function renderLearningPath() {
     <span class="learning-open">Åbn stien<svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m10 5 7 7-7 7m6-7H6"/></svg></span>`;
 }
 
+function renderWelcomeJourney() {
+  const cleared = state.profile ? state.cleared ?? 0 : 0;
+  const current = Math.min(cleared, HALLS.length - 1);
+  document.querySelectorAll('[data-welcome-hall]').forEach((button) => {
+    const index = Number(button.dataset.welcomeHall);
+    const hall = HALLS[index];
+    const status = index < cleared ? 'ryddet' : index === cleared ? 'åben' : 'låst';
+    button.classList.toggle('done', index < cleared);
+    button.classList.toggle('active', index === current);
+    button.disabled = index > cleared;
+    button.setAttribute('aria-label', `Hal ${hall.numeral}: ${hall.da}, ${status}`);
+  });
+  $('welcomeIdentity').textContent = state.profile ? `Fortsæt som ${state.profile.name}` : 'Begynd her';
+  $('welcomeHallName').textContent = HALLS[current].da;
+  $('welcomeStart').querySelector('span').textContent = state.profile ? 'Fortsæt rejsen' : 'Begynd vandringen';
+  $('welcomeNavStart').textContent = state.profile ? 'Fortsæt' : 'Start træning';
+}
+
 /* ============================================================
    Modes
    ============================================================ */
@@ -558,13 +582,27 @@ function renderPeople() {
     let done = 0;
     try { done = JSON.parse(localStorage.getItem(keyFor(slugify(name))) ?? '{}').cleared ?? 0; }
     catch { /* ignore */ }
-    return `<button class="profile" type="button" data-name="${safe}" style="--d:${i * 0.05}s">
-        <span class="mark">${safe.slice(0, 1).toUpperCase()}</span>
-        <span><b>${safe}</b><small>${done ? `${done} af 6 porte åbnet` : 'ingen porte åbnet endnu'}</small></span>
-        <span class="drop" role="button" tabindex="0" data-drop="${safe}" aria-label="Fjern ${safe}">&times;</span>
-      </button>`;
+    return `<span class="profile-row">
+        <button class="profile" type="button" data-name="${safe}" style="--d:${i * 0.05}s">
+          <span class="mark">${safe.slice(0, 1).toUpperCase()}</span>
+          <span><b>${safe}</b><small>${done ? `${done} af 6 porte åbnet` : 'ingen porte åbnet endnu'}</small></span>
+        </button>
+        <button class="drop" type="button" data-drop="${safe}" aria-label="Fjern ${safe}">&times;</button>
+      </span>`;
   }).join('');
   $('newProfile').querySelector('input').placeholder = list.length ? 'Nyt navn' : 'Dit navn';
+}
+
+function resumeJourney() {
+  if (!state.profile) return showWho();
+  if (!state.guide) return go('viewShore', 'shore');
+  const hallIndex = welcomeHall;
+  welcomeHall = null;
+  if (hallIndex !== null && hallState(hallIndex) !== 'shut') {
+    return start(null, hallMode(HALLS[hallIndex], hallIndex));
+  }
+  renderPath();
+  go('viewPath', 'path');
 }
 
 function useProfile(name, { guest = false } = {}) {
@@ -572,6 +610,8 @@ function useProfile(name, { guest = false } = {}) {
     ? { name: 'Gæst', slug: 'gaest', key: 'felag.guest', guest: true }
     : { name, slug: slugify(name), key: keyFor(slugify(name)), guest: false };
   load();
+  if (!guest) localStorage.setItem(ACTIVE_PROFILE, state.profile.slug);
+  $('foot').hidden = false;
   $('whoNow').textContent = state.profile.name;
   $('soundToggle').textContent = state.sound ? 'Lyd til' : 'Lyd fra';
   $('soundToggle').setAttribute('aria-pressed', String(state.sound));
@@ -584,13 +624,13 @@ function useProfile(name, { guest = false } = {}) {
   }
   if (state.guide) {
     choose(state.guide);
-    renderPath();
-    return go('viewPath', 'path');
+    return resumeJourney();
   }
   go('viewShore', 'shore');
 }
 
 function showWho() {
+  $('foot').hidden = true;
   renderPeople();
   go('viewWho', 'landfall');
 }
@@ -604,27 +644,6 @@ function renderShore() {
       <b>${c.name}</b><span>${c.style}</span>
     </button>`).join('');
 
-  const roster = $('roster');
-  roster.addEventListener('click', (e) => {
-    const btn = e.target.closest('.char');
-    if (btn) choose(btn.dataset.id);
-  });
-  // Double-click picks and walks on in one go. The button stays the primary
-  // path: touch has no dblclick, so this is a shortcut, never the only way.
-  roster.addEventListener('dblclick', (e) => {
-    const btn = e.target.closest('.char');
-    if (!btn) return;
-    choose(btn.dataset.id);
-    begin();
-  });
-  // Keyboard parity: Enter on a focused guide does the same as double-click.
-  roster.addEventListener('keydown', (e) => {
-    const btn = e.target.closest('.char');
-    if (!btn || e.key !== 'Enter') return;
-    e.preventDefault();
-    choose(btn.dataset.id);
-    begin();
-  });
 }
 
 function choose(id) {
@@ -1735,6 +1754,7 @@ async function main() {
   state.bankById = new Map(state.bank.map((q) => [q.id, q]));
   const papers = new Set(state.bank.flatMap((q) => q.seen.map((seen) => seen.split('#')[0])));
   $('welcomeQuestions').textContent = state.bank.length.toLocaleString('da-DK');
+  $('welcomeQuestionCopy').textContent = `${state.bank.length.toLocaleString('da-DK')} rigtige spørgsmål`;
   $('welcomePapers').textContent = papers.size.toLocaleString('da-DK');
   $('welcomeHalls').textContent = HALLS.length.toLocaleString('da-DK');
 
@@ -1752,19 +1772,26 @@ async function main() {
     history.replaceState(null, '', location.pathname);
     state.pendingChallenge = challenge;
   }
-  showWho();
-  scenes.show('path');
+  const active = activePerson();
+  if (active) useProfile(active);
+  else showWho();
+  renderWelcomeJourney();
+  if (challenge && active) $('welcome').hidden = true;
+  else scenes.show('path');
   $('boot').hidden = true;
 }
 
 /* ---------- wiring ---------- */
 function begin() {
   if (!state.guide) return;
-  renderPath();
-  go('viewPath', 'path');
+  resumeJourney();
 }
 
 $('beginBtn').addEventListener('click', begin);
+$('roster').addEventListener('click', (e) => {
+  const btn = e.target.closest('.char');
+  if (btn) choose(btn.dataset.id);
+});
 $('changeGuide').addEventListener('click', () => go('viewShore', 'shore'));
 $('learningPath').addEventListener('click', showHalls);
 function openMode(id) {
@@ -1889,7 +1916,10 @@ $('profiles').addEventListener('click', (e) => {
     if (!confirm(`Fjern ${name} og al fremgang på denne enhed?`)) return;
     remember(people().filter((n) => n !== name));
     localStorage.removeItem(keyFor(slugify(name)));
-    return renderPeople();
+    if (localStorage.getItem(ACTIVE_PROFILE) === slugify(name)) localStorage.removeItem(ACTIVE_PROFILE);
+    renderPeople();
+    ($('profiles').querySelector('.profile') ?? $('profileName')).focus();
+    return;
   }
   const card = e.target.closest('.profile');
   if (card) useProfile(card.dataset.name);
@@ -1900,11 +1930,18 @@ $('newProfile').addEventListener('submit', (e) => {
   const input = $('profileName');
   const name = input.value.trim();
   if (!name) return;
+  if (!slugify(name)) {
+    input.setCustomValidity('Brug mindst ét bogstav eller tal.');
+    input.reportValidity();
+    return;
+  }
+  input.setCustomValidity('');
   const list = people();
   // Same name twice would share one record, which is the bug we are fixing.
-  if (!list.some((n) => slugify(n) === slugify(name))) remember([...list, name]);
+  const existing = list.find((item) => slugify(item) === slugify(name));
+  if (!existing) remember([...list, name]);
   input.value = '';
-  useProfile(name);
+  useProfile(existing ?? name);
 });
 
 $('guestBtn').addEventListener('click', () => {
@@ -1917,12 +1954,17 @@ function enterApp() {
   welcome.classList.add('leaving');
   setTimeout(() => {
     welcome.hidden = true;
-    scenes.show('landfall');
-    $('profileName').focus({ preventScroll: true });
+    resumeJourney();
   }, scenes.still.matches ? 0 : 450);
 }
 $('welcomeStart').addEventListener('click', enterApp);
 $('welcomeNavStart').addEventListener('click', enterApp);
+$('welcome').addEventListener('click', (e) => {
+  const hall = e.target.closest('[data-welcome-hall]');
+  if (!hall || hall.disabled) return;
+  welcomeHall = Number(hall.dataset.welcomeHall);
+  enterApp();
+});
 
 main().catch((err) => {
   $('boot').innerHTML = `<p>Kunne ikke hente spørgsmålene.<br><small>${err}</small></p>`;
