@@ -67,10 +67,8 @@ const EXAM = {
   checked: '2026-08-13',
   source: 'https://danskogproever.dk/tilmeldingsfrister-og-proevedatoer/',
 };
-/* Six wrong sinks the full paper of 45. A hall of 12 or a duel of 15 kept the
-   same six, so a short crossing was over before the water ever reached the
-   gunwale. The share is what sinks you, not the count, and never fewer than
-   two: one mistake must not drown a five-question drill. */
+/* Ungraded crossings keep a little drama. Graded crossings sink only when a
+   pass is mathematically impossible; ending earlier would change SIRI's rules. */
 const SINK_SHARE = 6 / 45;
 const sinkAfter = (n) => Math.max(2, Math.round(n * SINK_SHARE));
 const SINK_AFTER_VALUE_WRONG = 2;
@@ -1370,7 +1368,13 @@ function renderQuestion() {
 
 function sinkReason(run) {
   const wrong = run.marks.filter((mark) => mark === false).length;
-  if (wrong >= sinkAfter(run.questions.length)) {
+  const pass = run.mode.exam
+    ? RULES.pass
+    : run.mode.hall
+    ? Math.ceil(run.questions.length * HALL_PASS)
+    : run.mode.gate?.need;
+  const fatal = pass ? run.questions.length - pass + 1 : sinkAfter(run.questions.length);
+  if (wrong >= fatal) {
     return `${NUMERAL[wrong] ?? wrong} fejl. Skibet tager for meget vand ind.`;
   }
 
@@ -1568,9 +1572,12 @@ function finish() {
 
   state.best[mode.id] = Math.max(state.best[mode.id] ?? 0, score);
   // Clearing a hall opens the next one, and only ever forwards.
+  const wasCleared = state.cleared ?? 0;
   if (mode.hall && passed) {
     state.cleared = Math.max(state.cleared ?? 0, mode.index + 1);
   }
+  // The prize fires once, at the crossing from "not all" to "all six".
+  const wonAll = wasCleared < HALLS.length && state.cleared >= HALLS.length;
   save();
   if (passed !== false) sfx.done();
 
@@ -1607,8 +1614,14 @@ function finish() {
     ${ghost
       ? ''
       : mode.hall
-      ? `<p class="note">${passed
-          ? 'Porten er åbnet. Den næste hal kan nu besøges.'
+      ? `${wonAll ? `<div class="prize">
+          <span class="prize-sigil" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none"><path d="M24 4l5 11 12 1-9 8 3 12-11-6-11 6 3-12-9-8 12-1z"/></svg></span>
+          <b>Alle seks porte er åbnet!</b>
+          <span>Du har gennemført hele Læringsstien og læst hele sagaen. Nu venter Altinget — hele prøven på tid, under de rigtige regler.</span>
+          <button class="btn primary prize-go" id="altingBtn" type="button">${topicIcon('parliament', 'mode-icon alting')}Tag Altinget nu — 45 spørgsmål</button>
+        </div>` : ''}
+        <p class="note">${passed
+          ? (wonAll ? 'Den sidste hal er ryddet. Sagaen er fuldført.' : 'Porten er åbnet. Den næste hal kan nu besøges.')
           : sunk
           ? 'Du nåede ikke frem denne gang. Brug forklaringerne og prøv hallen igen.'
           : `Du skal have ${Math.ceil(questions.length * HALL_PASS)} af ${questions.length} for at rydde hallen. Spørgsmålene blandes hver gang.`}</p>`
@@ -1644,6 +1657,9 @@ function finish() {
       sagaDoor = hallDoor;
       showSagas(mode.hall, new Set(missed.map((q) => q.id)));
     };
+  }
+  if (wonAll) {
+    $('altingBtn').onclick = () => start('alting');
   }
   $('shareBtn').onclick = async () => {
     // The whole challenge travels in the fragment, so nothing is stored anywhere.
@@ -1717,6 +1733,10 @@ async function main() {
     return now ? { ...merged, status: now.status, currency: now.note } : merged;
   });
   state.bankById = new Map(state.bank.map((q) => [q.id, q]));
+  const papers = new Set(state.bank.flatMap((q) => q.seen.map((seen) => seen.split('#')[0])));
+  $('welcomeQuestions').textContent = state.bank.length.toLocaleString('da-DK');
+  $('welcomePapers').textContent = papers.size.toLocaleString('da-DK');
+  $('welcomeHalls').textContent = HALLS.length.toLocaleString('da-DK');
 
   // Anyone who used the app before profiles existed keeps their progress.
   const legacy = localStorage.getItem(LEGACY);
@@ -1733,6 +1753,7 @@ async function main() {
     state.pendingChallenge = challenge;
   }
   showWho();
+  scenes.show('path');
   $('boot').hidden = true;
 }
 
@@ -1890,6 +1911,18 @@ $('guestBtn').addEventListener('click', () => {
   sessionStorage.removeItem('felag.guest');
   useProfile(null, { guest: true });
 });
+
+function enterApp() {
+  const welcome = $('welcome');
+  welcome.classList.add('leaving');
+  setTimeout(() => {
+    welcome.hidden = true;
+    scenes.show('landfall');
+    $('profileName').focus({ preventScroll: true });
+  }, scenes.still.matches ? 0 : 450);
+}
+$('welcomeStart').addEventListener('click', enterApp);
+$('welcomeNavStart').addEventListener('click', enterApp);
 
 main().catch((err) => {
   $('boot').innerHTML = `<p>Kunne ikke hente spørgsmålene.<br><small>${err}</small></p>`;
