@@ -6,7 +6,7 @@
 
 [![Open the site](https://img.shields.io/badge/Begynd%20vandringen-proteusiq.github.io%2Ffelag-d3a24c?style=for-the-badge)](https://proteusiq.github.io/felag/)
 
-[![Version](https://img.shields.io/badge/version-0.0.13-d3a24c?style=flat-square)](https://github.com/Proteusiq/felag/releases)
+[![Version](https://img.shields.io/badge/version-0.0.14-d3a24c?style=flat-square)](https://github.com/Proteusiq/felag/releases)
 [![Questions](https://img.shields.io/badge/spørgsmål-508-223448?style=flat-square)](data/questions.jsonl)
 [![Papers](https://img.shields.io/badge/prøver-13%20(2020–2026)-223448?style=flat-square)](https://danskogproever.dk/borger/indfoedsretsproeve-statsborgerskab/forberedelse-til-indfoedsretsproeven/)
 [![Price](https://img.shields.io/badge/pris-0%20kr-8fae8c?style=flat-square)](#)
@@ -75,7 +75,7 @@ Beyond them stand:
 - **Dysten**, a race against Bjørn or against a friend, settled under a raised banner or a struck one, with both scores side by side
 - **Tinget**, the five values questions, taught as ten principles rather than drilled
 - **Altinget**, the whole paper on the clock
-- **Sagaerne**, the læremateriale itself, cut into 57 stretches and sized by how much of the exam came off each one
+- **Sagaerne**, explanations from the læremateriale, cut into 56 stretches and sized by how much of the exam came off each one
 
 And on the road itself, the only date that matters: how many days until the ship
 puts in.
@@ -134,14 +134,14 @@ pinned, and fetched only when someone actually walks in.
 
 ## Sagaerne, where the reading is done
 
-The halls ask; the læremateriale answers, and it is 243 pages. Félag reads the
+The halls ask; the læremateriale answers, and it is 246 pages. Félag reads the
 book by its own typography rather than by guessing at its text — 38pt is a
 section number, 13pt in the heading face a heading, 13pt in the text face a
-table caption that only looks like one — and cuts it into **57 stretches**, each
+table caption that only looks like one — and cuts it into **56 stretches**, each
 holding the questions drawn from its pages. All 397 land in exactly one.
 
 Each stretch is a settlement sized by how much of the exam came off those pages,
-because the material is steeply uneven: ten pages of 243 hold 22 questions in
+because the material is steeply uneven: ten pages of 246 hold 22 questions in
 every 100, and 98 pages have never been examined at all. Those stand as
 **ødegårde**, the word for a farm left empty after the plague. The pages are
 there and nobody lives on them, which is worth knowing when you are studying
