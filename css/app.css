@@ -230,7 +230,7 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
   .welcome-copy,.welcome-journey{ width:100%; max-width:100%; }
   .welcome h1{ font-size:clamp(37px,10.5vw,44px); }
   .welcome-lead{ margin-top:20px; font-size:15px; line-height:1.55; }
-  .welcome-actions{ margin-top:27px; }.welcome-start{ width:100%; justify-content:space-between; }.welcome-exam{ width:100%; justify-content:center; }
+  .welcome-actions{ margin-top:27px; }.welcome-start{ width:100%; justify-content:space-between; }.welcome-exam{ width:100%; justify-content:flex-start; padding-left:24px; }
   .welcome-free{ width:100%; text-align:center; }
   .welcome-journey{ padding:24px 20px 21px; }.welcome-journey h2{ font-size:25px; }
   .journey-line{ margin-top:26px; }.journey-line button{ width:27px; height:27px; }.journey-line button.active{ width:33px; height:33px; }
