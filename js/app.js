@@ -2030,6 +2030,12 @@ function enterApp() {
 }
 $('welcomeStart').addEventListener('click', enterApp);
 $('welcomeNavStart').addEventListener('click', enterApp);
+$('motionToggle').hidden = !scenes.canTilt();
+$('motionToggle').addEventListener('click', async (event) => {
+  const enabled = await scenes.enableTilt();
+  event.currentTarget.setAttribute('aria-pressed', String(enabled));
+  event.currentTarget.querySelector('span').textContent = enabled ? 'Bevægelse er aktiv' : 'Bevægelse er ikke tilladt';
+});
 $('welcome').addEventListener('click', (e) => {
   const hall = e.target.closest('[data-welcome-hall]');
   if (!hall || hall.disabled) return;

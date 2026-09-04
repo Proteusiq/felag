@@ -244,21 +244,58 @@ const defs = `<defs>
 
 let host = null;
 let depths = [];
+let tiltBase = null;
+let tiltOn = false;
+let mounted = false;
 
 export const still = matchMedia('(prefers-reduced-motion: reduce)');
 
+const clamp = (value) => Math.max(-1, Math.min(1, value));
+
+function move(x, y) {
+  if (!host || still.matches) return;
+  document.documentElement.style.setProperty('--scene-light-x', `${(50 + x * 12).toFixed(2)}%`);
+  document.documentElement.style.setProperty('--scene-light-y', `${(36 + y * 9).toFixed(2)}%`);
+  host.querySelectorAll('.layer').forEach((layer, index) => {
+    const depth = depths[index] ?? 0;
+    layer.style.transform = `translate(${(-x * depth * 34).toFixed(2)}px, ${(-y * depth * 18).toFixed(2)}px)`;
+  });
+}
+
+function orient(event) {
+  if (!tiltOn || event.beta === null || event.gamma === null) return;
+  tiltBase ??= { beta: event.beta, gamma: event.gamma };
+  move(clamp((event.gamma - tiltBase.gamma) / 24), clamp((event.beta - tiltBase.beta) / 24));
+}
+
+export function canTilt() {
+  return !still.matches && matchMedia('(pointer:coarse)').matches && 'DeviceOrientationEvent' in window;
+}
+
+export async function enableTilt() {
+  if (!canTilt()) return false;
+  const permission = DeviceOrientationEvent.requestPermission;
+  try {
+    if (permission && await permission.call(DeviceOrientationEvent) !== 'granted') return false;
+  } catch {
+    return false;
+  }
+  tiltBase = null;
+  tiltOn = true;
+  return true;
+}
+
 export function mount(el) {
   host = el;
-  // Pointer parallax, capped at a few pixels so it reads as depth, not as a toy.
-  addEventListener('pointermove', (e) => {
-    if (still.matches) return;
-    const x = (e.clientX / innerWidth - .5) * 2;
-    const y = (e.clientY / innerHeight - .5) * 2;
-    host.querySelectorAll('.layer').forEach((g, i) => {
-      const d = depths[i] ?? 0;
-      g.style.transform = `translate(${(-x * d * 34).toFixed(2)}px, ${(-y * d * 18).toFixed(2)}px)`;
-    });
+  if (mounted) return;
+  mounted = true;
+  // Touch keeps normal page gestures unless the reader explicitly enables the
+  // phone sensor. Pointer movement provides the same depth on desktop.
+  addEventListener('pointermove', (event) => {
+    if (!matchMedia('(pointer:fine)').matches || tiltOn) return;
+    move((event.clientX / innerWidth - .5) * 2, (event.clientY / innerHeight - .5) * 2);
   }, { passive: true });
+  addEventListener('deviceorientation', orient, { passive: true });
 }
 
 export function show(name) {

@@ -87,6 +87,10 @@
           <span>Begynd vandringen</span>
           <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9 5 7 7-7 7m6-7H4"/></svg>
         </button>
+        <button class="motion-toggle" id="motionToggle" type="button" aria-pressed="false" hidden>
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v18M3 12h18M6.3 6.3l11.4 11.4M17.7 6.3 6.3 17.7"/><circle cx="12" cy="12" r="3"/></svg>
+          <span>Aktivér bevægelse</span>
+        </button>
         <span class="welcome-free">Gratis · ingen login · ingen reklamer · <a href="https://danskogproever.dk/borger/indfoedsretsproeve-statsborgerskab/forberedelse-til-indfoedsretsproeven/" target="_blank" rel="noopener">SIRIs kilder</a></span>
       </div>
     </div>
@@ -95,12 +99,16 @@
       <p>Din læringssti</p>
       <h2>Seks haller.<br>Ét mål.</h2>
       <div class="journey-line">
-        <span class="journey-path"></span>
         <button class="active" type="button" data-welcome-hall="0"><b>I</b></button>
+        <span class="journey-segment" aria-hidden="true"></span>
         <button type="button" data-welcome-hall="1"><b>II</b></button>
+        <span class="journey-segment" aria-hidden="true"></span>
         <button type="button" data-welcome-hall="2"><b>III</b></button>
+        <span class="journey-segment" aria-hidden="true"></span>
         <button type="button" data-welcome-hall="3"><b>IV</b></button>
+        <span class="journey-segment" aria-hidden="true"></span>
         <button type="button" data-welcome-hall="4"><b>V</b></button>
+        <span class="journey-segment" aria-hidden="true"></span>
         <button type="button" data-welcome-hall="5"><b>VI</b></button>
       </div>
       <div class="journey-caption">
