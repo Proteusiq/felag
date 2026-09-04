@@ -205,7 +205,7 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
 @keyframes welcome-in{ from{ opacity:0; transform:translateY(18px); } to{ opacity:1; transform:none; } }
 
 @media (max-width:850px){
-  .welcome{ padding-inline:24px; }
+  .welcome{ padding-left:max(24px,env(safe-area-inset-left)); padding-right:max(24px,env(safe-area-inset-right)); }
   .welcome-main{ grid-template-columns:1fr; gap:36px; align-content:center; }
   .welcome-copy{ max-width:650px; }
   .welcome-journey{ max-width:520px; }
@@ -264,6 +264,7 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
    block for position:fixed children. That silently trapped the mobile start
    button inside the view instead of pinning it to the viewport. */
 .view{ display:flex; flex-direction:column; align-items:center; animation:rise .5s var(--ease) backwards; }
+.view :is(h1,h2)[tabindex="-1"]:focus{ outline:none; }
 /* The mobile start button becomes fixed after choosing a guide. Keep the shore
    entrance free of transforms, which would otherwise trap that button briefly. */
 #viewShore{ animation:fade .5s var(--ease) backwards; }

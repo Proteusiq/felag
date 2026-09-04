@@ -308,6 +308,10 @@ export function render(el, stops, guide, onPick) {
     const [a, b] = [...live.values()];
     return Math.hypot(a.x - b.x, a.y - b.y);
   };
+  const middle = () => {
+    const [a, b] = [...live.values()];
+    return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+  };
   let from = null;
   let moved = false;
   let pinch = null;
@@ -315,7 +319,7 @@ export function render(el, stops, guide, onPick) {
   el.addEventListener('pointerdown', (e) => {
     live.set(e.pointerId, { x: e.clientX, y: e.clientY });
     if (live.size === 2) {
-      pinch = { gap: gap(), scale: view.scale };
+      pinch = { gap: gap(), scale: view.scale, ...middle(), vx: view.x, vy: view.y, box: el.getBoundingClientRect() };
       from = null;
       return;
     }
@@ -328,7 +332,14 @@ export function render(el, stops, guide, onPick) {
 
   el.addEventListener('pointermove', (e) => {
     if (live.has(e.pointerId)) live.set(e.pointerId, { x: e.clientX, y: e.clientY });
-    if (pinch) return zoom(pinch.scale * gap() / pinch.gap);
+    if (pinch) {
+      const center = middle();
+      zoom(pinch.scale * gap() / pinch.gap);
+      view.x = pinch.vx + ((center.x - pinch.x) / pinch.box.width) * 100;
+      view.y = pinch.vy + ((center.y - pinch.y) / pinch.box.height) * 100;
+      apply();
+      return;
+    }
     // A drag is a drag. Your figure holds its ground while the map moves under
     // it, or panning would drag the two of you around together.
     if (!from) return follow(e);

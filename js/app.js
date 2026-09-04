@@ -814,7 +814,8 @@ const inSentence = (name) =>
  * an answer from another. The count is unioned over the members actually shown,
  * so "stillet 3 gange" is a claim the page can back up.
  */
-function oneEach(questions) {
+function oneEach(questions, local = false) {
+  const available = new Map(questions.map((q) => [q.id, q]));
   const taken = new Set();
   const out = [];
   for (const q of questions) {
@@ -824,8 +825,13 @@ function oneEach(questions) {
     taken.add(group);
     const kin = group.map((id) => state.bankById.get(id)).filter((x) => x && usable(x));
     if (!kin.length) continue;
-    const lead = kin.reduce((best, x) =>
-      (x.explain?.length ?? 0) > (best.explain?.length ?? 0) ? x : best, kin[0]);
+    const candidates = local ? kin.filter((item) => available.has(item.id)) : kin;
+    const lead = candidates.reduce((best, x) =>
+      (x.explain?.length ?? 0) > (best.explain?.length ?? 0) ? x : best, candidates[0]);
+    // In the ordinary reading room, a shared fact lives only beside its best
+    // explanation. Focused remediation may repeat it in the hall where it was
+    // missed, because finding the learner's gap matters more than tidy shelves.
+    if (!local && !available.has(lead.id)) continue;
     const asked = [...new Set(kin.flatMap((x) => x.seen))].sort();
     out.push({ ...lead, seen: asked });
   }
@@ -915,7 +921,8 @@ function showSagas(hall, missed = null) {
   const places = sagasIn(hall.chapter);
   const shown = places.map((saga) => {
     const questions = oneEach(
-      saga.questions.map((id) => state.bankById.get(id)).filter((q) => q && usable(q)));
+      saga.questions.map((id) => state.bankById.get(id)).filter((q) => q && usable(q)),
+      Boolean(missed));
     const hit = missed ? questions.filter((q) => readingWasMissed(q, missed)) : questions;
     return { saga, questions, hit };
   }).filter((row) => !missed || row.hit.length);
@@ -1661,8 +1668,8 @@ function finish() {
   const missed = mode.hall && passed === false
     ? questions.filter((_, i) => marks[i] === false)
     : [];
-  const nextHall = mode.hall && passed && mode.index < HALLS.length - 1
-    ? HALLS[mode.index + 1]
+  const nextHall = mode.hall && passed && state.cleared > wasCleared && state.cleared < HALLS.length
+    ? HALLS[state.cleared]
     : null;
   const guide = byId(state.guide) ?? CAST[0];
 
@@ -2006,6 +2013,7 @@ $('newProfile').addEventListener('submit', (e) => {
   input.value = '';
   useProfile(existing ?? name);
 });
+$('profileName').addEventListener('input', (e) => e.currentTarget.setCustomValidity(''));
 
 $('guestBtn').addEventListener('click', () => {
   sessionStorage.removeItem('felag.guest');
