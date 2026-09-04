@@ -246,6 +246,7 @@ let host = null;
 let depths = [];
 let tiltBase = null;
 let tiltOn = false;
+let tiltAsked = false;
 let mounted = false;
 
 export const still = matchMedia('(prefers-reduced-motion: reduce)');
@@ -272,16 +273,21 @@ export function canTilt() {
   return !still.matches && matchMedia('(pointer:coarse)').matches && 'DeviceOrientationEvent' in window;
 }
 
-export async function enableTilt() {
-  if (!canTilt()) return false;
+function startTilt() {
+  tiltBase = null;
+  tiltOn = true;
+}
+
+export async function requestTilt() {
+  if (!canTilt() || tiltOn || tiltAsked) return false;
+  tiltAsked = true;
   const permission = DeviceOrientationEvent.requestPermission;
   try {
     if (permission && await permission.call(DeviceOrientationEvent) !== 'granted') return false;
   } catch {
     return false;
   }
-  tiltBase = null;
-  tiltOn = true;
+  startTilt();
   return true;
 }
 
@@ -289,8 +295,10 @@ export function mount(el) {
   host = el;
   if (mounted) return;
   mounted = true;
-  // Touch keeps normal page gestures unless the reader explicitly enables the
-  // phone sensor. Pointer movement provides the same depth on desktop.
+  // Android exposes orientation without a prompt. iPhone requires a tap, which
+  // requestTilt receives from the learner's first route choice.
+  if (canTilt() && !DeviceOrientationEvent.requestPermission) startTilt();
+  // Pointer movement provides the same depth on desktop.
   addEventListener('pointermove', (event) => {
     if (!matchMedia('(pointer:fine)').matches || tiltOn) return;
     move((event.clientX / innerWidth - .5) * 2, (event.clientY / innerHeight - .5) * 2);

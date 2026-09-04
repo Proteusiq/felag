@@ -84,6 +84,7 @@ const state = {
   run: null,
 };
 let welcomeHall = null;
+let welcomeMode = null;
 
 /* ============================================================
    Persistence
@@ -607,7 +608,10 @@ function resumeJourney() {
   if (!state.profile) return showWho();
   if (!state.guide) return go('viewShore', 'shore');
   const hallIndex = welcomeHall;
+  const mode = welcomeMode;
   welcomeHall = null;
+  welcomeMode = null;
+  if (mode === 'alting') return start('alting');
   if (hallIndex !== null && hallState(hallIndex) !== 'shut') {
     return start(null, hallMode(HALLS[hallIndex], hallIndex));
   }
@@ -2021,6 +2025,7 @@ $('guestBtn').addEventListener('click', () => {
 });
 
 function enterApp() {
+  scenes.requestTilt();
   const welcome = $('welcome');
   welcome.classList.add('leaving');
   setTimeout(() => {
@@ -2030,11 +2035,9 @@ function enterApp() {
 }
 $('welcomeStart').addEventListener('click', enterApp);
 $('welcomeNavStart').addEventListener('click', enterApp);
-$('motionToggle').hidden = !scenes.canTilt();
-$('motionToggle').addEventListener('click', async (event) => {
-  const enabled = await scenes.enableTilt();
-  event.currentTarget.setAttribute('aria-pressed', String(enabled));
-  event.currentTarget.querySelector('span').textContent = enabled ? 'Bevægelse er aktiv' : 'Bevægelse er ikke tilladt';
+$('welcomeExam').addEventListener('click', () => {
+  welcomeMode = 'alting';
+  enterApp();
 });
 $('welcome').addEventListener('click', (e) => {
   const hall = e.target.closest('[data-welcome-hall]');
