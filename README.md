@@ -6,7 +6,7 @@
 
 [![Open the site](https://img.shields.io/badge/Begynd%20vandringen-proteusiq.github.io%2Ffelag-d3a24c?style=for-the-badge)](https://proteusiq.github.io/felag/)
 
-[![Version](https://img.shields.io/badge/version-0.0.21-d3a24c?style=flat-square)](https://github.com/Proteusiq/felag/releases)
+[![Version](https://img.shields.io/badge/version-0.0.22-d3a24c?style=flat-square)](https://github.com/Proteusiq/felag/releases)
 [![Questions](https://img.shields.io/badge/spørgsmål-508-223448?style=flat-square)](data/questions.jsonl)
 [![Papers](https://img.shields.io/badge/prøver-13%20(2020–2026)-223448?style=flat-square)](https://danskogproever.dk/borger/indfoedsretsproeve-statsborgerskab/forberedelse-til-indfoedsretsproeven/)
 [![Price](https://img.shields.io/badge/pris-0%20kr-8fae8c?style=flat-square)](#)
@@ -43,7 +43,7 @@ than the source.
 -> 508 that differ
    397 laeremateriale   35 of the 45 you will face
     46 vaerdier          5 you will face, and 4 you must answer
-    65 aktuelt           5 you will face, drawn from the year's news
+    65 aktuelt           5 historical examples of the half-year news format
 ```
 
 The three kinds do not behave alike, and so they are not trained alike.
@@ -51,7 +51,7 @@ The three kinds do not behave alike, and so they are not trained alike.
 | Kind | Returns between papers | What that demands |
 |---|---|---|
 | Læremateriale | 31 in 100 | Drill it. How often a thing is asked is itself worth knowing. |
-| Værdier | 13 in 100 | Barely returns. Learn the principle, never the answer. |
+| Værdier | 8 in 100 | Barely returns. Learn the principle, never the answer. |
 | Aktuelt | none | Never returns. The old ones show the shape, not the answer. |
 
 ## The road itself
@@ -62,12 +62,12 @@ without ever barring the door.
 
 | | Hall | Questions |
 |---|---|---|
-| I | Danmarks historie | 116 |
-| II | Det danske demokrati | 74 |
-| III | Den danske økonomi | 19 |
-| IV | Danmark og omverdenen | 29 |
-| V | Dansk kulturliv | 46 |
-| VI | Temaopslag | 111 |
+| I | Danmarks historie | 128 |
+| II | Det danske demokrati | 67 |
+| III | Den danske økonomi | 20 |
+| IV | Danmark og omverdenen | 23 |
+| V | Dansk kulturliv | 47 |
+| VI | Temaopslag | 104 |
 
 Beyond them stand:
 
@@ -80,9 +80,9 @@ Beyond them stand:
 And on the road itself, the only date that matters: how many days until the ship
 puts in.
 
-A challenge is a link and nothing else. The seed rebuilds the identical paper,
-in the same order, with the same option order, so the race is fair without a
-server, an account or a database behind it.
+A challenge is a link and nothing else. Against the same question-bank version,
+the seed rebuilds the identical paper in the same order with the same option
+order, so the race is fair without a server, an account or a database behind it.
 
     #dyst=dyst~1toqq5u~111011100111001
 
@@ -141,8 +141,8 @@ table caption that only looks like one — and cuts it into **56 stretches**, ea
 holding the questions drawn from its pages. All 397 land in exactly one.
 
 Each stretch is a settlement sized by how much of the exam came off those pages,
-because the material is steeply uneven: ten pages of 246 hold 22 questions in
-every 100, and 98 pages have never been examined at all. Those stand as
+because the material is steeply uneven: the ten most-used pages hold about 18
+questions in every 100, and 97 pages have never been examined at all. Those stand as
 **ødegårde**, the word for a farm left empty after the plague. The pages are
 there and nobody lives on them, which is worth knowing when you are studying
 against a clock.
@@ -181,8 +181,8 @@ rule, and the traps, which are always two facts wearing one answer.
 
 > [!TIP]
 > **The third door opens more often than the others.** Across the thirteen
-> papers, C is correct in 39.3 of 100 three-choice questions, where blind chance
-> would give 33.3. That is 181 of 460, some 2.7 standard deviations out. It is
+> papers, C is correct in 38.5 of 100 three-choice questions, where blind chance
+> would give 33.3. That is 177 of 460, some 2.3 standard deviations out. It is
 > real, it is weak, and it will not carry you. Félag shuffles the choices at
 > every sitting so that what you learn is the matter itself and not the seat it
 > sat in.
@@ -231,13 +231,13 @@ no fewer than four of the five questions on Danish values.
 
 > [!CAUTION]
 > The values gate stands apart. A traveller may answer well overall and still be
-> turned back at it alone. That is precisely where most are turned back, and so
-> Félag weighs it separately and says so plainly.
+> turned back at it alone. Félag weighs that independent requirement separately
+> and says so plainly.
 
 ## Where the answers come from
 
-Answer a question and the panel gives you more than a tick. Every question has
-an explanation: direct explanations draw on the material or the historical
+Answer a practice question and the panel gives you more than a tick; Altinget
+waits until submission. Every question has an explanation drawn on the material or the historical
 event, while Danish-values questions teach the underlying legal principle.
 Beneath that sits the provenance: which sittings asked this, which chapter it
 belongs to, and links back to the official question and material.

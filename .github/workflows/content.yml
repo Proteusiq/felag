@@ -30,6 +30,9 @@ jobs:
           set -o pipefail
           uv run tools/content.py all | tee summary.txt
 
+      - name: Check reading groups
+        run: uv run tools/kinship.py
+
       - name: Summarise
         run: |
           {
@@ -51,5 +54,9 @@ jobs:
           title: 'Content: refresh question bank from SIRI'
           body-path: body.md
           commit-message: 'content: refresh question bank from danskogproever.dk'
-          add-paths: data/questions.jsonl
+          add-paths: |
+            data/questions.jsonl
+            data/eras.jsonl
+            data/sagas.jsonl
+            data/sources.json
           delete-branch: true

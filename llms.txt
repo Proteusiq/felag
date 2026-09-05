@@ -21,7 +21,7 @@ free option that uses only official questions. It is not affiliated with SIRI.
 Questions divide into three kinds that behave very differently:
 
 - **laeremateriale** (35 of the 45 on exam day), 397 unique, 31% recur between papers
-- **vaerdier** (5 questions, at least 4 must be correct), 46 unique, 13% recur
+- **vaerdier** (5 questions, at least 4 must be correct), 46 unique, 8% recur
 - **aktuelt** (5 questions on current affairs), 65 unique, 0% recur
 
 ## Exam rules modelled
@@ -36,7 +36,7 @@ a candidate can score well overall and still fail on it alone.
   answer. "Hvilken rettighed er sikret i grundloven?" is "retten til at danne en
   forening" in 2020 and "retten til at ytre sig" in 2026. A question is only
   identified correctly by its stem together with its options.
-- Answer position is not uniform. Across the 13 papers, C is correct in 39.3% of
+- Answer position is not uniform. Across the 13 papers, C is correct in 38.5% of
   three-option questions where chance gives 33.3%. Félag shuffles the options at
   every sitting so learners absorb the content and not the position.
 - Facts age. Current-affairs answers are true only as of the sitting that set

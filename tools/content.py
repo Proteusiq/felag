@@ -22,7 +22,7 @@ Design notes that are easy to get wrong:
   option order so nobody learns "the answer is C" instead of the content.
 * Counts (how often a question has been asked) are derived from `seen` at
   runtime, not stored, so adding one exam does not rewrite unrelated lines.
-* Records are sorted by id, so a new exam yields an append-shaped diff.
+* Records are sorted by id, so rebuilds remain stable and reviewable.
 * Explanations are hand-written in data/explanations.jsonl and joined by id.
   This script never writes that file, so re-running it cannot destroy them.
 """
@@ -197,11 +197,9 @@ def papers() -> list[Path]:
 # ---------------------------------------------------------------------------
 # Grounding questions in the læremateriale
 #
-# Every question on the paper is answerable from the 243-page material, so each
-# one is matched back to the page it came from. That single step yields three
-# things at once: which of the six chapters a question belongs to, a page to
-# cite, and the passage to write the explanation from. Explanations are then
-# written from the source rather than from memory.
+# The 35 material questions are matched back to the current 246-page material.
+# That yields the chapter, a proposed page and a passage for human review.
+# Current-affairs and values questions have separate source rules.
 # ---------------------------------------------------------------------------
 
 MATERIAL = RAW / "laeremateriale-til-indfoedsretsproeven.pdf"
@@ -643,13 +641,11 @@ def locate(entries: list[Entry]) -> None:
         weights.update(terms(entry.answer))
         weights.update(terms(entry.answer))  # the answer pins the passage
 
-        best, runner, at = 0.0, 0.0, None
+        best, at = 0.0, None
         for index, page in enumerate(counts):
             score = relevance(weights, page, idf)
             if score > best:
-                best, runner, at = score, best, index
-            elif score > runner:
-                runner = score
+                best, at = score, index
 
         if at is None:
             continue
@@ -734,12 +730,17 @@ def fetch(force: bool = False) -> int:
             print("no PDF links found; the page structure changed", file=sys.stderr)
             return 1
 
+        try:
+            previous = json.loads(SOURCES.read_text("utf-8"))
+        except (FileNotFoundError, json.JSONDecodeError):
+            previous = {}
         downloaded = 0
         for href in links:
             target = RAW / href.rsplit("/", 1)[-1]
-            if target.exists() and not force:
+            source = ORIGIN + href
+            if target.exists() and not force and previous.get(Path(href).stem) == source:
                 continue
-            target.write_bytes(client.get(ORIGIN + href).raise_for_status().content)
+            target.write_bytes(client.get(source).raise_for_status().content)
             print(f"  fetched {target.name}")
             downloaded += 1
 
@@ -766,6 +767,14 @@ def build() -> tuple[list[Entry], list[str]]:
         posed = parse_paper(read_pdf(paper))
         key = parse_key(read_pdf(key_path, positional=True))
         print(f"  {sitting}: {len(posed)} questions, {len(key)} answers")
+
+        expected = 40 if sitting <= "2021-06" else 45
+        numbers = [item.number for item in posed]
+        if len(posed) != expected or len(key) != expected or numbers != list(range(1, expected + 1)):
+            rejected.append(
+                f"{sitting}: expected {expected} contiguous questions and answers, "
+                f"got {len(posed)} questions and {len(key)} answers")
+            continue
 
         for item in posed:
             index = ord(key.get(item.number, "?")) - ord("A")
@@ -815,43 +824,46 @@ def extract() -> int:
     if not papers():
         print("no exams in data/raw; run `fetch` first", file=sys.stderr)
         return 1
+    if not MATERIAL.exists():
+        print("no læremateriale in data/raw; run `fetch` first", file=sys.stderr)
+        return 1
 
     entries, rejected = build()
+    if rejected:
+        print(f"\nrejected {len(rejected)}: {rejected[:8]}", file=sys.stderr)
+        return 1
     locate(entries)
     # Before anything groups by page: the written citation wins over the guess.
     if moved := adopt_written_pages(entries):
         print(f"\n{moved} questions moved to their hand-checked page")
 
-    # The timeline is derived, so it is regenerated rather than hand-kept.
-    if periods := eras():
-        for era in periods:
-            era["questions"] = sorted(
-                e.id for e in entries
-                if e.chapter == 1 and e.page and era["page"] <= e.page <= era["until"])
-        ERAS.write_text(
-            "".join(json.dumps(e, ensure_ascii=False, sort_keys=True) + "\n" for e in periods),
-            encoding="utf-8")
-        covered = sum(len(e["questions"]) for e in periods)
-        print(f"\neras: {len(periods)} periods covering {covered} chapter-1 questions")
-
-    # The reading rooms, likewise derived rather than hand-kept.
-    if reading := sagas(entries):
-        SAGAS.write_text(
-            "".join(json.dumps(s, ensure_ascii=False, sort_keys=True) + "\n" for s in reading),
-            encoding="utf-8")
-        settled = [s for s in reading if s["questions"]]
-        print(f"sagas: {len(reading)} stretches, {len(settled)} with questions, "
-              f"{len(reading) - len(settled)} never examined, "
-              f"{sum(len(s['questions']) for s in reading)} questions placed")
-    BANK.parent.mkdir(parents=True, exist_ok=True)
-    BANK.write_text("".join(e.as_json() + "\n" for e in entries), encoding="utf-8")
-    report(entries)
-
-    if rejected:
-        # Parsing regressions must fail the pipeline rather than silently ship a
-        # smaller bank, so the workflow opens no pull request until it is fixed.
-        print(f"\nrejected {len(rejected)}: {rejected[:8]}", file=sys.stderr)
+    # Derive every output before writing any, so an incomplete rebuild cannot
+    # leave a mixed old/new bank in the worktree.
+    periods = eras()
+    reading = sagas(entries)
+    if not periods or not reading:
+        print("could not derive eras and sagas from the current material", file=sys.stderr)
         return 1
+    for era in periods:
+        era["questions"] = sorted(
+            e.id for e in entries
+            if e.chapter == 1 and e.page and era["page"] <= e.page <= era["until"])
+
+    BANK.parent.mkdir(parents=True, exist_ok=True)
+    ERAS.write_text(
+        "".join(json.dumps(e, ensure_ascii=False, sort_keys=True) + "\n" for e in periods),
+        encoding="utf-8")
+    SAGAS.write_text(
+        "".join(json.dumps(s, ensure_ascii=False, sort_keys=True) + "\n" for s in reading),
+        encoding="utf-8")
+    BANK.write_text("".join(e.as_json() + "\n" for e in entries), encoding="utf-8")
+    covered = sum(len(e["questions"]) for e in periods)
+    print(f"\neras: {len(periods)} periods covering {covered} chapter-1 questions")
+    settled = [s for s in reading if s["questions"]]
+    print(f"sagas: {len(reading)} stretches, {len(settled)} with questions, "
+          f"{len(reading) - len(settled)} never examined, "
+          f"{sum(len(s['questions']) for s in reading)} questions placed")
+    report(entries)
     return 0
 
 

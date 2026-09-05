@@ -21,7 +21,7 @@ import { still } from './scenes.js';
 /* Where each stop stands. Fixed, because a map whose landmarks move is not a
    map. The chain runs south-west to north-east and climbs as it goes: the
    Alting is the last node and the highest. */
-export const STOPS = [
+const STOPS = [
   [200, 615], [325, 495], [470, 560], [615, 440],
   [750, 515], [875, 400], [955, 275], [1010, 155],
 ];

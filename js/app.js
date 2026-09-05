@@ -27,9 +27,8 @@ const $ = (id) => document.getElementById(id);
    when the tab closes and leaves nothing behind on a public
    computer.
 
-   localStorage is the right store at this size. The whole record
-   is a few hundred bytes, and IndexedDB would be machinery for
-   nothing.
+   localStorage is the right store at this size. The record remains small,
+   and IndexedDB would be machinery for nothing.
    ============================================================ */
 const ROSTER = 'felag.people';
 const ACTIVE_PROFILE = 'felag.active';
@@ -126,7 +125,7 @@ function clearRun() {
 
    Option order is randomised so nobody learns "the answer is C".
    That matters here: across the 13 published papers C is correct
-   39.3% of the time on three-option questions where chance says
+   38.5% of the time on three-option questions where chance says
    33.3%, so fixed order teaches a position habit instead of the
    content. The shuffle is seeded so a given run is reproducible,
    which is what later makes shared ghost battles fair.
@@ -742,7 +741,7 @@ function renderExamDate() {
     <b>${left === 0 ? 'I dag' : `${left} ${left === 1 ? 'dag' : 'dage'}`}</b>
     <em>${left === 0
       ? 'Indfødsretsprøven er i dag.'
-      : `til Indfødsretsprøven · den ${when}`}</em>`;
+      : `til Indfødsretsprøven · den <a href="${EXAM.source}" target="_blank" rel="noopener" title="Kontrolleret ${EXAM.checked}">${when}</a>`}</em>`;
 }
 
 function showTraining() {
@@ -1211,14 +1210,13 @@ function renderBattles() {
   };
 }
 
-function recordBattle(opponent, mine, theirs, sunk) {
+function recordBattle(opponent, mine, theirs) {
   const result = mine > theirs ? 'won' : mine < theirs ? 'lost' : 'draw';
   state.battles = [{
     opponent,
     mine,
     theirs,
     result,
-    sunk: Boolean(sunk),
     date: new Intl.DateTimeFormat('da-DK', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date()),
   }, ...(state.battles ?? [])].slice(0, 30);
   return result;
@@ -1444,9 +1442,9 @@ function restoreRun() {
 }
 
 /** Bjørn does not need a recorded run: his is derived from the same seed. */
-function houseGhost(modeId, seed, accuracy = 0.72) {
+function houseGhost(seed, accuracy = 0.72) {
   const rand = rng(seed ^ 0x5bd1e995);
-  return { modeId, seed, name: 'Bjørn', house: true,
+  return { seed, name: 'Bjørn', house: true,
            marks: Array.from({ length: 64 }, () => rand() < accuracy) };
 }
 
@@ -1594,10 +1592,12 @@ const MATERIAL_URL = 'laeremateriale-til-indfoedsretsproeven';
 function paperLink(tag) {
   const [stamp, number] = tag.split('#');
   const url = state.sources?.[`indfoedsretsproeven-${stamp}`];
+  const key = state.sources?.[`indfoedsretsproeven-${stamp}-retteark`];
   const label = sitting(tag);
-  return url
+  const paper = url
     ? `<a href="${url}" target="_blank" rel="noopener">${label}, spørgsmål ${number}</a>`
     : `${label}, spørgsmål ${number}`;
+  return key ? `${paper} (<a href="${key}" target="_blank" rel="noopener">retteark</a>)` : paper;
 }
 
 function materialLink(page) {
@@ -1752,7 +1752,7 @@ function finish() {
   const theirs = ghost ? ghost.marks.slice(0, questions.length).filter(Boolean).length : null;
   const rival = ghost?.name ?? 'Vikingen';
   const battleResult = ghost ? (score > theirs ? 'won' : score < theirs ? 'lost' : 'draw') : null;
-  if (ghost && mode.duel) recordBattle(rival, score, theirs, sunk);
+  if (ghost && mode.duel) recordBattle(rival, score, theirs);
 
   state.best[mode.id] = Math.max(state.best[mode.id] ?? 0, score);
   // Clearing a hall opens the next one, and only ever forwards.
@@ -1860,7 +1860,7 @@ function finish() {
   go('viewResult', sceneFor(mode));
   $('againBtn').onclick = () => {
     const freshSeed = Date.now() >>> 0;
-    start(mode.id, mode, ghost?.house ? houseGhost(mode.id, freshSeed) : null);
+    start(mode.id, mode, ghost?.house ? houseGhost(freshSeed) : null);
   };
   if (missed.length) {
     $('sagaBtn').onclick = () => {
@@ -1976,8 +1976,8 @@ async function main() {
   const values = state.bank.filter((q) => q.section === 'vaerdier');
   state.paperCount = papers.size;
   $('welcomeQuestions').textContent = state.bank.length.toLocaleString('da-DK');
-  $('welcomeQuestionCopy').textContent = `${state.bank.length.toLocaleString('da-DK')} rigtige spørgsmål`;
-  $('shoreQuestionCount').textContent = `${state.bank.length.toLocaleString('da-DK')} rigtige spørgsmål`;
+  $('welcomeQuestionCopy').textContent = `en historisk bank på ${state.bank.length.toLocaleString('da-DK')} rigtige spørgsmål`;
+  $('shoreQuestionCount').textContent = `En historisk bank på ${state.bank.length.toLocaleString('da-DK')} rigtige spørgsmål`;
   $('welcomePapers').textContent = papers.size.toLocaleString('da-DK');
   $('welcomeHalls').textContent = HALLS.length.toLocaleString('da-DK');
   $('valuesAsked').textContent = values.reduce((count, q) => count + q.seen.length, 0).toLocaleString('da-DK');
@@ -2107,7 +2107,7 @@ $('tingTest').addEventListener('click', () => start('ting'));
 $('bjornDuel').addEventListener('click', () => {
   const mode = MODES.find((item) => item.id === 'dyst');
   const seed = Date.now() >>> 0;
-  start(mode.id, mode, houseGhost(mode.id, seed));
+  start(mode.id, mode, houseGhost(seed));
 });
 $('friendDuel').addEventListener('click', () => start('dyst'));
 $('eras').addEventListener('click', (e) => {

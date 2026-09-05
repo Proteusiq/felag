@@ -23,7 +23,6 @@ const COLOR = {
   sand: new THREE.Color('#c9b489'),
   grassLight: new THREE.Color('#658d50'),
   grassMid: new THREE.Color('#446c3c'),
-  grassDark: new THREE.Color('#3d6236'),
   rockHigh: new THREE.Color('#7e857e'),
   trunk: '#5a4022',
   birch: '#cfc7ae',

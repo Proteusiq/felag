@@ -21,9 +21,10 @@ Break any of these and the project stops being what it claims to be.
 3. **No dependencies in the site.** `js/` is plain ES modules. three.js is
    vendored. Tools may use uv scripts with inline PEP 723 dependencies.
 4. **Generated data is generated; written data is written.** `tools/content.py`
-   owns `questions.jsonl`, `eras.jsonl`, `sagas.jsonl` and rewrites them freely.
-   It must never write `explanations.jsonl`, `currency.jsonl` or
-   `kinship.jsonl` — those are human judgement, joined by id.
+   owns `questions.jsonl`, `eras.jsonl`, `sagas.jsonl` and `sources.json`, and
+   rewrites them freely. It must never write `explanations.jsonl`,
+   `currency.jsonl`, `kinship.jsonl` or `principles.jsonl` — those are human
+   judgement, joined by id.
 5. **Reading is never gated.** The six halls lock to pace drilling. Sagaerne is
    open from day one, including for locked halls.
 

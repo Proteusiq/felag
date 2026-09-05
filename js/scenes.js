@@ -269,7 +269,7 @@ function orient(event) {
   move(clamp((event.gamma - tiltBase.gamma) / 24), clamp((event.beta - tiltBase.beta) / 24));
 }
 
-export function canTilt() {
+function canTilt() {
   return !still.matches && matchMedia('(pointer:coarse)').matches && 'DeviceOrientationEvent' in window;
 }
 

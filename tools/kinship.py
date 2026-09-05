@@ -27,9 +27,9 @@ What the script does instead is the part that is not judgement:
 
 * proposes. Pairs already close in wording, sitting in the same saga, and not yet
   ruled on. That narrows 397 questions to a list short enough to read.
-* checks. Every group must be whole — ids that still exist, no group joining two
-  questions with different answers unless a human wrote that group deliberately,
-  and no group so large it has clearly run away through a chain of near-misses.
+* checks. Every group must be whole — ids that still exist, no question in two
+  groups, every refusal carrying a reason, and no group so large it has clearly
+  run away through a chain of near-misses.
 
 The asymmetry is the whole reason for the care. A wrong split leaves a duplicate
 on the page, which is untidy. A wrong merge hides a real question behind an
@@ -46,7 +46,6 @@ import json
 import re
 import sys
 import unicodedata
-from collections import defaultdict
 from itertools import combinations
 from pathlib import Path
 

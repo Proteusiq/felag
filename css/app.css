@@ -395,12 +395,8 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
 }
 .btn.primary{
   margin-top:26px; padding:14px 24px; border:1px solid rgba(211,162,76,.62); border-radius:10px;
-  color:var(--parchment); font-family:var(--display);
+  font-family:var(--display);
   font-weight:600; font-size:13.5px; letter-spacing:.1em;
-  /* Rust, not gold: the label is parchment, and gold that light under cream
-     text drops the contrast to about 1.7:1. The gold stays on the border. */
-  background:radial-gradient(circle at 20% 15%,rgba(255,225,181,.18),transparent 34%),linear-gradient(135deg,#a94d2a,#68291d);
-  box-shadow:inset 0 1px rgba(255,255,255,.14),0 10px 22px -15px rgba(0,0,0,.85);
   transition:transform .18s var(--ease),border-color .18s ease,box-shadow .18s ease,filter .18s ease;
 }
 .btn.primary svg{ width:17px; height:17px; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
@@ -409,12 +405,10 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
   padding-left:18px;
   padding-right:18px;
 }
-.btn.primary:hover:not(:disabled){ border-color:#eccb8a; box-shadow:0 13px 25px -15px rgba(211,162,76,.8); filter:brightness(1.08); transform:translateY(-2px); }
+.btn.primary:hover:not(:disabled){ filter:brightness(1.08); transform:translateY(-2px); }
 .btn.primary:active:not(:disabled){ transform:translateY(1px); }
 .btn.primary:focus-visible{ outline:2px solid #eccb8a; outline-offset:3px; }
 .btn.primary:disabled{ cursor:default; opacity:.48; }
-.btn.ghost{ background:none; border:none; color:var(--parchment-dim); text-transform:none; letter-spacing:.02em; }
-.btn.ghost:hover{ color:var(--parchment); }
 .guide-switch{ display:inline-flex; align-items:center; gap:8px; margin-top:24px; padding:5px 10px 5px 5px; border:1px solid transparent; border-radius:22px; color:var(--parchment-dim); background:transparent; font:inherit; font-size:12px; cursor:pointer; transition:color .2s ease,border-color .2s ease,background .2s ease,transform .2s var(--ease); }.guide-helmet{ display:grid; place-items:center; width:27px; height:27px; color:var(--gold); border:1px solid rgba(211,162,76,.38); border-radius:50%; background:rgba(211,162,76,.06); }.guide-helmet svg{ width:18px; height:18px; stroke:currentColor; stroke-width:1.55; stroke-linecap:round; stroke-linejoin:round; }.guide-switch:hover,.guide-switch:focus-visible{ color:var(--parchment); border-color:rgba(211,162,76,.5); background:rgba(211,162,76,.07); outline:none; transform:translateY(-1px); }
 .linklike{ background:none; border:none; color:var(--parchment-dim); font:inherit; font-size:12px; cursor:pointer; text-decoration:underline; text-underline-offset:3px; padding:0; }
 .linklike:hover{ color:var(--parchment); }
@@ -1169,14 +1163,6 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
 .why p{ font-size:14.5px; line-height:1.68; margin:0; }
 .why p + p{ margin-top:9px; }
 
-/* A quotation from the material, marked as borrowed rather than written here. */
-.why blockquote{
-  margin:0; padding:2px 0 2px 15px;
-  border-left:2px solid rgba(211,162,76,.5);
-  font-style:italic; font-size:15px; line-height:1.6;
-}
-.why .cite{ margin-top:8px; font-size:12px; color:var(--parchment-dim); }
-.why .cite b{ color:var(--parchment); font-weight:700; }
 .why .thin{ color:var(--parchment-dim); font-style:italic; }
 
 .why .src{
@@ -1291,7 +1277,6 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
 .foot-control svg{ width:14px; height:14px; stroke:var(--parchment-dim); stroke-width:1.55; stroke-linecap:round; stroke-linejoin:round; }
 .foot .linklike{ color:var(--parchment-dim); text-decoration:none; transition:color .2s ease; }
 .foot-control:hover .linklike, .foot-control:hover svg, .foot .linklike:focus-visible{ color:var(--parchment); stroke:var(--parchment); }
-.foot-control.reset:hover .linklike, .foot-control.reset:hover svg{ color:#df7783; stroke:#df7783; }
 
 .boot{ position:fixed; inset:0; z-index:50; display:grid; place-content:center; justify-items:center; gap:14px; background:var(--bg); color:var(--parchment-dim); font-family:var(--display); font-size:14px; letter-spacing:.04em; }
 .boot[hidden]{ display:none !important; }
@@ -1336,7 +1321,6 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
   .card{ padding:20px 16px; }
   .q{ font-size:17px; }
   .opt{ font-size:14.5px; padding:12px 13px; }
-  .quiz-nav .btn{ padding:12px 18px; }
   .principle > button{ padding:14px 16px; }
   .principle .more{ padding:0 16px 16px; }
   .hall{ gap:12px; }
