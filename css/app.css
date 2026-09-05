@@ -21,6 +21,10 @@
   --dannebrog:#c8102e;      /* the flag's own red: for fills and marks, never text */
   --danger:#ef8a9c;         /* the same red, lifted until it can be read at 10px */
   --green:#8fae8c;         /* the sage of a printed border */
+  --surface:linear-gradient(145deg,rgba(27,48,54,.78),rgba(8,20,25,.88));
+  --surface-strong:linear-gradient(145deg,rgba(31,54,60,.9),rgba(7,18,24,.96));
+  --surface-line:rgba(239,227,200,.16);
+  --surface-shine:inset 0 1px rgba(255,255,255,.05);
 
   /* Each guide's colour is worn as an 11px uppercase label as well as a border
      and a glow, so it has to survive at 11px. At full saturation Thor sat at
@@ -1243,6 +1247,30 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
 }
 .share-note svg{ width:18px; height:18px; flex:0 0 auto; stroke:var(--green); stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
 
+/* ---------- shared material ----------
+   The landing established the visual grammar. Interior rooms use the same
+   teal glass and warm edge; route-specific colors remain accents, never new
+   background systems. */
+.profile,.char,.banner,.hall .body,.place .body,.mode,.era .body,.arena-choice,.scoreboard,.principle,.card{
+  background:var(--surface);
+  border-color:var(--surface-line);
+  box-shadow:var(--surface-shine);
+}
+.learning-path{ background:radial-gradient(circle at 12% 30%,rgba(211,162,76,.1),transparent 25%),var(--surface-strong); border-color:rgba(211,162,76,.4); }
+.mode[data-id="heim"]{ background:radial-gradient(circle at 85% 50%,rgba(183,154,194,.12),transparent 25%),var(--surface); }
+.place .body[open]{ background:radial-gradient(circle at 100% 0,rgba(211,162,76,.09),transparent 35%),var(--surface-strong); }
+.place.oede .body{ background:rgba(8,20,25,.58); }
+.btn.primary{ color:#13252b; text-shadow:none; border-color:#f1d092; background:linear-gradient(135deg,#e6bd72,#c9923f); box-shadow:0 14px 30px -18px rgba(211,162,76,.8); }
+.btn.primary:hover:not(:disabled){ color:#0b171c; border-color:var(--parchment); box-shadow:0 18px 35px -17px rgba(211,162,76,.95); }
+.result .prize{ background:radial-gradient(circle at 50% 0%,rgba(211,162,76,.22),transparent 60%),var(--surface-strong); }
+.challenge-btn{ background:radial-gradient(circle at 20% 25%,rgba(211,162,76,.13),transparent 32%),var(--surface-strong); }
+.map{ border-color:var(--surface-line); background:radial-gradient(ellipse at 48% 42%,#15353e 0,#0d272f 48%,#07161c 100%); box-shadow:var(--surface-shine); }
+.map .sea-ring{ fill:#0d2730; }.map .fjord,.map .river{ fill:#153945; }
+.heim{ border-color:var(--surface-line); background:#0d252d; box-shadow:var(--surface-shine); }
+#halls .hall.done .state{ color:var(--green); }#halls .hall:not(.done):not(.shut) .state{ color:var(--gold); }#halls .hall.shut .state{ color:var(--parchment-dim); }
+.duel.draw .duel-tally b{ color:var(--parchment-dim); }
+.foot-control.reset:hover .linklike,.foot-control.reset:hover svg{ color:var(--danger); stroke:var(--danger); }
+
 /* ---------- footer / boot ---------- */
 .foot{
   position:relative; z-index:1; padding:0 max(18px,env(safe-area-inset-right)) max(20px,env(safe-area-inset-bottom)) max(18px,env(safe-area-inset-left)); color:var(--parchment-dim);
@@ -1296,7 +1324,8 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
     /* clear of the home indicator, where iOS eats the first tap */
     bottom:calc(14px + env(safe-area-inset-bottom));
     margin:0; border-color:var(--gold);
-    background:var(--bg);
+    color:#13252b;
+    background:linear-gradient(135deg,#e6bd72,#c9923f);
     backdrop-filter:blur(10px);
     box-shadow:0 8px 26px -10px rgba(0,0,0,.8);
     animation:fade .35s var(--ease) both;
