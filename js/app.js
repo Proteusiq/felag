@@ -2205,7 +2205,6 @@ addEventListener('beforeunload', (event) => {
 });
 
 function enterApp() {
-  scenes.requestTilt();
   const welcome = $('welcome');
   welcome.classList.add('leaving');
   setTimeout(() => {

@@ -246,7 +246,6 @@ let host = null;
 let depths = [];
 let tiltBase = null;
 let tiltOn = false;
-let tiltAsked = false;
 let mounted = false;
 
 export const still = matchMedia('(prefers-reduced-motion: reduce)');
@@ -269,8 +268,11 @@ function orient(event) {
   move(clamp((event.gamma - tiltBase.gamma) / 24), clamp((event.beta - tiltBase.beta) / 24));
 }
 
-function canTilt() {
-  return !still.matches && matchMedia('(pointer:coarse)').matches && 'DeviceOrientationEvent' in window;
+function canAutoTilt() {
+  return !still.matches
+    && matchMedia('(pointer:coarse)').matches
+    && 'DeviceOrientationEvent' in window
+    && !DeviceOrientationEvent.requestPermission;
 }
 
 function startTilt() {
@@ -278,26 +280,13 @@ function startTilt() {
   tiltOn = true;
 }
 
-export async function requestTilt() {
-  if (!canTilt() || tiltOn || tiltAsked) return false;
-  tiltAsked = true;
-  const permission = DeviceOrientationEvent.requestPermission;
-  try {
-    if (permission && await permission.call(DeviceOrientationEvent) !== 'granted') return false;
-  } catch {
-    return false;
-  }
-  startTilt();
-  return true;
-}
-
 export function mount(el) {
   host = el;
   if (mounted) return;
   mounted = true;
-  // Android exposes orientation without a prompt. iPhone requires a tap, which
-  // requestTilt receives from the learner's first route choice.
-  if (canTilt() && !DeviceOrientationEvent.requestPermission) startTilt();
+  // Some browsers expose orientation without a prompt. iPhone requires one, so
+  // it deliberately stays still rather than interrupting the learner.
+  if (canAutoTilt()) startTilt();
   // Pointer movement provides the same depth on desktop.
   addEventListener('pointermove', (event) => {
     if (!matchMedia('(pointer:fine)').matches || tiltOn) return;
