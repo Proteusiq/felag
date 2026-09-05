@@ -197,6 +197,7 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
 .journey-caption{ display:flex; justify-content:space-between; gap:20px; color:var(--parchment); font-size:12px; }
 .journey-caption span:last-child{ text-align:right; }
 .journey-caption small{ display:block; margin-bottom:3px; color:var(--parchment-dim); font-size:8px; letter-spacing:.16em; text-transform:uppercase; }
+.welcome-switch{ margin:18px 0 0; padding:0; color:var(--parchment-dim); border:0; border-bottom:1px solid currentColor; background:none; font:inherit; font-size:11px; cursor:pointer; }.welcome-switch:hover,.welcome-switch:focus-visible{ color:var(--gold); }
 
 .welcome-facts{
   position:relative; display:grid; grid-template-columns:repeat(3,auto) 1fr; align-items:center;
@@ -551,6 +552,7 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
 .hall.shut .hall-read{ opacity:1; }
 
 .places{ width:100%; max-width:760px; display:flex; flex-direction:column; margin-bottom:30px; }
+.saga-retry{ align-self:center; margin-top:24px; }
 .place{ position:relative; display:flex; gap:16px; padding:9px 0; align-items:flex-start;
   animation:rise .45s var(--ease) both; animation-delay:var(--d,0s);
   /* clearance for the sticky HUD when a fold scrolls a settlement back into view */
@@ -723,6 +725,8 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
 .map .stop-state{ fill:var(--parchment-dim); font-size:10px; letter-spacing:.1em; stroke-width:4px; }
 .map .stop.done .stop-ring{ fill:rgba(143,174,140,.14); }
 .map .stop.done .stop-state{ fill:var(--green); }
+.map .stop.attempted .stop-ring{ stroke:var(--gold); }
+.map .stop.attempted .stop-state,.map .stop.open .stop-state{ fill:var(--gold); }
 .map .stop.shut{ opacity:.4; cursor:not-allowed; }
 .map .stop.shut .stop-ring{ stroke:rgba(239,227,200,.3); }
 .map .stop-pulse{

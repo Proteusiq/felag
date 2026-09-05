@@ -352,7 +352,7 @@ function renderHalls() {
             <span class="state">${mark}${label}</span>
           </span>
           <span class="chips">${hall.topics.map((key) => `<span>${topicIcon(key)}${topicLabel(key)}</span>`).join('')}
-            <span>${progress.total} spørgsmål</span></span>
+            <span>${progress.total} i banken</span><span>12 spørgsmål · 10 rigtige for at åbne</span></span>
           <span class="hall-progress"><span>Set <b>${progress.seen}</b></span><span>Rigtige <b>${progress.correct}</b></span><span>Tilbage <b>${progress.left}</b></span></span>
         </button>
         <!-- Never disabled, whatever the gate says. The lock is on sitting the
@@ -396,12 +396,13 @@ function renderWelcomeJourney() {
     button.classList.toggle('done', index < cleared);
     button.classList.toggle('active', index === current);
     button.disabled = index > cleared;
-    button.setAttribute('aria-label', `Hal ${hall.numeral}: ${hall.da}, ${status}`);
+    button.setAttribute('aria-label', `Hal ${hall.numeral}: ${hall.da}, ${status}. 12 spørgsmål; 10 rigtige kræves.`);
   });
   $('welcomeIdentity').textContent = state.profile ? `Fortsæt som ${state.profile.name}` : 'Begynd her';
-  $('welcomeHallName').textContent = HALLS[current].da;
-  $('welcomeStart').querySelector('span').textContent = state.profile ? 'Fortsæt rejsen' : 'Begynd vandringen';
+  $('welcomeHallName').textContent = cleared === HALLS.length ? 'Altinget venter' : HALLS[current].da;
+  $('welcomeStart').querySelector('span').textContent = cleared === HALLS.length ? 'Tag Altinget' : state.profile ? 'Fortsæt rejsen' : 'Begynd vandringen';
   $('welcomeNavStart').textContent = state.profile ? 'Fortsæt' : 'Start træning';
+  $('welcomeSwitch').hidden = !state.profile;
 }
 
 /* ============================================================
@@ -500,14 +501,17 @@ let hallDoor = showHalls;
     reading room goes back the way it was entered rather than always to one. */
 let sagaDoor = showHalls;
 let resultMode = null;
+const showPath = () => { renderPath(); go('viewPath', 'path'); };
+let assemblyDoor = showPath;
 
 /** Leaving a drill returns where it was started from, not to the map. */
 const leave = (mode) => mode?.hall ? hallDoor()
   : mode?.training ? showTraining()
+  : mode?.id === 'ting' || mode?.exam ? assemblyDoor()
   : mode?.ting ? showTing()
   : mode?.time ? showTime()
   : mode?.duel ? showArena()
-  : (renderPath(), go('viewPath', 'path'));
+  : showPath();
 
 /**
  * Outdated questions never enter a draw.
@@ -1009,12 +1013,18 @@ function showSagas(hall, missed = null) {
       </div>`;
   }).join('');
 
+  $('sagaRetry').hidden = !missed;
+  if (missed) {
+    const index = HALLS.findIndex((item) => item.chapter === hall.chapter);
+    $('sagaRetry').onclick = () => start(null, hallMode(hall, index));
+  }
+
   go('viewSagas', 'hall');
 }
 
 /* ---------- the saga map ---------- */
 
-const GATE_LABEL = { done: 'Ryddet', open: 'Åben', shut: 'Låst' };
+const GATE_LABEL = { done: 'Ryddet', attempted: 'Prøvet', open: 'Åben', shut: 'Låst' };
 
 /**
  * The eight stops, in the order they are walked.
@@ -1029,7 +1039,7 @@ function stops() {
   const cleared = state.cleared ?? 0;
   const assembly = (id, kind) => {
     const mode = MODES.find((m) => m.id === id);
-    const gate = state.best[id] ? 'done' : 'open';
+    const gate = Number.isFinite(state.best[id]) ? 'attempted' : 'open';
     return {
       kind, name: mode.da, accent: mode.accent, gate,
       state: GATE_LABEL[gate],
@@ -1099,6 +1109,7 @@ function showMap() {
     // The Ting teaches its principles before it tests them, the same as it
     // does from the path; the map is another door into the room, not a
     // shortcut past it.
+    assemblyDoor = showMap;
     return i === HALLS.length ? showTing() : start('alting');
   });
   go('viewMap', 'path');
@@ -1223,6 +1234,7 @@ function showTime() {
 
   $('eras').innerHTML = state.eras.map((era, i) => {
     const stock = era.questions.filter((id) => usable(byQuestion(id))).length;
+    const best = state.best[`tid-${era.page}`];
     // An open end means two different things: the last period is still running,
     // an earlier one simply starts around then and overlaps its neighbours.
     const span = era.to ? `${era.from}\u2013${era.to}`
@@ -1237,7 +1249,7 @@ function showTime() {
             <i style="width:${Math.round((stock / most) * 100)}px"></i>
             <span>${stock ? `${stock} spørgsmål` : 'ingen spørgsmål'}</span>
           </span>
-          ${stock ? '<span class="era-action">Øv perioden</span>' : ''}
+          ${stock ? `<span class="era-action">${Number.isFinite(best) ? `Bedste ${best}/${Math.min(12, stock)} · ` : ''}Øv perioden</span>` : ''}
         </button>
       </div>`;
   }).join('');
@@ -1250,7 +1262,7 @@ const byQuestion = (id) => state.bank.find((q) => q.id === id) ?? {};
 function eraMode(era) {
   const stock = era.questions.map(byQuestion).filter((q) => q.id && usable(q));
   return {
-    id: `tid-${era.page}`, da: era.title, accent: '--astrid', time: true,
+    id: `tid-${era.page}`, da: era.title, accent: '--astrid', time: era,
     build: (rand) => weighted(stock, Math.min(12, stock.length), rand),
   };
 }
@@ -1258,9 +1270,10 @@ function eraMode(era) {
 /* ---------- Tinget ---------- */
 function showTing() {
   $('hudTitle').textContent = 'Tinget';
-  $('hudBackLabel').textContent = 'Tilbage til Træning';
-  $('hudBack').setAttribute('aria-label', 'Tilbage til Træning');
-  $('hudBack').dataset.tooltip = 'Tilbage til Træning';
+  const back = assemblyDoor === showMap ? 'Tilbage til Kortet' : 'Tilbage til Træning';
+  $('hudBackLabel').textContent = back;
+  $('hudBack').setAttribute('aria-label', back);
+  $('hudBack').dataset.tooltip = back;
   $('principles').innerHTML = state.principles.map((p, i) => {
     const count = p.questions.filter((id) => usable(byQuestion(id))).length;
     return `
@@ -1333,7 +1346,11 @@ function start(modeId, override, ghost) {
 
 function showRun() {
   const { mode } = state.run;
-  const returnLabel = mode.hall ? 'Tilbage til De Seks Haller' : 'Tilbage til vejen og hallerne';
+  const returnLabel = mode.hall
+    ? 'Tilbage til De Seks Haller'
+    : (mode.exam || mode.id === 'ting') && assemblyDoor === showMap
+    ? 'Tilbage til Kortet'
+    : 'Tilbage til vejen og hallerne';
   $('hudTitle').textContent = mode.da;
   $('hudBackLabel').textContent = returnLabel;
   $('hudBack').setAttribute('aria-label', returnLabel);
@@ -1772,9 +1789,16 @@ function finish() {
   const missed = mode.hall && passed === false
     ? questions.filter((_, i) => marks[i] === false)
     : [];
+  const missedPrinciples = mode.gate && passed === false
+    ? [...new Set(questions.flatMap((question, index) => marks[index] === false
+      ? state.principles.filter((principle) => principle.questions.includes(question.id)).map((principle) => principle.id)
+      : []))]
+    : [];
   const nextHall = mode.hall && passed && state.cleared > wasCleared && state.cleared < HALLS.length
     ? HALLS[state.cleared]
     : null;
+  const eraIndex = mode.time ? state.eras.findIndex((era) => era.page === mode.time.page) : -1;
+  const nextEra = eraIndex >= 0 ? state.eras.slice(eraIndex + 1).find((era) => era.questions.some((id) => usable(byQuestion(id)))) : null;
   const guide = byId(state.guide) ?? CAST[0];
 
   $('resultCard').innerHTML = `
@@ -1805,15 +1829,24 @@ function finish() {
       <span><small>Næste skridt</small><b>Hal ${nextHall.numeral} · ${nextHall.da}</b></span>
       <svg class="challenge-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m10 5 7 7-7 7m6-7H6"/></svg>
     </button>` : ''}
+    ${nextEra ? `<button class="journey-next" id="nextEraBtn" type="button">
+      <span><small>Næste periode</small><b>${nextEra.title}</b></span>
+      <svg class="challenge-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m10 5 7 7-7 7m6-7H6"/></svg>
+    </button>` : ''}
     ${missed.length ? `<button class="read-back" id="sagaBtn" type="button">
       <span class="read-sigil" aria-hidden="true">${ICON.book}</span>
       <span><b>Læs sagaen om det, du missede</b><small>${missed.length}
         ${missed.length === 1 ? 'spørgsmål' : 'spørgsmål'} · med forklaring og sidehenvisning</small></span>
       <svg class="challenge-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m10 5 7 7-7 7m6-7H6"/></svg>
     </button>` : ''}
+    ${missedPrinciples.length ? `<button class="read-back" id="principleReviewBtn" type="button">
+      <span class="read-sigil" aria-hidden="true">${topicIcon('parliament')}</span>
+      <span><b>Gennemgå principperne bag dine fejl</b><small>${missedPrinciples.length} ${missedPrinciples.length === 1 ? 'princip' : 'principper'}</small></span>
+      <svg class="challenge-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m10 5 7 7-7 7m6-7H6"/></svg>
+    </button>` : ''}
     ${mode.exam ? examReview(finished) : ''}
     <div class="actions ${mode.duel ? 'with-challenge' : ''}">
-      <button class="btn primary" id="againBtn" type="button"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 11a8 8 0 1 0 2 5M20 4v7h-7"/></svg>${ghost ? (ghost.house ? 'Kræv omkamp' : 'Sejl igen') : 'Få nye spørgsmål'}</button>
+      <button class="btn primary" id="againBtn" type="button"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 11a8 8 0 1 0 2 5M20 4v7h-7"/></svg>${ghost ? (ghost.house ? 'Kræv omkamp' : 'Sejl igen') : mode.time ? 'Prøv perioden igen' : 'Få nye spørgsmål'}</button>
       ${mode.duel ? `<button class="challenge-btn" id="shareBtn" type="button" data-tooltip="Din danske viking får det samme sæt spørgsmål og kan slå din score.">
         <span class="challenge-sigil" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none"><path d="m11 39 26-30m-26 0 26 30"/><path d="m8 10 9 2-4 8-7-4 2-6Zm32 0-9 2 4 8 7-4-2-6Z" fill="currentColor"/><path d="M24 19v16M17 35h14"/></svg></span>
         <span><b>Udfordr en dansk viking</b><small>Hvem kender Danmark bedst?</small></span>
@@ -1835,11 +1868,24 @@ function finish() {
       showSagas(mode.hall, new Set(missed.map((q) => q.id)));
     };
   }
+  if (missedPrinciples.length) {
+    $('principleReviewBtn').onclick = () => {
+      assemblyDoor = showTraining;
+      showTing();
+      missedPrinciples.forEach((id) => {
+        const card = [...document.querySelectorAll('.principle')].find((item) => item.dataset.id === id);
+        if (card && !card.classList.contains('open')) togglePrinciple(card);
+      });
+    };
+  }
   if (wonAll) {
     $('altingBtn').onclick = () => start('alting');
   }
   if (nextHall) {
     $('nextHallBtn').onclick = () => start(null, hallMode(nextHall, mode.index + 1));
+  }
+  if (nextEra) {
+    $('nextEraBtn').onclick = () => start(null, eraMode(nextEra));
   }
   if (mode.duel) $('shareBtn').onclick = async () => {
     // The whole challenge travels in the fragment, so nothing is stored anywhere.
@@ -1991,6 +2037,7 @@ $('modes').addEventListener('click', (e) => {
   if (btn.dataset.id === 'sagaer') return showSagaer();
   if (btn.dataset.id === 'training') return showTraining();
   if (btn.dataset.id === 'heim') return showHeim();
+  if (btn.dataset.id === 'alting') assemblyDoor = showPath;
   openMode(btn.dataset.id);
 });
 $('heimReset').addEventListener('click', () => heim?.reset());
@@ -1998,7 +2045,10 @@ $('heimOut').addEventListener('click', () => heim?.zoom(1.15));
 $('heimIn').addEventListener('click', () => heim?.zoom(.85));
 $('trainingModes').addEventListener('click', (e) => {
   const btn = e.target.closest('.mode');
-  if (btn) openMode(btn.dataset.id);
+  if (btn) {
+    if (btn.dataset.id === 'ting') assemblyDoor = showTraining;
+    openMode(btn.dataset.id);
+  }
 });
 /* Opening a settlement folds whichever was open, and when that one sat higher up
    the page everything below it slides up — including the panel just opened. Left
@@ -2079,7 +2129,8 @@ const exitRun = () => {
   if (!$('viewResult').hidden && resultMode) return leave(resultMode);
   if (!$('viewSagas').hidden) return sagaDoor();
   if (!$('viewSagaer').hidden) { renderPath(); return go('viewPath', 'path'); }
-  if (!$('viewTime').hidden || !$('viewTing').hidden) return showTraining();
+  if (!$('viewTing').hidden) return assemblyDoor();
+  if (!$('viewTime').hidden) return showTraining();
   renderPath();
   go('viewPath', 'path');
 };
@@ -2162,10 +2213,18 @@ function enterApp() {
     resumeJourney();
   }, scenes.still.matches ? 0 : 450);
 }
-$('welcomeStart').addEventListener('click', enterApp);
+$('welcomeStart').addEventListener('click', () => {
+  if ((state.cleared ?? 0) >= HALLS.length) welcomeMode = 'alting';
+  enterApp();
+});
 $('welcomeNavStart').addEventListener('click', enterApp);
+$('welcomeSwitch').addEventListener('click', () => {
+  $('welcome').hidden = true;
+  showWho();
+});
 $('welcomeExam').addEventListener('click', () => {
   welcomeMode = 'alting';
+  assemblyDoor = showPath;
   enterApp();
 });
 $('welcome').addEventListener('click', (e) => {
