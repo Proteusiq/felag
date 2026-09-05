@@ -422,7 +422,7 @@ const MODES = [
   },
   {
     id: 'alting', da: 'Altinget', en: 'The full assembly', accent: '--thor', icon: 'parliament',
-    blurb: 'Hele prøven under rigtige regler: 45 spørgsmål, 36 for at bestå, og mindst 4 af 5 værdispørgsmål.',
+    blurb: '45 spørgsmål på 45 minutter med prøvens beståkrav. Svar og forklaringer vises først, når du afleverer.',
     tag: '45 spørgsmål',
     build: (rand) => [
       ...pick(pool('laeremateriale'), 35, rand),
@@ -451,7 +451,7 @@ const DESTINATIONS = [
   },
   {
     id: 'alting', da: 'Altinget', en: 'The full test', accent: '--thor', icon: 'parliament',
-    blurb: 'Hele prøven under de rigtige regler: 45 spørgsmål, 36 for at bestå.', tag: '45 spørgsmål',
+    blurb: '45 spørgsmål på 45 minutter. Feedback og kilder vises efter aflevering.', tag: '45 spørgsmål',
   },
   {
     id: 'heim', da: 'Vikingheim', en: 'The settlement', accent: '--astrid', icon: 'architecture',
@@ -1300,6 +1300,7 @@ function start(modeId, override, ghost) {
 
   state.run = {
     mode, seed, questions, i: 0, marks: Array(questions.length).fill(null),
+    choices: Array(questions.length).fill(null),
     ghost: ghost ?? null,
     deadline: mode.exam ? Date.now() + RULES.minutes * 60000 : null,
   };
@@ -1317,7 +1318,10 @@ function tick() {
   const run = state.run;
   if (!run?.deadline) return;
   const left = run.deadline - Date.now();
-  if (left <= 0) return finish();
+  if (left <= 0) {
+    run.timedOut = true;
+    return finish();
+  }
   const clock = `${String(Math.floor(left / 60000)).padStart(2, '0')}:${String(Math.floor(left / 1000) % 60).padStart(2, '0')}`;
   $('hudMeta').textContent = `${run.i + 1} / ${run.questions.length} · ${clock}`;
   $('hudMeta').setAttribute('aria-label', `Spørgsmål ${run.i + 1} af ${run.questions.length}. Tid tilbage ${clock}.`);
@@ -1371,17 +1375,17 @@ function houseGhost(modeId, seed, accuracy = 0.72) {
 
 /** Advance the crossing by correct answers; the duel is a race on accuracy. */
 function renderRow(stroke) {
-  const { marks, i, ghost } = state.run;
+  const { marks, ghost, mode } = state.run;
   const row = $('row');
   $('rowTrack').innerHTML = marks
-    .map((m) => `<i class="${m === true ? 'hit' : m === false ? 'miss' : ''}"></i>`).join('');
+    .map((mark) => `<i class="${mode.exam && mark !== null ? 'answered' : mark === true ? 'hit' : mark === false ? 'miss' : ''}"></i>`).join('');
   $('rowBoat').innerHTML = BOAT;
   $('rowGhost').innerHTML = state.run.ghost ? BOAT : '';
   $('rowGhost').hidden = !state.run.ghost;
   // Position is correct answers, not questions seen. The race is on accuracy,
   // which is what the exam actually measures.
   const answered = marks.filter((m) => m !== null).length;
-  const mine = marks.filter(Boolean).length;
+  const mine = mode.exam ? answered : marks.filter(Boolean).length;
 
   row.style.setProperty('--p', `${2 + (mine / marks.length) * 90}%`);
 
@@ -1450,6 +1454,7 @@ function answer(chosen) {
   const q = run.questions[run.i];
   const right = chosen === q.answerAt;
   run.marks[run.i] = right;
+  run.choices[run.i] = chosen;
   if (run.mode.hall) {
     const progress = (state.hallStats ??= {})[run.mode.hall.chapter] ??= { seen: [], correct: [] };
     if (!progress.seen.includes(q.id)) progress.seen.push(q.id);
@@ -1461,6 +1466,14 @@ function answer(chosen) {
 
   const opts = [...$('quizCard').querySelectorAll('.opt')];
   opts.forEach((b) => { b.disabled = true; });
+  if (run.mode.exam) {
+    opts[chosen].classList.add('picked');
+    opts[chosen].insertAdjacentHTML('beforeend', '<strong class="opt-result picked">Dit svar</strong>');
+    $('quizStatus').textContent = 'Svar gemt.';
+    renderRow('stroke');
+    $('quizNext').disabled = false;
+    return;
+  }
   opts[q.answerAt].classList.add('hit');
   opts[q.answerAt].insertAdjacentHTML('beforeend', '<strong class="opt-result">Rigtigt svar</strong>');
   if (!right) {
@@ -1531,7 +1544,7 @@ function dating(q) {
     return `<div class="caution">${WARN}<span>
       Aktuelt spørgsmål fra <b>${sitting(last)}</b>. Svaret var rigtigt dengang,
       og er ikke nødvendigvis rigtigt i dag. På din prøve handler de fem aktuelle
-      spørgsmål om året, du går op. Følg med i danske nyheder.
+       spørgsmål om halvåret op til prøven. Følg med i danske nyheder.
     </span></div>`;
   }
   return '';
@@ -1576,6 +1589,30 @@ function buildWhy(q, right) {
       Åbn den officielle prøve for at se spørgsmålet med de oprindelige svarmuligheder.
     </span>`;
   return why;
+}
+
+function examReview(run) {
+  const missed = run.questions.flatMap((question, index) => {
+    if (run.marks[index] === true) return [];
+    const explanation = buildWhy(question, false);
+    const result = explanation.querySelector('.answer-result');
+    const choice = run.choices[index];
+    if (choice === null) {
+      result.textContent = `Ubesvaret · Det rigtige svar er ${question.answer}`;
+    } else {
+      result.insertAdjacentHTML('afterend', `<p class="exam-choice">Dit svar: <b>${question.options[choice]}</b></p>`);
+    }
+    return [`<details class="exam-review-item">
+      <summary><span>${index + 1}. ${question.q}</span><b>${choice === null ? 'Ubesvaret' : 'Forkert'}</b></summary>
+      ${explanation.outerHTML}
+    </details>`];
+  });
+  if (!missed.length) return '<p class="exam-perfect">Ingen fejl at gennemgå.</p>';
+  return `<section class="exam-review" aria-labelledby="examReviewTitle">
+    <h3 id="examReviewTitle">Gennemgå dine ${missed.length} fejl</h3>
+    <p>Forklaringerne og de officielle kilder vises nu, hvor prøven er afleveret.</p>
+    ${missed.join('')}
+  </section>`;
 }
 
 function next() {
@@ -1635,7 +1672,8 @@ function finish() {
   // with the "af 15" next to it.
   const theirs = ghost ? ghost.marks.slice(0, questions.length).filter(Boolean).length : null;
   const rival = ghost?.name ?? 'Vikingen';
-  const battleResult = ghost ? recordBattle(rival, score, theirs, sunk) : null;
+  const battleResult = ghost ? (score > theirs ? 'won' : score < theirs ? 'lost' : 'draw') : null;
+  if (ghost && mode.duel) recordBattle(rival, score, theirs, sunk);
 
   state.best[mode.id] = Math.max(state.best[mode.id] ?? 0, score);
   // Clearing a hall opens the next one, and only ever forwards.
@@ -1697,7 +1735,7 @@ function finish() {
           ? 'Du nåede ikke frem denne gang. Brug forklaringerne og prøv hallen igen.'
           : `Du skal have ${Math.ceil(questions.length * HALL_PASS)} af ${questions.length} for at rydde hallen. Spørgsmålene blandes hver gang.`}</p>`
       : mode.exam
-      ? `<p class="note">Til den rigtige prøve skal du have ${RULES.pass} af ${RULES.total} rigtige.</p>`
+      ? `<p class="note">${finished.timedOut ? 'Tiden løb ud. ' : ''}Til den rigtige prøve skal du have ${RULES.pass} af ${RULES.total} rigtige.</p>`
       : `<p class="note">${score === questions.length
           ? 'Fejlfrit. Tag Altinget, når du er klar til hele prøven.'
           : 'Gennemgå de forkerte, og tag den igen. Spørgsmålene blandes hver gang.'}</p>`}
@@ -1711,13 +1749,14 @@ function finish() {
         ${missed.length === 1 ? 'spørgsmål' : 'spørgsmål'} · med forklaring og sidehenvisning</small></span>
       <svg class="challenge-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m10 5 7 7-7 7m6-7H6"/></svg>
     </button>` : ''}
-    <div class="actions">
+    ${mode.exam ? examReview(finished) : ''}
+    <div class="actions ${mode.duel ? 'with-challenge' : ''}">
       <button class="btn primary" id="againBtn" type="button"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 11a8 8 0 1 0 2 5M20 4v7h-7"/></svg>${ghost ? (ghost.house ? 'Kræv omkamp' : 'Sejl igen') : 'Få nye spørgsmål'}</button>
-      <button class="challenge-btn" id="shareBtn" type="button" data-tooltip="Din danske viking får det samme sæt spørgsmål og kan slå din score.">
+      ${mode.duel ? `<button class="challenge-btn" id="shareBtn" type="button" data-tooltip="Din danske viking får det samme sæt spørgsmål og kan slå din score.">
         <span class="challenge-sigil" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none"><path d="m11 39 26-30m-26 0 26 30"/><path d="m8 10 9 2-4 8-7-4 2-6Zm32 0-9 2 4 8 7-4-2-6Z" fill="currentColor"/><path d="M24 19v16M17 35h14"/></svg></span>
         <span><b>Udfordr en dansk viking</b><small>Hvem kender Danmark bedst?</small></span>
         <svg class="challenge-arrow" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m10 5 7 7-7 7m6-7H6"/></svg>
-      </button>
+      </button>` : ''}
     </div>
     <p class="share-note" id="shareNote" role="status" aria-live="polite" hidden></p>`;
 
@@ -1740,7 +1779,7 @@ function finish() {
   if (nextHall) {
     $('nextHallBtn').onclick = () => start(null, hallMode(nextHall, mode.index + 1));
   }
-  $('shareBtn').onclick = async () => {
+  if (mode.duel) $('shareBtn').onclick = async () => {
     // The whole challenge travels in the fragment, so nothing is stored anywhere.
     const link = `${location.origin}${location.pathname}#dyst=${packRun(finished)}`;
     const note = $('shareNote');
@@ -1774,10 +1813,16 @@ async function main() {
   load();
 
   const lines = (t) => t.split('\n').filter(Boolean).map((l) => JSON.parse(l));
-  const grab = (p) => fetch(p).then((r) => (r.ok ? r.text() : '')).catch(() => '');
+  const grab = async (path) => {
+    const response = await fetch(path);
+    if (!response.ok) throw new Error(`Mangler ${path}`);
+    const text = await response.text();
+    if (!text.trim()) throw new Error(`${path} er tom`);
+    return text;
+  };
 
   const [questions, explanations, currency, principles, eras, sagaList, kinship, sources] = await Promise.all([
-    fetch('./data/questions.jsonl').then((r) => r.text()),
+    grab('./data/questions.jsonl'),
     grab('./data/explanations.jsonl'),
     grab('./data/currency.jsonl'),
     grab('./data/principles.jsonl'),
@@ -1786,31 +1831,37 @@ async function main() {
     grab('./data/kinship.jsonl'),
     grab('./data/sources.json'),
   ]);
-  state.sources = sources ? JSON.parse(sources) : {};
-  state.principles = principles ? lines(principles) : [];
-  state.eras = eras ? lines(eras) : [];
-  state.sagas = sagaList ? lines(sagaList) : [];
+  state.sources = JSON.parse(sources);
+  state.principles = lines(principles);
+  state.eras = lines(eras);
+  state.sagas = lines(sagaList);
   // Read as id -> the group it belongs to, so a lookup is one step and two
   // members of a group resolve to the very same array and compare identical.
   state.kin = new Map();
-  for (const group of kinship ? lines(kinship) : []) {
+  for (const group of lines(kinship)) {
     // The file also records pairs a human ruled must stay apart, with the
     // reason written beside them. Those are there to stop the question being
     // re-asked on the next rebuild; here they are simply not groups.
     for (const id of group.questions ?? []) state.kin.set(id, group.questions);
   }
 
-  const why = new Map(explanations ? lines(explanations).map((e) => [e.id, e]) : []);
-  const age = new Map(currency ? lines(currency).map((e) => [e.id, e]) : []);
+  const why = new Map(lines(explanations).map((e) => [e.id, e]));
+  const age = new Map(lines(currency).map((e) => [e.id, e]));
 
   state.bank = lines(questions).map((q) => {
     const extra = why.get(q.id);
-    // Hand-written fields win over generated ones (a human-checked page
-    // citation beats the located guess), but never the identity.
-    const merged = extra ? { ...q, ...extra, id: q.id } : q;
+    // Written data may teach and correct a citation; official identity fields
+    // always remain those parsed from SIRI's paper and answer key.
+    const merged = { ...q };
+    if (extra?.explain) merged.explain = extra.explain;
+    if (extra?.dated) merged.dated = extra.dated;
+    if (extra?.page) merged.page = extra.page;
+    else if (q.section === 'aktuelt') delete merged.page;
     const now = age.get(q.id);
     return now ? { ...merged, status: now.status, currency: now.note } : merged;
   });
+  const unexplained = state.bank.filter((q) => q.section !== 'vaerdier' && !q.explain);
+  if (unexplained.length) throw new Error(`${unexplained.length} spørgsmål mangler en gennemgået forklaring`);
   state.bankById = new Map(state.bank.map((q) => [q.id, q]));
   const papers = new Set(state.bank.flatMap((q) => q.seen.map((seen) => seen.split('#')[0])));
   const values = state.bank.filter((q) => q.section === 'vaerdier');
@@ -2047,5 +2098,7 @@ $('welcome').addEventListener('click', (e) => {
 });
 
 main().catch((err) => {
-  $('boot').innerHTML = `<p>Kunne ikke hente spørgsmålene.<br><small>${err}</small></p>`;
+  $('boot').innerHTML = `<p>Kunne ikke hente det kontrollerede indhold.<br><small>${err}</small></p>
+    <button class="btn primary" id="retryLoad" type="button">Prøv igen</button>`;
+  $('retryLoad').onclick = () => location.reload();
 });

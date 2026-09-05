@@ -230,7 +230,7 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
   .welcome-copy,.welcome-journey{ width:100%; max-width:100%; }
   .welcome h1{ font-size:clamp(37px,10.5vw,44px); }
   .welcome-lead{ margin-top:20px; font-size:15px; line-height:1.55; }
-  .welcome-actions{ margin-top:27px; }.welcome-start{ width:100%; justify-content:space-between; }.welcome-exam{ width:100%; justify-content:flex-start; padding-left:24px; }
+  .welcome-actions{ margin-top:27px; }.welcome-start{ width:100%; justify-content:space-between; }.welcome-exam{ width:100%; justify-content:flex-start; padding-left:0; font-size:12px; }
   .welcome-free{ width:100%; text-align:center; }
   .welcome-journey{ padding:24px 20px 21px; }.welcome-journey h2{ font-size:25px; }
   .journey-line{ margin-top:26px; }.journey-line button{ width:27px; height:27px; }.journey-line button.active{ width:33px; height:33px; }
@@ -1095,6 +1095,7 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
 }
 .row-track i.hit{ background:var(--green); height:6px; }
 .row-track i.miss{ background:var(--dannebrog); height:6px; opacity:.75; }
+.row-track i.answered{ background:var(--gold); height:5px; opacity:.7; }
 
 .row-shore{                            /* the far shore you are pulling towards */
   position:absolute; right:0; top:22px; width:30px; height:12px; opacity:.4;
@@ -1133,8 +1134,11 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
 .opt.hit em{ border-color:var(--green); background:var(--green); color:#0f1a24; }
 .opt.miss{ border-color:var(--dannebrog); background:rgba(200,16,46,.1); animation:shake .32s ease; }
 .opt.miss em{ border-color:var(--dannebrog); background:var(--dannebrog); color:#fff; }
+.opt.picked{ border-color:var(--gold); background:rgba(211,162,76,.1); }
+.opt.picked em{ border-color:var(--gold); background:var(--gold); color:#0f1a24; }
 .opt-result{ margin-left:auto; color:var(--green); font-size:10px; letter-spacing:.08em; text-transform:uppercase; }
 .opt-result.wrong{ color:#ffd4da; }
+.opt-result.picked{ color:var(--gold); }
 @keyframes shake{ 0%,100%{transform:none} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
 
 /* ---------- the panel that opens once you have answered ----------
@@ -1218,7 +1222,10 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
  .result .prize-go .mode-icon{ width:22px; height:22px; }
  @keyframes prize-rise{ from{ opacity:0; transform:translateY(12px) scale(.97); } to{ opacity:1; transform:none; } }
  @media (prefers-reduced-motion:reduce){ .result .prize{ animation:none; } }
-.result .actions{ display:grid; grid-template-columns:auto minmax(250px,1fr); gap:10px; align-items:center; width:100%; margin-top:24px; }
+.exam-review{ margin-top:24px; text-align:left; border-top:1px solid rgba(239,227,200,.14); }
+.exam-review>h3{ margin:20px 0 4px; font-family:var(--display); font-size:19px; color:var(--gold); }.exam-review>p{ margin:0 0 12px; color:var(--parchment-dim); font-size:13px; line-height:1.5; }.exam-review-item{ border-top:1px solid rgba(239,227,200,.12); }.exam-review-item summary{ display:flex; align-items:flex-start; gap:12px; padding:13px 2px; color:var(--parchment); cursor:pointer; font-size:13px; line-height:1.45; }.exam-review-item summary span{ flex:1; }.exam-review-item summary b{ color:var(--danger); font-size:9px; letter-spacing:.1em; text-transform:uppercase; }.exam-review-item .why{ margin:0 0 16px; padding:14px; border:1px solid rgba(239,227,200,.12); border-radius:10px; background:rgba(8,20,25,.5); }.exam-choice{ margin-bottom:10px !important; color:var(--parchment-dim); }.exam-perfect{ margin-top:22px; color:var(--green); }
+.result .actions{ display:grid; grid-template-columns:1fr; gap:10px; align-items:center; width:100%; margin-top:24px; }
+.result .actions.with-challenge{ grid-template-columns:auto minmax(250px,1fr); }
 .result .actions .btn.primary{ margin:0; padding:14px 25px; }
 .journey-next{ display:flex; align-items:center; gap:12px; width:100%; margin-top:18px; padding:14px 16px; color:var(--parchment); text-align:left; border:1px solid rgba(143,174,140,.5); border-radius:12px; background:linear-gradient(135deg,rgba(143,174,140,.15),rgba(20,32,44,.9)); cursor:pointer; transition:transform .2s var(--ease),border-color .2s ease; }
 .journey-next:hover,.journey-next:focus-visible{ transform:translateY(-2px); border-color:var(--green); }.journey-next span{ min-width:0; }.journey-next small{ display:block; color:var(--green); font-size:9px; letter-spacing:.12em; text-transform:uppercase; }.journey-next b{ display:block; margin-top:3px; font-family:var(--display); font-size:16px; font-weight:600; }
