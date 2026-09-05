@@ -33,6 +33,7 @@ const $ = (id) => document.getElementById(id);
    ============================================================ */
 const ROSTER = 'felag.people';
 const ACTIVE_PROFILE = 'felag.active';
+const ACTIVE_GUEST = 'felag.activeGuest';
 const LEGACY = 'felag.v1';
 const keyFor = (slug) => `felag.v1.${slug}`;
 const slugify = (name) =>
@@ -104,6 +105,20 @@ function save() {
       sound: state.sound, cleared: state.cleared,
     }));
   } catch { /* private mode: run without persistence rather than fail */ }
+}
+
+const runKey = () => state.profile ? `felag.run.${state.profile.slug}` : null;
+
+function checkpointRun() {
+  if (!state.run || !runKey()) return;
+  const { mode, seed, questions, marks, choices, deadline, ghost } = state.run;
+  sessionStorage.setItem(runKey(), JSON.stringify({
+    modeId: mode.id, seed, questionIds: questions.map((q) => q.id), marks, choices, deadline, ghost,
+  }));
+}
+
+function clearRun() {
+  if (runKey()) sessionStorage.removeItem(runKey());
 }
 
 /* ============================================================
@@ -624,17 +639,25 @@ function useProfile(name, { guest = false } = {}) {
     ? { name: 'Gæst', slug: 'gaest', key: 'felag.guest', guest: true }
     : { name, slug: slugify(name), key: keyFor(slugify(name)), guest: false };
   load();
-  if (!guest) localStorage.setItem(ACTIVE_PROFILE, state.profile.slug);
+  if (guest) sessionStorage.setItem(ACTIVE_GUEST, 'true');
+  else {
+    localStorage.setItem(ACTIVE_PROFILE, state.profile.slug);
+    sessionStorage.removeItem(ACTIVE_GUEST);
+  }
   $('foot').hidden = false;
   $('whoNow').textContent = state.profile.name;
   $('soundToggle').textContent = state.sound ? 'Lyd: til' : 'Lyd: fra';
   $('soundToggle').setAttribute('aria-pressed', String(state.sound));
   renderShore();
+  if (restoreRun()) return;
   if (state.pendingChallenge) {
     const challenge = state.pendingChallenge;
     state.pendingChallenge = null;
     const mode = modeById(challenge.modeId);
-    if (mode) return start(mode.id, mode, { ...challenge, name: 'Vikingen' });
+    if (mode) {
+      history.replaceState(null, '', location.pathname);
+      return start(mode.id, mode, { ...challenge, name: 'Vikingen' });
+    }
   }
   if (state.guide) {
     choose(state.guide);
@@ -1304,6 +1327,12 @@ function start(modeId, override, ghost) {
     ghost: ghost ?? null,
     deadline: mode.exam ? Date.now() + RULES.minutes * 60000 : null,
   };
+  checkpointRun();
+  showRun();
+}
+
+function showRun() {
+  const { mode } = state.run;
   const returnLabel = mode.hall ? 'Tilbage til De Seks Haller' : 'Tilbage til vejen og hallerne';
   $('hudTitle').textContent = mode.da;
   $('hudBackLabel').textContent = returnLabel;
@@ -1364,6 +1393,37 @@ function modeById(id) {
     return p ? principleMode(p) : null;
   }
   return MODES.find((m) => m.id === id) ?? null;
+}
+
+function restoreRun() {
+  if (!runKey()) return false;
+  let saved;
+  try { saved = JSON.parse(sessionStorage.getItem(runKey()) ?? 'null'); }
+  catch { clearRun(); return false; }
+  if (!saved) return false;
+  const mode = modeById(saved.modeId);
+  const questions = saved.questionIds?.map((id) => state.bankById.get(id)).filter(Boolean);
+  if (!mode || questions?.length !== saved.questionIds.length || saved.marks?.length !== questions.length) {
+    clearRun();
+    return false;
+  }
+  state.run = {
+    mode,
+    seed: saved.seed,
+    questions: questions.map((question) => present(question, saved.seed)),
+    i: Math.min(saved.marks.findIndex((mark) => mark === null), questions.length - 1),
+    marks: saved.marks,
+    choices: saved.choices ?? Array(questions.length).fill(null),
+    deadline: saved.deadline ?? null,
+    ghost: saved.ghost ?? null,
+  };
+  if (state.run.i < 0) {
+    state.run.i = questions.length - 1;
+    finish();
+    return true;
+  }
+  showRun();
+  return true;
 }
 
 /** Bjørn does not need a recorded run: his is derived from the same seed. */
@@ -1455,6 +1515,7 @@ function answer(chosen) {
   const right = chosen === q.answerAt;
   run.marks[run.i] = right;
   run.choices[run.i] = chosen;
+  checkpointRun();
   if (run.mode.hall) {
     const progress = (state.hallStats ??= {})[run.mode.hall.chapter] ??= { seen: [], correct: [] };
     if (!progress.seen.includes(q.id)) progress.seen.push(q.id);
@@ -1620,6 +1681,7 @@ function next() {
   if (run.sunk) return finish();
   if (run.i >= run.questions.length - 1) return finish();
   run.i++;
+  checkpointRun();
   renderQuestion();
 }
 
@@ -1802,6 +1864,7 @@ function finish() {
       prompt('Kopiér dit løb:', link);
     }
   };
+  clearRun();
   state.run = null;
 }
 
@@ -1885,14 +1948,14 @@ async function main() {
   // A challenge link carries everything needed to replay the same paper.
   const challenge = unpackRun(new URLSearchParams(location.hash.slice(1)).get('dyst'));
   if (challenge) {
-    history.replaceState(null, '', location.pathname);
     state.pendingChallenge = challenge;
   }
   const active = activePerson();
-  if (active) useProfile(active);
+  if (sessionStorage.getItem(ACTIVE_GUEST)) useProfile(null, { guest: true });
+  else if (active) useProfile(active);
   else showWho();
   renderWelcomeJourney();
-  if (challenge && active) $('welcome').hidden = true;
+  if (state.run) $('welcome').hidden = true;
   else scenes.show('path');
   $('boot').hidden = true;
 }
@@ -2002,11 +2065,16 @@ $('eras').addEventListener('click', (e) => {
   if (btn) start(null, eraMode(state.eras[Number(btn.dataset.i)]));
 });
 $('quizNext').addEventListener('click', next);
+const hasActiveAnswers = () => state.run?.marks.some((mark) => mark !== null);
+const abandonRun = () => {
+  if (hasActiveAnswers() && !confirm('Forlad denne omgang? Resultatet for den ufærdige omgang bliver ikke gemt.')) return false;
+  clearRun();
+  state.run = null;
+  return true;
+};
 const exitRun = () => {
   const mode = state.run?.mode;
-  if (state.run && state.run.marks.some((mark) => mark !== null)
-      && !confirm('Forlad denne omgang? Dine svar i omgangen bliver ikke gemt.')) return;
-  state.run = null;
+  if (!abandonRun()) return;
   if (mode) return leave(mode);
   if (!$('viewResult').hidden && resultMode) return leave(resultMode);
   if (!$('viewSagas').hidden) return sagaDoor();
@@ -2028,10 +2096,15 @@ $('resetBtn').addEventListener('click', () => {
   if (!state.profile) return;
   const who = state.profile?.name ?? '';
   if (!confirm(`Nulstil al fremgang for ${who}?`)) return;
+  clearRun();
   store().removeItem(state.profile.key);
   location.reload();
 });
-$('switchBtn').addEventListener('click', () => { state.run = null; showWho(); });
+$('switchBtn').addEventListener('click', () => {
+  if (!abandonRun()) return;
+  sessionStorage.removeItem(ACTIVE_GUEST);
+  showWho();
+});
 
 $('profiles').addEventListener('click', (e) => {
   const drop = e.target.closest('[data-drop]');
@@ -2071,8 +2144,13 @@ $('newProfile').addEventListener('submit', (e) => {
 $('profileName').addEventListener('input', (e) => e.currentTarget.setCustomValidity(''));
 
 $('guestBtn').addEventListener('click', () => {
-  sessionStorage.removeItem('felag.guest');
   useProfile(null, { guest: true });
+});
+
+addEventListener('beforeunload', (event) => {
+  if (!hasActiveAnswers()) return;
+  event.preventDefault();
+  event.returnValue = '';
 });
 
 function enterApp() {
