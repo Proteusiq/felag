@@ -85,6 +85,7 @@ const state = {
 };
 let welcomeHall = null;
 let welcomeMode = null;
+let welcomeMasteryHall = null;
 
 /* ============================================================
    Persistence
@@ -387,6 +388,7 @@ function renderLearningPath() {
 
 function renderWelcomeJourney() {
   const cleared = state.profile ? state.cleared ?? 0 : 0;
+  const completed = cleared === HALLS.length;
   const current = Math.min(cleared, HALLS.length - 1);
   document.querySelectorAll('[data-welcome-hall]').forEach((button) => {
     const index = Number(button.dataset.welcomeHall);
@@ -398,8 +400,30 @@ function renderWelcomeJourney() {
     button.setAttribute('aria-label', `Hal ${hall.numeral}: ${hall.da}, ${status}. 12 spørgsmål; 10 rigtige kræves.`);
   });
   $('welcomeIdentity').textContent = state.profile ? `Fortsæt som ${state.profile.name}` : 'Begynd her';
-  $('welcomeHallName').textContent = cleared === HALLS.length ? 'Altinget venter' : HALLS[current].da;
-  $('welcomeStart').querySelector('span').textContent = cleared === HALLS.length ? 'Tag Altinget' : state.profile ? 'Fortsæt rejsen' : 'Begynd vandringen';
+  $('welcomeHallName').textContent = completed ? 'Altinget venter' : HALLS[current].da;
+  $('welcomeStart').querySelector('span').textContent = completed ? 'Tag Altinget' : state.profile ? 'Fortsæt rejsen' : 'Begynd vandringen';
+  const unseen = completed
+    ? HALLS.map((hall, index) => ({ hall, index, left: hallProgress(hall).left })).filter((item) => item.left > 0)
+    : [];
+  const randomIndex = Math.floor(Math.random() * HALLS.length);
+  const mastery = unseen.length
+    ? unseen[Math.floor(Math.random() * unseen.length)]
+    : completed
+    ? { hall: HALLS[randomIndex], index: randomIndex, left: 0 }
+    : null;
+  welcomeMasteryHall = mastery?.index ?? null;
+  $('welcomeExamLabel').textContent = completed ? 'Mestr din rejse' : 'Tag Altinget';
+  $('welcomeExamMeta').textContent = completed
+    ? mastery.left
+      ? `${mastery.left} usete spørgsmål · ${mastery.hall.da}`
+      : `Alle spørgsmål set · tilfældig hal`
+    : '45 min simulation';
+  $('welcomeExamIcon').innerHTML = completed ? topicIcon('book') : topicIcon('parliament');
+  $('welcomeExam').setAttribute('aria-label', completed
+    ? mastery.left
+      ? `Mestr din rejse: ${mastery.left} usete spørgsmål i ${mastery.hall.da}`
+      : 'Mestr din rejse med 12 spørgsmål fra en tilfældig hal'
+    : 'Tag Altinget, en 45 minutters simulation');
   $('welcomeNavStart').textContent = state.profile ? 'Fortsæt' : 'Start træning';
   $('welcomeSwitch').hidden = !state.profile;
 }
@@ -2222,8 +2246,13 @@ $('welcomeSwitch').addEventListener('click', () => {
   showWho();
 });
 $('welcomeExam').addEventListener('click', () => {
-  welcomeMode = 'alting';
-  assemblyDoor = showPath;
+  if ((state.cleared ?? 0) >= HALLS.length) {
+    welcomeMode = null;
+    welcomeHall = welcomeMasteryHall;
+  } else {
+    welcomeMode = 'alting';
+    assemblyDoor = showPath;
+  }
   enterApp();
 });
 $('welcome').addEventListener('click', (e) => {
