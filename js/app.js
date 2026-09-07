@@ -464,7 +464,7 @@ function renderWelcomeJourney() {
   });
   $('welcomeIdentity').textContent = state.profile ? `Fortsæt som ${state.profile.name}` : 'Begynd her';
   $('welcomeHallName').textContent = completed ? 'Altinget venter' : HALLS[current].da;
-  $('welcomeStart').querySelector('span').textContent = completed ? 'Tag Altinget' : state.profile ? 'Fortsæt rejsen' : 'Begynd vandringen';
+  $('welcomeStart').querySelector('span').textContent = state.profile ? 'Gå til Vejen frem' : 'Begynd vandringen';
   const unseen = completed
     ? HALLS.map((hall, index) => ({ hall, index, left: hallProgress(hall).left })).filter((item) => item.left > 0)
     : [];
@@ -2401,7 +2401,10 @@ function enterApp() {
   }, scenes.still.matches ? 0 : 450);
 }
 $('welcomeStart').addEventListener('click', () => {
-  if ((state.cleared ?? 0) >= HALLS.length) welcomeMode = 'alting';
+  enterApp();
+});
+$('welcomeHome').addEventListener('click', (event) => {
+  event.preventDefault();
   enterApp();
 });
 $('welcomeNavStart').addEventListener('click', enterApp);
