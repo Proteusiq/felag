@@ -10,6 +10,7 @@
 import { CAST, byId } from './cast.js';
 import * as scenes from './scenes.js';
 import * as saga from './map.js';
+import * as storyView from './stories.js';
 
 const $ = (id) => document.getElementById(id);
 
@@ -875,13 +876,7 @@ function showHalls() {
    Fortællinger · facts joined into sourced understanding
    ============================================================ */
 function storyMode(story) {
-  return {
-    id: `story-${story.id}`,
-    da: story.title,
-    accent: '--astrid',
-    story,
-    build: () => story.questions.map((id) => state.bankById.get(id)).filter((question) => question && usable(question)),
-  };
+  return storyView.mode(story, state.bankById, usable);
 }
 
 function showStories() {
@@ -889,16 +884,7 @@ function showStories() {
   $('hudBackLabel').textContent = 'Tilbage til vejen';
   $('hudBack').setAttribute('aria-label', 'Tilbage til vejen');
   $('hudBack').dataset.tooltip = 'Tilbage til vejen';
-  $('storyList').innerHTML = state.stories.map((story, index) => {
-    const best = state.best[`story-${story.id}`];
-    return `<button class="story-card" type="button" data-story="${story.id}" style="--d:${index * .08}s">
-      <span class="story-card-kicker">${story.eyebrow}</span>
-      <b>${story.title}</b>
-      <p>${story.intro}</p>
-      <span class="story-card-meta">${story.sections.length} kapitler · ${story.questions.length} spørgsmål${Number.isFinite(best) ? ` · bedste ${best}/${story.questions.length}` : ''}</span>
-      <span class="story-card-open">Læs fortællingen ${ICON.chevron}</span>
-    </button>`;
-  }).join('');
+  $('storyList').innerHTML = storyView.list(state.stories, state.best, ICON.chevron);
   go('viewStories', 'hall');
 }
 
@@ -911,20 +897,12 @@ function showStory(story) {
   $('storyEyebrow').textContent = story.eyebrow;
   $('storyTitle').textContent = story.title;
   $('storyIntro').textContent = story.intro;
-  $('storyConnections').innerHTML = story.connections.map((connection) => `<span>${connection}</span>`).join('');
-  $('storyTimeline').innerHTML = story.moments.map((moment) => `<div class="story-moment">
-    <time>${moment.year}</time><p>${moment.text}</p>
-    <small>${materialSource(moment.pages)}</small>
-  </div>`).join('');
-  $('storySections').innerHTML = story.sections.map((section, index) => `<section class="story-section">
-    <span class="story-section-number">${String(index + 1).padStart(2, '0')}</span>
-    <div><h3>${section.title}</h3>${section.body.map((paragraph) => `<p>${paragraph}</p>`).join('')}
-      <p class="story-source">${materialSource(section.pages)}</p></div>
-  </section>`).join('');
-  const pages = [...new Set(story.sections.flatMap((section) => section.pages)
-    .concat(story.moments.flatMap((moment) => moment.pages)))].sort((a, b) => a - b);
-  $('storySources').innerHTML = `<h3>Kilder til fortællingen</h3><p>${materialSource(pages)}</p>`;
-  $('storyQuiz').innerHTML = `${topicIcon('book')}Prøv det, du har lært · ${story.questions.length} spørgsmål`;
+  const content = storyView.content(story, materialSource, topicIcon);
+  $('storyConnections').innerHTML = content.connections;
+  $('storyTimeline').innerHTML = content.timeline;
+  $('storySections').innerHTML = content.sections;
+  $('storySources').innerHTML = content.sources;
+  $('storyQuiz').innerHTML = content.quiz;
   go('viewStory', 'hall');
 }
 
