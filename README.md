@@ -6,7 +6,7 @@
 
 [![Open the site](https://img.shields.io/badge/Begynd%20vandringen-proteusiq.github.io%2Ffelag-d3a24c?style=for-the-badge)](https://proteusiq.github.io/felag/)
 
-[![Version](https://img.shields.io/badge/version-0.0.26-d3a24c?style=flat-square)](https://github.com/Proteusiq/felag/releases)
+[![Version](https://img.shields.io/badge/version-0.0.27-d3a24c?style=flat-square)](https://github.com/Proteusiq/felag/releases)
 [![Questions](https://img.shields.io/badge/spørgsmål-508-223448?style=flat-square)](data/questions.jsonl)
 [![Papers](https://img.shields.io/badge/prøver-13%20(2020–2026)-223448?style=flat-square)](https://danskogproever.dk/borger/indfoedsretsproeve-statsborgerskab/forberedelse-til-indfoedsretsproeven/)
 [![Price](https://img.shields.io/badge/pris-0%20kr-8fae8c?style=flat-square)](#)
@@ -75,6 +75,7 @@ Beyond them stand:
 - **Dysten**, a race against Bjørn or against a friend, settled under a raised banner or a struck one, with both scores side by side
 - **Tinget**, the five values questions, taught as ten principles rather than drilled
 - **Altinget**, the whole paper on the clock
+- **Dagens genbesøg**, due facts mixed across chapters at widening local intervals
 - **Fortællinger**, cited stories that join people, periods and questions into understanding
 - **Sagaerne**, explanations from the læremateriale, cut into 56 stretches and sized by how much of the exam came off each one
 

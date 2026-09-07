@@ -81,6 +81,7 @@ const state = {
   best: {},
   hallStats: {},
   battles: [],
+  review: {},
   sound: false,
   run: null,
 };
@@ -92,7 +93,7 @@ let welcomeMasteryHall = null;
    Persistence
    ============================================================ */
 function load() {
-  Object.assign(state, { guide: null, best: {}, hallStats: {}, battles: [], cleared: 0, sound: false });
+  Object.assign(state, { guide: null, best: {}, hallStats: {}, battles: [], review: {}, cleared: 0, sound: false });
   if (!state.profile) return;
   try {
     Object.assign(state, JSON.parse(store().getItem(state.profile.key) ?? '{}'));
@@ -103,7 +104,7 @@ function save() {
   try {
     store().setItem(state.profile.key, JSON.stringify({
       guide: state.guide, best: state.best, hallStats: state.hallStats, battles: state.battles,
-      sound: state.sound, cleared: state.cleared,
+      review: state.review, sound: state.sound, cleared: state.cleared,
     }));
   } catch { /* private mode: run without persistence rather than fail */ }
 }
@@ -120,6 +121,67 @@ function checkpointRun() {
 
 function clearRun() {
   if (runKey()) sessionStorage.removeItem(runKey());
+}
+
+const REVIEW_DAYS = [1, 3, 7, 14];
+const dayStamp = (date = new Date()) => {
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 10);
+};
+const afterDays = (days) => {
+  const date = new Date();
+  date.setDate(date.getDate() + days);
+  return dayStamp(date);
+};
+
+function rememberAnswer(question, right, persist = true) {
+  if (question.section !== 'laeremateriale' || !usable(question)) return;
+  const today = dayStamp();
+  const previous = state.review[question.id];
+  const sameDay = previous?.last === today;
+  const step = right
+    ? sameDay ? Math.max(previous?.step ?? 0, 0) : Math.min((previous?.step ?? -1) + 1, REVIEW_DAYS.length - 1)
+    : 0;
+  state.review[question.id] = {
+    step,
+    due: afterDays(right ? REVIEW_DAYS[step] : 1),
+    last: today,
+    correct: Boolean(right),
+    lapses: (previous?.lapses ?? 0) + (right ? 0 : 1),
+  };
+  if (persist) save();
+}
+
+function dueQuestions() {
+  const today = dayStamp();
+  return Object.entries(state.review)
+    .filter(([, review]) => review.due <= today)
+    .map(([id]) => state.bankById.get(id))
+    .filter((question) => question && usable(question) && question.section === 'laeremateriale');
+}
+
+function interleave(questions, rand) {
+  const groups = new Map();
+  for (const question of shuffle(questions, rand)) {
+    const group = groups.get(question.chapter) ?? [];
+    group.push(question);
+    groups.set(question.chapter, group);
+  }
+  const mixed = [];
+  while ([...groups.values()].some((group) => group.length)) {
+    for (const group of groups.values()) if (group.length) mixed.push(group.shift());
+  }
+  return mixed;
+}
+
+function reviewMode() {
+  return {
+    id: 'review',
+    da: 'Dagens genbesøg',
+    accent: '--green',
+    review: true,
+    build: (rand) => interleave(dueQuestions(), rand).slice(0, 15),
+  };
 }
 
 /* ============================================================
@@ -506,7 +568,7 @@ const DESTINATIONS = [
 ];
 
 function modeCard(mode, index) {
-  const best = state.best[mode.id];
+  const best = mode.id === 'review' ? undefined : state.best[mode.id];
   const scoringMode = MODES.find((item) => item.id === mode.id) ?? mode;
   const total = scoringMode.exam ? RULES.total
     : scoringMode.gate?.of ?? (scoringMode.duel || scoringMode.training ? 15 : null);
@@ -537,6 +599,7 @@ let assemblyDoor = showPath;
 /** Leaving a drill returns where it was started from, not to the map. */
 const leave = (mode) => mode?.hall ? hallDoor()
   : mode?.story ? showStory(mode.story)
+  : mode?.review ? showPath()
   : mode?.training ? showTraining()
   : mode?.id === 'ting' || mode?.exam ? assemblyDoor()
   : mode?.ting ? showTing()
@@ -742,7 +805,13 @@ function renderPath() {
   $('pathSub').textContent = c.recommends;
 
   renderLearningPath();
-  $('modes').innerHTML = DESTINATIONS
+  const due = dueQuestions();
+  const destinations = due.length ? [{
+    id: 'review', da: 'Dagens genbesøg', en: 'Spaced review', accent: '--green', icon: 'grundtvig',
+    blurb: 'Fakta, du tidligere har mødt, vender tilbage på det tidspunkt, hvor hukommelsen har mest gavn af at hente dem frem.',
+    tag: `${due.length} spørgsmål klar`,
+  }, ...DESTINATIONS] : DESTINATIONS;
+  $('modes').innerHTML = destinations
     .filter((d) => d.id !== 'heim' || heimWelcome())
     .map(modeCard).join('');
   renderExamDate();
@@ -1480,6 +1549,7 @@ function unpackRun(text) {
 
 /** Rebuild any mode from the id stored in a challenge link. */
 function modeById(id) {
+  if (id === 'review') return reviewMode();
   if (id?.startsWith('hal-')) {
     const n = Number(id.slice(4));
     const i = HALLS.findIndex((h) => h.chapter === n);
@@ -1625,8 +1695,9 @@ function answer(chosen) {
     const progress = (state.hallStats ??= {})[run.mode.hall.chapter] ??= { seen: [], correct: [] };
     if (!progress.seen.includes(q.id)) progress.seen.push(q.id);
     if (right && !progress.correct.includes(q.id)) progress.correct.push(q.id);
-    save();
   }
+  if (!run.mode.exam) rememberAnswer(q, right, false);
+  save();
   const sunk = right ? null : sinkReason(run);
   run.sunk = sunk;
 
@@ -1850,6 +1921,11 @@ function finish() {
   if (mode.hall && passed) {
     state.cleared = Math.max(state.cleared ?? 0, mode.index + 1);
   }
+  if (mode.exam) {
+    questions.forEach((question, index) => {
+      if (marks[index] !== null) rememberAnswer(question, marks[index], false);
+    });
+  }
   // The prize fires once, at the crossing from "not all" to "all six".
   const wonAll = wasCleared < HALLS.length && state.cleared >= HALLS.length;
   save();
@@ -1916,6 +1992,8 @@ function finish() {
       ? `<p class="note">${score === questions.length
           ? 'Du har samlet fortællingens forbindelser.'
           : 'Læs fortællingen igen, og se hvordan personer, periode og begivenheder hænger sammen.'}</p>`
+      : mode.review
+      ? `<p class="note">Dagens fakta er planlagt igen ud fra dine svar. Fejl vender tilbage i morgen; sikre svar får længere mellemrum.</p>`
       : `<p class="note">${score === questions.length
           ? 'Fejlfrit. Tag Altinget, når du er klar til hele prøven.'
           : 'Gennemgå de forkerte, og tag den igen. Spørgsmålene blandes hver gang.'}</p>`}
@@ -1940,7 +2018,7 @@ function finish() {
     </button>` : ''}
     ${mode.exam ? examReview(finished) : ''}
     <div class="actions ${mode.duel ? 'with-challenge' : ''}">
-      <button class="btn primary" id="againBtn" type="button"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 11a8 8 0 1 0 2 5M20 4v7h-7"/></svg>${ghost ? (ghost.house ? 'Kræv omkamp' : 'Sejl igen') : mode.time ? 'Prøv perioden igen' : mode.story ? 'Prøv fortællingen igen' : 'Få nye spørgsmål'}</button>
+      <button class="btn primary" id="againBtn" type="button"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 11a8 8 0 1 0 2 5M20 4v7h-7"/></svg>${ghost ? (ghost.house ? 'Kræv omkamp' : 'Sejl igen') : mode.time ? 'Prøv perioden igen' : mode.story ? 'Prøv fortællingen igen' : mode.review ? 'Tilbage til vejen' : 'Få nye spørgsmål'}</button>
       ${mode.duel ? `<button class="challenge-btn" id="shareBtn" type="button" data-tooltip="Din danske viking får det samme sæt spørgsmål og kan slå din score.">
         <span class="challenge-sigil" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none"><path d="m11 39 26-30m-26 0 26 30"/><path d="m8 10 9 2-4 8-7-4 2-6Zm32 0-9 2 4 8 7-4-2-6Z" fill="currentColor"/><path d="M24 19v16M17 35h14"/></svg></span>
         <span><b>Udfordr en dansk viking</b><small>Hvem kender Danmark bedst?</small></span>
@@ -1953,6 +2031,7 @@ function finish() {
   resultMode = mode;
   go('viewResult', sceneFor(mode));
   $('againBtn').onclick = () => {
+    if (mode.review) return showPath();
     const freshSeed = Date.now() >>> 0;
     start(mode.id, mode, ghost?.house ? houseGhost(freshSeed) : null);
   };
@@ -2130,6 +2209,7 @@ function openMode(id) {
 $('modes').addEventListener('click', (e) => {
   const btn = e.target.closest('.mode');
   if (!btn) return;
+  if (btn.dataset.id === 'review') return start(null, reviewMode());
   if (btn.dataset.id === 'stories') return showStories();
   if (btn.dataset.id === 'sagaer') return showSagaer();
   if (btn.dataset.id === 'training') return showTraining();
