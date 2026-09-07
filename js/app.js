@@ -77,6 +77,7 @@ const NUMERAL = ['Nul', 'Én', 'To', 'Tre', 'Fire', 'Fem', 'Seks', 'Syv', 'Otte'
 const state = {
   guide: null,
   bank: [],
+  stories: [],
   best: {},
   hallStats: {},
   battles: [],
@@ -476,6 +477,11 @@ const MODES = [
 
 const DESTINATIONS = [
   {
+    id: 'stories', da: 'Fortællinger', en: 'Connected learning', accent: '--astrid', icon: 'book',
+    blurb: 'Mennesker, begivenheder og kultur samlet i kildebelagte historier, så fakta bliver til forståelse.',
+    tag: 'Læs · forbind · husk',
+  },
+  {
     id: 'sagaer', da: 'Sagaerne', en: 'The reading rooms', accent: '--gorm', icon: 'book',
     blurb: 'Forklaringer fra lærematerialet: hvert kapitel lagt ud efter hvor meget SIRI har spurgt om siderne.',
     tag: 'Aldrig låst',
@@ -524,11 +530,13 @@ let hallDoor = showHalls;
     reading room goes back the way it was entered rather than always to one. */
 let sagaDoor = showHalls;
 let resultMode = null;
+let currentStory = null;
 const showPath = () => { renderPath(); go('viewPath', 'path'); };
 let assemblyDoor = showPath;
 
 /** Leaving a drill returns where it was started from, not to the map. */
 const leave = (mode) => mode?.hall ? hallDoor()
+  : mode?.story ? showStory(mode.story)
   : mode?.training ? showTraining()
   : mode?.id === 'ting' || mode?.exam ? assemblyDoor()
   : mode?.ting ? showTing()
@@ -595,7 +603,7 @@ function weighted(list, n, rand) {
 /* ============================================================
    Views
    ============================================================ */
-const VIEWS = ['viewWho', 'viewShore', 'viewPath', 'viewTraining', 'viewHalls', 'viewSagaer', 'viewSagas', 'viewMap', 'viewHeim', 'viewTime', 'viewArena', 'viewTing', 'viewQuiz', 'viewResult'];
+const VIEWS = ['viewWho', 'viewShore', 'viewPath', 'viewTraining', 'viewHalls', 'viewSagaer', 'viewStories', 'viewStory', 'viewSagas', 'viewMap', 'viewHeim', 'viewTime', 'viewArena', 'viewTing', 'viewQuiz', 'viewResult'];
 function go(id, scene) {
   const swap = () => {
     // The counter and clock belong to a run; nothing else should inherit them.
@@ -786,6 +794,60 @@ function showHalls() {
   $('hudBack').dataset.tooltip = 'Tilbage til vejen';
   renderHalls();
   go('viewHalls', 'path');
+}
+
+/* ============================================================
+   Fortællinger · facts joined into sourced understanding
+   ============================================================ */
+function storyMode(story) {
+  return {
+    id: `story-${story.id}`,
+    da: story.title,
+    accent: '--astrid',
+    story,
+    build: () => story.questions.map((id) => state.bankById.get(id)).filter((question) => question && usable(question)),
+  };
+}
+
+function showStories() {
+  $('hudTitle').textContent = 'Fortællinger';
+  $('hudBackLabel').textContent = 'Tilbage til vejen';
+  $('hudBack').setAttribute('aria-label', 'Tilbage til vejen');
+  $('hudBack').dataset.tooltip = 'Tilbage til vejen';
+  $('storyList').innerHTML = state.stories.map((story, index) => {
+    const best = state.best[`story-${story.id}`];
+    return `<button class="story-card" type="button" data-story="${story.id}" style="--d:${index * .08}s">
+      <span class="story-card-kicker">${story.eyebrow}</span>
+      <b>${story.title}</b>
+      <p>${story.intro}</p>
+      <span class="story-card-meta">${story.sections.length} kapitler · ${story.questions.length} spørgsmål${Number.isFinite(best) ? ` · bedste ${best}/${story.questions.length}` : ''}</span>
+      <span class="story-card-open">Læs fortællingen ${ICON.chevron}</span>
+    </button>`;
+  }).join('');
+  go('viewStories', 'hall');
+}
+
+function showStory(story) {
+  currentStory = story;
+  $('hudTitle').textContent = story.title;
+  $('hudBackLabel').textContent = 'Tilbage til Fortællinger';
+  $('hudBack').setAttribute('aria-label', 'Tilbage til Fortællinger');
+  $('hudBack').dataset.tooltip = 'Tilbage til Fortællinger';
+  $('storyEyebrow').textContent = story.eyebrow;
+  $('storyTitle').textContent = story.title;
+  $('storyIntro').textContent = story.intro;
+  $('storyConnections').innerHTML = story.connections.map((connection) => `<span>${connection}</span>`).join('');
+  $('storyTimeline').innerHTML = story.moments.map((moment) => `<div class="story-moment">
+    <time>${moment.year}</time><p>${moment.text}</p>
+    <small>${moment.pages.map(materialLink).join(' · ')}</small>
+  </div>`).join('');
+  $('storySections').innerHTML = story.sections.map((section, index) => `<section class="story-section">
+    <span class="story-section-number">${String(index + 1).padStart(2, '0')}</span>
+    <div><h3>${section.title}</h3>${section.body.map((paragraph) => `<p>${paragraph}</p>`).join('')}
+      <p class="story-source">${section.pages.map(materialLink).join(' · ')}</p></div>
+  </section>`).join('');
+  $('storyQuiz').innerHTML = `${topicIcon('book')}Prøv det, du har lært · ${story.questions.length} spørgsmål`;
+  go('viewStory', 'hall');
 }
 
 /* ============================================================
@@ -1431,6 +1493,10 @@ function modeById(id) {
     const p = state.principles.find((x) => x.id === id.slice(8));
     return p ? principleMode(p) : null;
   }
+  if (id?.startsWith('story-')) {
+    const story = state.stories.find((item) => item.id === id.slice(6));
+    return story ? storyMode(story) : null;
+  }
   return MODES.find((m) => m.id === id) ?? null;
 }
 
@@ -1846,6 +1912,10 @@ function finish() {
           : `Du skal have ${Math.ceil(questions.length * HALL_PASS)} af ${questions.length} for at rydde hallen. Spørgsmålene blandes hver gang.`}</p>`
       : mode.exam
       ? `<p class="note">${finished.timedOut ? 'Tiden løb ud. ' : ''}Til den rigtige prøve skal du have ${RULES.pass} af ${RULES.total} rigtige.</p>`
+      : mode.story
+      ? `<p class="note">${score === questions.length
+          ? 'Du har samlet fortællingens forbindelser.'
+          : 'Læs fortællingen igen, og se hvordan personer, periode og begivenheder hænger sammen.'}</p>`
       : `<p class="note">${score === questions.length
           ? 'Fejlfrit. Tag Altinget, når du er klar til hele prøven.'
           : 'Gennemgå de forkerte, og tag den igen. Spørgsmålene blandes hver gang.'}</p>`}
@@ -1870,7 +1940,7 @@ function finish() {
     </button>` : ''}
     ${mode.exam ? examReview(finished) : ''}
     <div class="actions ${mode.duel ? 'with-challenge' : ''}">
-      <button class="btn primary" id="againBtn" type="button"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 11a8 8 0 1 0 2 5M20 4v7h-7"/></svg>${ghost ? (ghost.house ? 'Kræv omkamp' : 'Sejl igen') : mode.time ? 'Prøv perioden igen' : 'Få nye spørgsmål'}</button>
+      <button class="btn primary" id="againBtn" type="button"><svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 11a8 8 0 1 0 2 5M20 4v7h-7"/></svg>${ghost ? (ghost.house ? 'Kræv omkamp' : 'Sejl igen') : mode.time ? 'Prøv perioden igen' : mode.story ? 'Prøv fortællingen igen' : 'Få nye spørgsmål'}</button>
       ${mode.duel ? `<button class="challenge-btn" id="shareBtn" type="button" data-tooltip="Din danske viking får det samme sæt spørgsmål og kan slå din score.">
         <span class="challenge-sigil" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none"><path d="m11 39 26-30m-26 0 26 30"/><path d="m8 10 9 2-4 8-7-4 2-6Zm32 0-9 2 4 8 7-4-2-6Z" fill="currentColor"/><path d="M24 19v16M17 35h14"/></svg></span>
         <span><b>Udfordr en dansk viking</b><small>Hvem kender Danmark bedst?</small></span>
@@ -1954,13 +2024,14 @@ async function main() {
     return text;
   };
 
-  const [questions, explanations, currency, principles, eras, sagaList, kinship, sources] = await Promise.all([
+  const [questions, explanations, currency, principles, eras, sagaList, stories, kinship, sources] = await Promise.all([
     grab('./data/questions.jsonl'),
     grab('./data/explanations.jsonl'),
     grab('./data/currency.jsonl'),
     grab('./data/principles.jsonl'),
     grab('./data/eras.jsonl'),
     grab('./data/sagas.jsonl'),
+    grab('./data/stories.jsonl'),
     grab('./data/kinship.jsonl'),
     grab('./data/sources.json'),
   ]);
@@ -1968,6 +2039,7 @@ async function main() {
   state.principles = lines(principles);
   state.eras = lines(eras);
   state.sagas = lines(sagaList);
+  state.stories = lines(stories);
   // Read as id -> the group it belongs to, so a lookup is one step and two
   // members of a group resolve to the very same array and compare identical.
   state.kin = new Map();
@@ -2058,11 +2130,21 @@ function openMode(id) {
 $('modes').addEventListener('click', (e) => {
   const btn = e.target.closest('.mode');
   if (!btn) return;
+  if (btn.dataset.id === 'stories') return showStories();
   if (btn.dataset.id === 'sagaer') return showSagaer();
   if (btn.dataset.id === 'training') return showTraining();
   if (btn.dataset.id === 'heim') return showHeim();
   if (btn.dataset.id === 'alting') assemblyDoor = showPath;
   openMode(btn.dataset.id);
+});
+$('storyList').addEventListener('click', (event) => {
+  const card = event.target.closest('[data-story]');
+  if (!card) return;
+  const story = state.stories.find((item) => item.id === card.dataset.story);
+  if (story) showStory(story);
+});
+$('storyQuiz').addEventListener('click', () => {
+  if (currentStory) start(null, storyMode(currentStory));
 });
 $('heimReset').addEventListener('click', () => heim?.reset());
 $('heimOut').addEventListener('click', () => heim?.zoom(1.15));
@@ -2151,6 +2233,8 @@ const exitRun = () => {
   if (!abandonRun()) return;
   if (mode) return leave(mode);
   if (!$('viewResult').hidden && resultMode) return leave(resultMode);
+  if (!$('viewStory').hidden) return showStories();
+  if (!$('viewStories').hidden) return showPath();
   if (!$('viewSagas').hidden) return sagaDoor();
   if (!$('viewSagaer').hidden) { renderPath(); return go('viewPath', 'path'); }
   if (!$('viewTing').hidden) return assemblyDoor();

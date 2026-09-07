@@ -31,7 +31,9 @@ jobs:
           uv run tools/content.py all | tee summary.txt
 
       - name: Check reading groups
-        run: uv run tools/kinship.py
+        run: |
+          uv run tools/kinship.py
+          uv run tools/stories.py
 
       - name: Summarise
         run: |

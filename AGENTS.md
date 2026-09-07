@@ -23,8 +23,8 @@ Break any of these and the project stops being what it claims to be.
 4. **Generated data is generated; written data is written.** `tools/content.py`
    owns `questions.jsonl`, `eras.jsonl`, `sagas.jsonl` and `sources.json`, and
    rewrites them freely. It must never write `explanations.jsonl`,
-   `currency.jsonl`, `kinship.jsonl` or `principles.jsonl` — those are human
-   judgement, joined by id.
+   `currency.jsonl`, `kinship.jsonl`, `principles.jsonl` or `stories.jsonl` —
+   those are human judgement, joined by id.
 5. **Reading is never gated.** The six halls lock to pace drilling. Sagaerne is
    open from day one, including for locked halls.
 
@@ -63,6 +63,7 @@ SIRI adds a paper roughly twice a year. The whole sequence:
 uv run tools/content.py all        # fetch new PDFs, rebuild the bank
 uv run tools/kinship.py --propose  # new near-duplicate pairs to rule on
 uv run tools/kinship.py            # check kinship.jsonl is still whole
+uv run tools/stories.py            # check authored stories and citations
 ```
 
 `content.py` exits non-zero if parsing regressed, and reports questions whose id
@@ -122,6 +123,7 @@ There is no test suite; the checks are the tools and the browser.
 
 ```sh
 uv run tools/kinship.py            # groups whole, no orphans, no runaways
+uv run tools/stories.py            # story ids, question ids and pages whole
 node --check js/app.js
 python3 -m http.server 8765
 ```

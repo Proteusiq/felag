@@ -6,7 +6,7 @@
 
 [![Open the site](https://img.shields.io/badge/Begynd%20vandringen-proteusiq.github.io%2Ffelag-d3a24c?style=for-the-badge)](https://proteusiq.github.io/felag/)
 
-[![Version](https://img.shields.io/badge/version-0.0.25-d3a24c?style=flat-square)](https://github.com/Proteusiq/felag/releases)
+[![Version](https://img.shields.io/badge/version-0.0.26-d3a24c?style=flat-square)](https://github.com/Proteusiq/felag/releases)
 [![Questions](https://img.shields.io/badge/spørgsmål-508-223448?style=flat-square)](data/questions.jsonl)
 [![Papers](https://img.shields.io/badge/prøver-13%20(2020–2026)-223448?style=flat-square)](https://danskogproever.dk/borger/indfoedsretsproeve-statsborgerskab/forberedelse-til-indfoedsretsproeven/)
 [![Price](https://img.shields.io/badge/pris-0%20kr-8fae8c?style=flat-square)](#)
@@ -75,6 +75,7 @@ Beyond them stand:
 - **Dysten**, a race against Bjørn or against a friend, settled under a raised banner or a struck one, with both scores side by side
 - **Tinget**, the five values questions, taught as ten principles rather than drilled
 - **Altinget**, the whole paper on the clock
+- **Fortællinger**, cited stories that join people, periods and questions into understanding
 - **Sagaerne**, explanations from the læremateriale, cut into 56 stretches and sized by how much of the exam came off each one
 
 And on the road itself, the only date that matters: how many days until the ship
@@ -271,6 +272,7 @@ uv run tools/content.py extract  # read only
 
 uv run tools/kinship.py           # check data/kinship.jsonl is whole
 uv run tools/kinship.py --propose # print pairs nobody has ruled on yet
+uv run tools/stories.py           # check every story, page and question id
 ```
 
 `AGENTS.md` has the whole sequence for when SIRI publishes a new paper, and the
@@ -300,8 +302,10 @@ js/app.js                state, routing, the halls, the law, the tide table
 vendor/three.*.min.js    three.js 0.180.0, vendored so no CDN is ever asked
 tools/content.py         uv script: fetch, read, ground in the material
 tools/kinship.py         propose and check kinship; never writes it
+tools/stories.py         check authored stories and their citations
 data/sagas.jsonl         the material cut into readable stretches, derived
 data/kinship.jsonl       questions that teach one fact, written by hand
+data/stories.jsonl       connected learning stories, written and cited by hand
 data/questions.jsonl     won from the papers, never edited by hand
 data/explanations.jsonl  written by hand, joined by id
 assets/fonts/            Metamorphous for the carving, Atkinson for the reading

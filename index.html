@@ -268,6 +268,28 @@
     <div class="halls" id="sagaHalls"></div>
   </section>
 
+  <!-- ============ FORTÆLLINGER: connected learning ============ -->
+  <section class="view" id="viewStories" hidden>
+    <div class="learning-view-head">
+      <span class="learning-sigil" aria-hidden="true"><svg viewBox="0 0 64 56" fill="none"><path d="M9 45V12l18-5 10 7 18-5v33l-18 5-10-7-18 5Z"/><path d="M27 7v33m10-26v33M16 19h5m-5 8h5m22-7h5m-5 8h5"/></svg></span>
+      <div><p class="path-kicker">Forstå forbindelserne</p><h2 class="path-title">Fortællinger</h2></div>
+    </div>
+    <p class="path-sub">Mennesker, begivenheder og kultur samlet i kildebelagte historier. Læsningen er altid åben.</p>
+    <div class="story-list" id="storyList"></div>
+  </section>
+
+  <article class="view story" id="viewStory" hidden>
+    <header class="story-head">
+      <p class="path-kicker" id="storyEyebrow"></p>
+      <h2 class="path-title" id="storyTitle"></h2>
+      <p class="story-intro" id="storyIntro"></p>
+      <div class="story-connections" id="storyConnections" aria-label="Forbindelser"></div>
+    </header>
+    <section class="story-timeline" id="storyTimeline" aria-label="Tidslinje"></section>
+    <div class="story-sections" id="storySections"></div>
+    <button class="btn primary story-quiz" id="storyQuiz" type="button"></button>
+  </article>
+
   <!-- ============ SAGAERNE: the reading room ============ -->
   <section class="view" id="viewSagas" hidden>
     <div class="learning-view-head">
