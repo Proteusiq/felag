@@ -914,13 +914,16 @@ function showStory(story) {
   $('storyConnections').innerHTML = story.connections.map((connection) => `<span>${connection}</span>`).join('');
   $('storyTimeline').innerHTML = story.moments.map((moment) => `<div class="story-moment">
     <time>${moment.year}</time><p>${moment.text}</p>
-    <small>${moment.pages.map(materialLink).join(' · ')}</small>
+    <small>${materialSource(moment.pages)}</small>
   </div>`).join('');
   $('storySections').innerHTML = story.sections.map((section, index) => `<section class="story-section">
     <span class="story-section-number">${String(index + 1).padStart(2, '0')}</span>
     <div><h3>${section.title}</h3>${section.body.map((paragraph) => `<p>${paragraph}</p>`).join('')}
-      <p class="story-source">${section.pages.map(materialLink).join(' · ')}</p></div>
+      <p class="story-source">${materialSource(section.pages)}</p></div>
   </section>`).join('');
+  const pages = [...new Set(story.sections.flatMap((section) => section.pages)
+    .concat(story.moments.flatMap((moment) => moment.pages)))].sort((a, b) => a - b);
+  $('storySources').innerHTML = `<h3>Kilder til fortællingen</h3><p>${materialSource(pages)}</p>`;
   $('storyQuiz').innerHTML = `${topicIcon('book')}Prøv det, du har lært · ${story.questions.length} spørgsmål`;
   go('viewStory', 'hall');
 }
@@ -1771,6 +1774,18 @@ function materialLink(page) {
   const url = state.sources?.[MATERIAL_URL];
   const label = `Læremateriale til Indfødsretsprøven, side ${page}`;
   return url ? `<a href="${url}#page=${page}" target="_blank" rel="noopener">${label}</a>` : label;
+}
+
+function materialSource(pages) {
+  const url = state.sources?.[MATERIAL_URL];
+  const unique = [...new Set(pages)].sort((a, b) => a - b);
+  const source = url
+    ? `<a class="source-title" href="${url}" target="_blank" rel="noopener">Lærematerialet</a>`
+    : '<span class="source-title">Lærematerialet</span>';
+  const linked = unique.map((page) => url
+    ? `<a href="${url}#page=${page}" target="_blank" rel="noopener" aria-label="Lærematerialet, side ${page}">${page}</a>`
+    : page).join(', ');
+  return `<span class="source-group">${source}<span>${unique.length === 1 ? 'side' : 'sider'} ${linked}</span></span>`;
 }
 
 /**
