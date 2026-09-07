@@ -464,7 +464,8 @@ function renderWelcomeJourney() {
   });
   $('welcomeIdentity').textContent = state.profile ? `Fortsæt som ${state.profile.name}` : 'Begynd her';
   $('welcomeHallName').textContent = completed ? 'Altinget venter' : HALLS[current].da;
-  $('welcomeStart').querySelector('span').textContent = state.profile ? 'Gå til Vejen frem' : 'Begynd vandringen';
+  $('welcomeStartLabel').textContent = state.profile ? 'Sæt sejl' : 'Begynd rejsen';
+  $('welcomeStartMeta').textContent = state.profile ? 'Til Vejen frem' : 'Vælg din vejleder';
   const unseen = completed
     ? HALLS.map((hall, index) => ({ hall, index, left: hallProgress(hall).left })).filter((item) => item.left > 0)
     : [];
