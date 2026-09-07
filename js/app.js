@@ -271,6 +271,11 @@ const ICON = {
   book: `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
     <path d="M2 3c2-.8 4-.5 6 1v9c-2-1.5-4-1.8-6-1V3Zm12 0c-2-.8-4-.5-6 1v9c2-1.5 4-1.8 6-1V3Z"/></svg>`,
 };
+const RUNESTONE_ICON = `<svg viewBox="0 0 36 42" fill="none">
+  <path d="M8 38h20l-2-27c-.5-5.5-4.3-8-8-8s-7.5 2.5-8 8L8 38Z"/>
+  <path d="M13 32V14l5-4 5 4v18M13 19h10M18 10v22M15 26h6"/>
+  <path d="m10 35 4 3m12-3-4 3"/>
+</svg>`;
 
 /* One visual vocabulary from map to question. The same emblem follows a topic
    into the hall and onto every question drawn from its pages. */
@@ -482,7 +487,7 @@ function renderWelcomeJourney() {
       ? `${mastery.left} usete spørgsmål · ${mastery.hall.da}`
       : `Alle spørgsmål set · tilfældig hal`
     : '45 min simulation';
-  $('welcomeExamIcon').innerHTML = completed ? topicIcon('book') : topicIcon('parliament');
+  $('welcomeExamIcon').innerHTML = completed ? RUNESTONE_ICON : topicIcon('parliament');
   $('welcomeExam').setAttribute('aria-label', completed
     ? mastery.left
       ? `Mestr din rejse: ${mastery.left} usete spørgsmål i ${mastery.hall.da}`

@@ -170,8 +170,8 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
 .welcome-start svg{ width:32px; height:26px; flex:0 0 auto; stroke:currentColor; stroke-width:1.7; stroke-linecap:round; stroke-linejoin:round; }
 .welcome-start>span{ text-align:left; }.welcome-start small{ display:block; margin-top:4px; font-size:8px; letter-spacing:.14em; opacity:.72; }
 .welcome-start:hover,.welcome-start:focus-visible{ outline:2px solid var(--parchment); outline-offset:4px; transform:translateY(-3px); filter:brightness(1.07); box-shadow:0 20px 40px -16px rgba(211,162,76,.9); }
-.welcome-exam{ display:inline-flex; align-items:center; gap:9px; min-height:48px; padding:0 14px; color:var(--parchment-dim); font:700 10px/1 var(--text); letter-spacing:.1em; text-align:left; text-transform:uppercase; border:1px solid rgba(239,227,200,.22); border-radius:2px; background:rgba(8,20,25,.42); cursor:pointer; transition:border-color .2s ease,color .2s ease,background .2s ease; }
-.welcome-exam-icon{ display:grid; place-items:center; width:26px; height:26px; flex:0 0 auto; }.welcome-exam svg{ width:25px; height:25px; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }.welcome-exam small{ display:block; margin-top:3px; color:var(--parchment-dim); font-size:8px; letter-spacing:.13em; }.welcome-exam:hover,.welcome-exam:focus-visible{ color:var(--gold); border-color:rgba(211,162,76,.65); background:rgba(211,162,76,.1); }
+.welcome-exam{ display:inline-flex; align-items:center; gap:16px; min-height:58px; padding:12px 18px 12px 24px; color:var(--parchment-dim); font:700 12px/1 var(--text); letter-spacing:.1em; text-align:left; text-transform:uppercase; border:1px solid rgba(239,227,200,.22); border-radius:2px; background:rgba(8,20,25,.42); cursor:pointer; transition:border-color .2s ease,color .2s ease,background .2s ease; }.welcome-exam>span:first-child{ min-width:0; }
+.welcome-exam-icon{ display:grid; place-items:center; width:32px; height:34px; margin-left:auto; flex:0 0 auto; }.welcome-exam svg{ width:31px; height:34px; stroke:currentColor; stroke-width:1.5; stroke-linecap:round; stroke-linejoin:round; }.welcome-exam small{ display:block; margin-top:4px; color:var(--parchment-dim); font-size:8px; letter-spacing:.13em; }.welcome-exam:hover,.welcome-exam:focus-visible{ color:var(--gold); border-color:rgba(211,162,76,.65); background:rgba(211,162,76,.1); }
 .welcome-free{ color:var(--parchment-dim); font-size:11px; letter-spacing:.06em; }
 .welcome-free a{ color:inherit; }
 
@@ -236,7 +236,7 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
   .welcome-copy,.welcome-journey{ width:100%; max-width:100%; }
   .welcome h1{ font-size:clamp(37px,10.5vw,44px); }
   .welcome-lead{ margin-top:20px; font-size:15px; line-height:1.55; }
-  .welcome-actions{ margin-top:27px; }.welcome-start{ width:100%; justify-content:space-between; }.welcome-exam{ width:100%; justify-content:flex-start; padding-left:0; font-size:12px; }
+  .welcome-actions{ margin-top:27px; }.welcome-start{ width:100%; justify-content:space-between; }.welcome-exam{ width:100%; justify-content:space-between; }
   .welcome-free{ width:100%; text-align:center; }
   .welcome-journey{ padding:24px 20px 21px; }.welcome-journey h2{ font-size:25px; }
   .journey-line{ margin-top:26px; }.journey-line button{ width:27px; height:27px; }.journey-line button.active{ width:33px; height:33px; }
