@@ -202,7 +202,7 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
 .journey-caption{ display:flex; justify-content:space-between; gap:20px; color:var(--parchment); font-size:12px; }
 .journey-caption span:last-child{ text-align:right; }
 .journey-caption small{ display:block; margin-bottom:3px; color:var(--parchment-dim); font-size:8px; letter-spacing:.16em; text-transform:uppercase; }
-.welcome-switch{ margin:18px 0 0; padding:0; color:var(--parchment-dim); border:0; border-bottom:1px solid currentColor; background:none; font:inherit; font-size:11px; cursor:pointer; }.welcome-switch:hover,.welcome-switch:focus-visible{ color:var(--gold); }
+.welcome-switch{ display:inline-flex; align-items:center; gap:9px; margin:18px 0 0; padding:7px 9px 7px 12px; color:var(--parchment-dim); border:1px solid rgba(239,227,200,.18); border-radius:20px; background:rgba(8,20,25,.38); font:700 10px/1 var(--text); letter-spacing:.09em; text-transform:uppercase; cursor:pointer; transition:color .2s ease,border-color .2s ease,background .2s ease,transform .2s var(--ease); }.welcome-switch svg{ width:30px; height:20px; stroke:currentColor; stroke-width:1.25; stroke-linecap:round; stroke-linejoin:round; }.welcome-switch:hover,.welcome-switch:focus-visible{ color:var(--gold); border-color:rgba(211,162,76,.55); background:rgba(211,162,76,.08); transform:translateY(-1px); }
 
 .welcome-facts{
   position:relative; display:grid; grid-template-columns:repeat(3,auto) 1fr; align-items:center;
