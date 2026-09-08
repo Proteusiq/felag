@@ -21,7 +21,7 @@ export function list(stories, best, chevron) {
       <b>${story.title}</b>
       <p>${story.intro}</p>
       <span class="story-card-meta">${story.sections.length} kapitler · ${story.questions.length} spørgsmål${Number.isFinite(score) ? ` · bedste ${score}/${story.questions.length}` : ''}</span>
-      <span class="story-card-open"><span>Vælg fortællingen</span>${chevron}</span>
+      <span class="story-card-open"><span>Kald fortællingen frem</span>${chevron}</span>
     </button>`;
   }).join('');
 }
@@ -40,8 +40,8 @@ export function deck(container, onOpen, onStatus) {
       item.classList.toggle('is-active', active);
       item.setAttribute('aria-pressed', String(active));
       item.querySelector('.story-card-open span').textContent = active
-        ? 'Klik igen for at åbne'
-        : 'Vælg fortællingen';
+        ? 'Træd ind i fortællingen'
+        : 'Kald fortællingen frem';
     }
     card.scrollIntoView({ block: 'nearest', behavior: matchMedia('(prefers-reduced-motion:reduce)').matches ? 'auto' : 'smooth' });
     if (focus) card.focus({ preventScroll: true });
