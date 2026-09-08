@@ -885,6 +885,7 @@ function showStories() {
   $('hudBack').setAttribute('aria-label', 'Tilbage til vejen');
   $('hudBack').dataset.tooltip = 'Tilbage til vejen';
   $('storyList').innerHTML = storyView.list(state.stories, state.best, ICON.chevron);
+  storyDeck.restore(currentStory?.id ?? null);
   go('viewStories', 'hall');
 }
 
@@ -2216,12 +2217,14 @@ $('modes').addEventListener('click', (e) => {
   if (btn.dataset.id === 'alting') assemblyDoor = showPath;
   openMode(btn.dataset.id);
 });
-$('storyList').addEventListener('click', (event) => {
-  const card = event.target.closest('[data-story]');
-  if (!card) return;
-  const story = state.stories.find((item) => item.id === card.dataset.story);
-  if (story) showStory(story);
-});
+const storyDeck = storyView.deck(
+  $('storyList'),
+  (storyId) => {
+    const story = state.stories.find((item) => item.id === storyId);
+    if (story) showStory(story);
+  },
+  (message) => { $('storyDeckStatus').textContent = message; },
+);
 $('storyQuiz').addEventListener('click', () => {
   if (currentStory) start(null, storyMode(currentStory));
 });
