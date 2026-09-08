@@ -17,6 +17,8 @@ export function createSound(isEnabled) {
   };
 
   return {
+    select: () => tone(520, .09),
+    toggle: () => tone(600, .1),
     hit: () => { tone(660, .1); setTimeout(() => tone(990, .16), 70); },
     miss: () => tone(150, .22, 'triangle', .04),
     done: () => [523, 659, 784].forEach((frequency, index) => setTimeout(() => tone(frequency, .3), index * 110)),

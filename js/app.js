@@ -633,7 +633,7 @@ function choose(id) {
     <span class="banner-line">&ldquo;${c.quote}&rdquo;</span>
     <span class="banner-strength">${c.strength}</span>`;
   $('beginBtn').disabled = false;
-  tone(520, 0.09);
+  sfx.select();
 }
 
 /* ---------- path ---------- */
@@ -2129,7 +2129,7 @@ $('soundToggle').addEventListener('click', (e) => {
   e.currentTarget.textContent = state.sound ? 'Lyd: til' : 'Lyd: fra';
   e.currentTarget.setAttribute('aria-pressed', String(state.sound));
   save();
-  tone(600, 0.1);
+  sfx.toggle();
 });
 $('resetBtn').addEventListener('click', () => {
   if (!state.profile) return;
