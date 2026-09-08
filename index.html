@@ -54,6 +54,17 @@
 
 <div class="scene" id="scene" aria-hidden="true"></div>
 
+<nav class="edge-nav" id="edgeNav" aria-label="Historik" hidden>
+  <button class="edge-nav-button back" id="edgeBack" type="button" aria-label="Gå tilbage" disabled>
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m14 5-7 7 7 7M8 12h11"/></svg>
+    <span>Tilbage<small>Alt + ←</small></span>
+  </button>
+  <button class="edge-nav-button forward" id="edgeForward" type="button" aria-label="Gå frem" disabled>
+    <span>Frem<small>Alt + →</small></span>
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m10 5 7 7-7 7m6-7H5"/></svg>
+  </button>
+</nav>
+
 <section class="welcome" id="welcome" role="main" aria-labelledby="welcomeTitle">
   <header class="welcome-nav">
     <a class="welcome-brand" id="welcomeHome" href="#viewPath" aria-label="Félag, gå til Vejen frem">

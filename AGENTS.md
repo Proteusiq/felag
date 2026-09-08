@@ -124,7 +124,7 @@ There is no test suite; the checks are the tools and the browser.
 ```sh
 uv run tools/kinship.py            # groups whole, no orphans, no runaways
 uv run tools/stories.py            # story ids, question ids and pages whole
-node --check js/app.js
+for file in js/*.js; do node --check "$file"; done
 python3 -m http.server 8765
 ```
 
