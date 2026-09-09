@@ -42,6 +42,20 @@ but no claim may enter `data/` unless SIRI independently supports it.
 - [Den Europæiske Union: Danmark](https://european-union.europa.eu/principles-countries-history/eu-countries/denmark_en)
 - [Europa-Kommissionen: Denmark and the euro](https://economy-finance.ec.europa.eu/euro/eu-countries-and-euro/denmark-and-euro_en)
 
+## Hvem hjælper dig: kommune, region eller stat?
+
+- [KL: Kommunale politikområder](https://www.kl.dk/)
+- [KL: Sundhed og ældre](https://www.kl.dk/sundhed-og-aeldre)
+- [Danske Regioner: Behandling på hospitaler](https://www.regioner.dk/sundhed/behandling-paa-hospitaler/)
+- [Danske Regioner: Om de fem regioner](https://www.regioner.dk/om-os/om-de-fem-regioner/)
+- [Politiet: Om politiet](https://politi.dk/om-politiet)
+- [Indenrigs- og Sundhedsministeriet: Kommuner og regioners styrelse](https://www.ism.dk/indenrigs-ressortomlagt/kommuner-og-regioners-styrelse)
+- [Indenrigs- og Sundhedsministeriet: Sundhedsreformen 2024](https://www.ism.dk/temaer/sundhedsreformen-2024/om-reformen)
+- [Indenrigs- og Sundhedsministeriet: Opgaveflytning](https://www.ism.dk/temaer/sundhedsreformen-2024/opgaveflytning)
+- [Borger.dk: Find en myndighed](https://www.borger.dk/om-borger-dk/Find-en-myndighed)
+- [STAR: Beskæftigelsesreformen](https://star.dk/implementering/beskaeftigelsesreform/proces)
+- [Beskæftigelsesministeriet: Reform af beskæftigelsesindsatsen](https://bm.dk/arbejdsomraader/aktuelle-fokusomraader/reform-af-beskaeftigelsesindsatsen/)
+
 ## Skagen: lyset mellem to have
 
 - [Lex: Skagensmalerne](https://lex.dk/Skagensmalerne)

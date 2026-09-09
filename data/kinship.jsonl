@@ -13,7 +13,7 @@
 {"by": "judged", "questions": ["1051b9935e", "76b94df0c2"], "seen": ["2020-06#13", "2023-11#15"]}
 {"by": "exact", "questions": ["1546f41ab3", "29d3f41247"], "seen": ["2021-06#7", "2022-11#28"]}
 {"by": "judged", "questions": ["1576cffcc6", "e1037b4de5"], "seen": ["2022-06#35", "2023-11#7"]}
-{"by": "judged", "questions": ["16b8fb6dc7", "874478990b"], "seen": ["2020-06#4", "2022-06#1"]}
+{"by": "judged", "questions": ["16b8fb6dc7", "874478990b", "813734e472"], "seen": ["2020-06#4", "2022-06#1", "2025-05#20"]}
 {"by": "judged", "questions": ["1958fd3272", "c54ea08847"], "seen": ["2020-11#5", "2022-11#26", "2025-05#6"]}
 {"by": "judged", "questions": ["1a56f35efe", "2d3a4cce08", "8ac993e911", "9a403f999c"], "seen": ["2020-06#3", "2021-11#7", "2023-05#35", "2026-06#7"]}
 {"by": "judged", "questions": ["1bb1c9b52c", "36f6ee57c8", "59d9af87ec", "da92c62c70"], "seen": ["2020-11#1", "2022-11#27", "2024-05#1", "2026-06#30"]}
@@ -92,3 +92,4 @@
 {"apart": ["45503284a4", "fa6b176667"], "why": "Arbejdere stemte Socialdemokratiet, landmænd Venstre. To grupper, to partier."}
 {"apart": ["45503284a4", "b898c8a4b7"], "why": "Arbejdere stemte Socialdemokratiet, landmænd Venstre. To grupper, to partier."}
 {"by": "judged", "questions": ["f484a2c0a8", "f797f4e217"], "seen": ["2022-06#28", "2024-05#17"]}
+{"by": "judged", "questions": ["f52d0c11b6", "cf6e4ae0e7"], "seen": ["2020-11#12", "2026-06#32"]}

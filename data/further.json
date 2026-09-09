@@ -32,6 +32,19 @@
     {"label": "Den Europæiske Union: Danmark", "url": "https://european-union.europa.eu/principles-countries-history/eu-countries/denmark_en"},
     {"label": "Europa-Kommissionen: Denmark and the euro", "url": "https://economy-finance.ec.europa.eu/euro/eu-countries-and-euro/denmark-and-euro_en"}
   ],
+  "hvem-hjaelper-dig": [
+    {"label": "KL: Kommunale politikområder", "url": "https://www.kl.dk/"},
+    {"label": "KL: Sundhed og ældre", "url": "https://www.kl.dk/sundhed-og-aeldre"},
+    {"label": "Danske Regioner: Behandling på hospitaler", "url": "https://www.regioner.dk/sundhed/behandling-paa-hospitaler/"},
+    {"label": "Danske Regioner: Om de fem regioner", "url": "https://www.regioner.dk/om-os/om-de-fem-regioner/"},
+    {"label": "Politiet: Om politiet", "url": "https://politi.dk/om-politiet"},
+    {"label": "Indenrigs- og Sundhedsministeriet: Kommuner og regioners styrelse", "url": "https://www.ism.dk/indenrigs-ressortomlagt/kommuner-og-regioners-styrelse"},
+    {"label": "Indenrigs- og Sundhedsministeriet: Sundhedsreformen 2024", "url": "https://www.ism.dk/temaer/sundhedsreformen-2024/om-reformen"},
+    {"label": "Indenrigs- og Sundhedsministeriet: Opgaveflytning", "url": "https://www.ism.dk/temaer/sundhedsreformen-2024/opgaveflytning"},
+    {"label": "Borger.dk: Find en myndighed", "url": "https://www.borger.dk/om-borger-dk/Find-en-myndighed"},
+    {"label": "STAR: Beskæftigelsesreformen", "url": "https://star.dk/implementering/beskaeftigelsesreform/proces"},
+    {"label": "Beskæftigelsesministeriet: Reform af beskæftigelsesindsatsen", "url": "https://bm.dk/arbejdsomraader/aktuelle-fokusomraader/reform-af-beskaeftigelsesindsatsen/"}
+  ],
   "skagen-lyset-mellem-to-have": [
     {"label": "Lex: Skagensmalerne", "url": "https://lex.dk/Skagensmalerne"},
     {"label": "Lex: Anna Ancher", "url": "https://lex.dk/Anna_Ancher"},
