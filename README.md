@@ -6,7 +6,7 @@
 
 [![Open the site](https://img.shields.io/badge/Begynd%20vandringen-proteusiq.github.io%2Ffelag-d3a24c?style=for-the-badge)](https://proteusiq.github.io/felag/)
 
-[![Version](https://img.shields.io/badge/version-0.0.44-d3a24c?style=flat-square)](https://github.com/Proteusiq/felag/releases)
+[![Version](https://img.shields.io/badge/version-0.0.45-d3a24c?style=flat-square)](https://github.com/Proteusiq/felag/releases)
 [![Questions](https://img.shields.io/badge/spørgsmål-508-223448?style=flat-square)](data/questions.jsonl)
 [![Papers](https://img.shields.io/badge/prøver-13%20(2020–2026)-223448?style=flat-square)](https://danskogproever.dk/borger/indfoedsretsproeve-statsborgerskab/forberedelse-til-indfoedsretsproeven/)
 [![Price](https://img.shields.io/badge/pris-0%20kr-8fae8c?style=flat-square)](#)
@@ -243,6 +243,10 @@ waits until submission. Every question has an explanation drawn on the material 
 event, while Danish-values questions teach the underlying legal principle.
 Beneath that sits the provenance: which sittings asked this, which chapter it
 belongs to, and links back to the official question and material.
+
+Institutional sources used to challenge wording during review are kept in the
+[research bibliography](RESEARCH.md). They are background only and never the
+authority for a shipped answer, explanation or story claim.
 
 > [!NOTE]
 > Restating the answer is never shown. The highlight already said it.
