@@ -6,7 +6,7 @@
 
 [![Open the site](https://img.shields.io/badge/Begynd%20vandringen-proteusiq.github.io%2Ffelag-d3a24c?style=for-the-badge)](https://proteusiq.github.io/felag/)
 
-[![Version](https://img.shields.io/badge/version-0.0.48-d3a24c?style=flat-square)](https://github.com/Proteusiq/felag/releases)
+[![Version](https://img.shields.io/badge/version-0.0.49-d3a24c?style=flat-square)](https://github.com/Proteusiq/felag/releases)
 [![Questions](https://img.shields.io/badge/spørgsmål-508-223448?style=flat-square)](data/questions.jsonl)
 [![Papers](https://img.shields.io/badge/prøver-13%20(2020–2026)-223448?style=flat-square)](https://danskogproever.dk/borger/indfoedsretsproeve-statsborgerskab/forberedelse-til-indfoedsretsproeven/)
 [![Price](https://img.shields.io/badge/pris-0%20kr-8fae8c?style=flat-square)](#)
@@ -125,14 +125,6 @@ put in at the beach below Hal I, and the locked half of the island stays empty
 and still. They are the guides' own drawings reused at map scale rather than six
 new silhouettes: the figure on the road has to be recognisably the person who
 greeted you, or it is just a token.
-
-**Vikingheim** is scenery and nothing else, a settlement you can turn around in.
-It costs some 176 KB of gzipped WebGL library, which is a poor trade to make on
-a stranger's behalf, so it is offered only on a screen wide enough to be worth
-it, to a reader who has not asked for less motion, over a connection not flagged
-as metered. Where it is not offered it is absent rather than greyed out: an
-offer you cannot take is worse than no offer. The library is vendored and
-pinned, and fetched only when someone actually walks in.
 
 ## Sagaerne, where the reading is done
 
@@ -258,8 +250,7 @@ authority for a shipped answer, explanation or story claim.
 
 The site is live at **[proteusiq.github.io/felag](https://proteusiq.github.io/felag/)**,
 so there is rarely a reason to run it locally. If you want to anyway, it is plain
-static files with no build, no bundler and nothing to install. The one library it
-uses, three.js, sits vendored in `vendor/` and is never fetched from elsewhere:
+static files with no build, no bundler, no dependencies and nothing to install:
 
 ```sh
 python3 -m http.server 8765
@@ -302,7 +293,6 @@ css/app.css              tokens, the light of the hour, motion
 js/cast.js               the six guides, one shared frame
 js/scenes.js             scenes as data, drawn by one hand; Holger waits in one
 js/map.js                the eight stops as ground, and the six who walk it
-js/heim.js               Vikingheim, loaded the moment it is entered and no sooner
 js/app.js                orchestration, training, quizzes and results
 js/navigation.js         refresh-safe history, edge controls and mobile swipes
 js/stories.js            pure Fortællinger modes, deck interaction and markup
@@ -315,7 +305,6 @@ js/review.js             local spaced-review scheduling
 js/profiles.js           named and guest device-local persistence
 js/random.js             reproducible question and option ordering
 js/sound.js              synthesised answer cues
-vendor/three.*.min.js    three.js 0.180.0, vendored so no CDN is ever asked
 tools/content.py         uv script: fetch, read, ground in the material
 tools/kinship.py         propose and check kinship; never writes it
 tools/stories.py         check authored stories, citations and further reading

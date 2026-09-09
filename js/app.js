@@ -199,11 +199,6 @@ const DESTINATIONS = [
     id: 'alting', da: 'Altinget', en: 'The full test', accent: '--thor', icon: 'parliament',
     blurb: '45 spørgsmål på 45 minutter. Feedback og kilder vises efter aflevering.', tag: '45 spørgsmål',
   },
-  {
-    id: 'heim', da: 'Vikingheim', en: 'The settlement', accent: '--astrid', icon: 'architecture',
-    blurb: 'Bopladsen i tre dimensioner. Ingen spørgsmål, ingen prøve, bare et sted at hvile øjnene.',
-    tag: 'Et pusterum',
-  },
 ];
 
 function modeCard(mode, index) {
@@ -244,7 +239,7 @@ const renderWelcomeJourney = () => halls.renderWelcome(RUNESTONE_ICON);
 
 const RESTORABLE_VIEWS = new Set([
   'viewPath', 'viewTraining', 'viewHalls', 'viewSagaer', 'viewStories', 'viewStory',
-  'viewSagas', 'viewMap', 'viewHeim', 'viewTime', 'viewArena', 'viewTing',
+  'viewSagas', 'viewMap', 'viewTime', 'viewArena', 'viewTing',
 ]);
 const routeKey = () => state.profile ? `felag.route.${state.profile.slug}` : null;
 
@@ -272,7 +267,6 @@ function restoreRoute(route) {
     if (!hall) return false;
     reading.showHall(hall, null, showHalls);
   } else if (route.view === 'viewMap') showMap();
-  else if (route.view === 'viewHeim') showHeim();
   else if (route.view === 'viewTime') showTime();
   else if (route.view === 'viewArena') showArena();
   else if (route.view === 'viewTing') {
@@ -352,7 +346,7 @@ function weighted(list, n, rand) {
 /* ============================================================
    Views
    ============================================================ */
-const VIEWS = ['viewWho', 'viewShore', 'viewPath', 'viewTraining', 'viewHalls', 'viewSagaer', 'viewStories', 'viewStory', 'viewSagas', 'viewMap', 'viewHeim', 'viewTime', 'viewArena', 'viewTing', 'viewQuiz', 'viewResult'];
+const VIEWS = ['viewWho', 'viewShore', 'viewPath', 'viewTraining', 'viewHalls', 'viewSagaer', 'viewStories', 'viewStory', 'viewSagas', 'viewMap', 'viewTime', 'viewArena', 'viewTing', 'viewQuiz', 'viewResult'];
 function go(id, scene) {
   const swap = () => {
     // The counter and clock belong to a run; nothing else should inherit them.
@@ -360,10 +354,6 @@ function go(id, scene) {
       $('hudMeta').textContent = '';
       $('hudMeta').removeAttribute('aria-label');
     }
-    // Vikingheim holds a WebGL context and a render loop. Every route out of
-    // it runs through here, so tearing it down here is the only place that
-    // cannot be forgotten later.
-    if (id !== 'viewHeim') heim?.dispose();
     VIEWS.forEach((v) => { $(v).hidden = v !== id; });
     if (scene) scenes.show(scene);
     $('hud').hidden = id === 'viewShore' || id === 'viewWho' || id === 'viewPath';
@@ -500,9 +490,7 @@ function renderPath() {
     blurb: 'Fakta, du tidligere har mødt, vender tilbage på det tidspunkt, hvor hukommelsen har mest gavn af at hente dem frem.',
     tag: `${due.length} spørgsmål klar`,
   }, ...DESTINATIONS] : DESTINATIONS;
-  $('modes').innerHTML = destinations
-    .filter((d) => d.id !== 'heim' || heimWelcome())
-    .map(modeCard).join('');
+  $('modes').innerHTML = destinations.map(modeCard).join('');
   renderExamDate();
 }
 
@@ -620,44 +608,6 @@ function stops() {
     assembly('ting', 'ting'),
     assembly('alting', 'alting'),
   ];
-}
-
-/* ---------- Vikingheim ---------- */
-
-/**
- * Vikingheim is scenery, and it costs about 700 KB of WebGL library to draw.
- *
- * That is a bad trade to make on someone else's behalf, so it is only offered
- * when all three of these hold: the reader has not asked for less motion, the
- * connection has not been flagged as metered, and there is a screen wide
- * enough to be worth it. When it is not offered it is not merely disabled,
- * it is absent — an offer you cannot take is worse than no offer.
- */
-const heimWelcome = () => !scenes.still.matches
-  && !navigator.connection?.saveData
-  && innerWidth >= 760
-  && innerHeight >= 520;
-
-let heim = null;
-
-async function showHeim() {
-  $('hudTitle').textContent = 'Vikingheim';
-  $('hudBackLabel').textContent = 'Tilbage til vejen';
-  $('hudBack').setAttribute('aria-label', 'Tilbage til vejen');
-  $('hudBack').dataset.tooltip = 'Tilbage til vejen';
-  go('viewHeim', 'shore');
-  $('heim').setAttribute('aria-busy', 'true');
-  $('heim').innerHTML = '<p class="heim-absent">Bopladsen bygges…</p>';
-  try {
-    heim ??= await import('./heim.js');
-    heim.mount($('heim'));
-  } catch {
-    // A settlement that will not build is not worth an error message. Say
-    // where it went, leave the road open, and never let it break the path.
-    $('heim').innerHTML = '<p class="heim-absent">Bopladsen kunne ikke bygges her. Vejen og hallerne virker som altid.</p>';
-  } finally {
-    $('heim').removeAttribute('aria-busy');
-  }
 }
 
 function showMap() {
@@ -1448,7 +1398,6 @@ $('modes').addEventListener('click', (e) => {
   if (btn.dataset.id === 'stories') return showStories();
   if (btn.dataset.id === 'sagaer') return reading.showIndex();
   if (btn.dataset.id === 'training') return showTraining();
-  if (btn.dataset.id === 'heim') return showHeim();
   if (btn.dataset.id === 'alting') assemblyDoor = showPath;
   openMode(btn.dataset.id);
 });
@@ -1483,14 +1432,11 @@ navigation = createNavigation({
   },
   isBlocked: () => Boolean(state.run),
   restore: restoreRoute,
-  ignoreSwipe: (target) => Boolean(target.closest?.('.story-list,.map,.heim,.quiz,input,textarea,select')),
+  ignoreSwipe: (target) => Boolean(target.closest?.('.story-list,.map,.quiz,input,textarea,select')),
 });
 $('storyQuiz').addEventListener('click', () => {
   if (currentStory) start(null, storyMode(currentStory));
 });
-$('heimReset').addEventListener('click', () => heim?.reset());
-$('heimOut').addEventListener('click', () => heim?.zoom(1.15));
-$('heimIn').addEventListener('click', () => heim?.zoom(.85));
 $('trainingModes').addEventListener('click', (e) => {
   const btn = e.target.closest('.mode');
   if (btn) {

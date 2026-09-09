@@ -18,8 +18,8 @@ Break any of these and the project stops being what it claims to be.
 2. **No LLM in the project.** No model is called at build time or at run time.
    Judgement that needs a model is made *in the agent harness*, by you, and
    committed as reviewed data with a reason attached. See below.
-3. **No dependencies in the site.** `js/` is plain ES modules. three.js is
-   vendored. Tools may use uv scripts with inline PEP 723 dependencies.
+3. **No dependencies in the site.** `js/` is plain ES modules. Tools may use
+   uv scripts with inline PEP 723 dependencies.
 4. **Generated data is generated; written data is written.** `tools/content.py`
    owns `questions.jsonl`, `eras.jsonl`, `sagas.jsonl` and `sources.json`, and
    rewrites them freely. It must never write `explanations.jsonl`,

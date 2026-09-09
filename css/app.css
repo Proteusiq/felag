@@ -778,26 +778,6 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
    any part of it. Small type is the price of an overview, and an overview is
    what someone opening a map came for. */
 
-/* ---------- Vikingheim ----------
-   A WebGL canvas and nothing else. It is scenery, so it is allowed to be
-   large, and it is focusable so the arrow keys can reach the camera. */
-.heim{
-  position:relative; width:100%; max-width:min(1000px, 150vh); aspect-ratio:16/10;
-  overflow:hidden; touch-action:none; cursor:grab;
-  border-radius:14px; border:1px solid rgba(239,227,200,.12);
-  background:#1b2436;
-  box-shadow:inset 0 0 120px 40px rgba(10,8,6,.45);
-}
-.heim:active{ cursor:grabbing; }
-.heim:focus-visible{ outline:2px solid var(--gold); outline-offset:3px; }
-.heim canvas{ display:block; width:100%; height:100%; }
-.heim-absent{ display:grid; place-items:center; height:100%; margin:0; padding:0 24px; text-align:center; color:var(--parchment-dim); font-size:14px; }
-.heim-controls{ display:flex; align-items:center; gap:14px; flex-wrap:wrap; justify-content:center; }
-.heim-hint{ color:var(--parchment-dim); font-size:11px; letter-spacing:.04em; }
-.heim-hint kbd{
-  font:inherit; padding:1px 5px; border-radius:4px;
-  background:rgba(239,227,200,.07); border:1px solid rgba(239,227,200,.16);
-}
 .era-title{ display:flex; align-items:center; gap:9px; font-family:var(--display); font-weight:600; font-size:16px; }
 .era-title .topic-icon{ width:20px; height:20px; color:var(--gold); }
 
@@ -823,13 +803,13 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
 .mode p{ font-size:13px; line-height:1.55; color:var(--parchment-dim); margin:10px 0 0; }
 .mode .tag{ display:inline-block; margin-top:12px; font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); }
 .mode .best{ margin-left:auto; font-family:var(--text); font-size:11px; color:var(--parchment-dim); font-variant-numeric:tabular-nums; }
-.mode[data-id="heim"]{ grid-column:1/-1; background:radial-gradient(circle at 85% 50%,rgba(183,154,194,.12),transparent 25%),linear-gradient(180deg,rgba(34,52,72,.72),rgba(15,26,36,.72)); }
 
 /* ---------- Fortællinger ---------- */
 .story-list{ display:block; width:100%; max-width:860px; padding-bottom:20px; }
 .story-card{ position:relative; z-index:calc(var(--i) + 1); display:block; overflow:hidden; width:100%; height:310px; margin:0; padding:26px 28px; color:var(--parchment); text-align:left; border:1px solid rgba(183,154,194,.42); border-radius:16px; background:radial-gradient(circle at 88% 20%,rgba(183,154,194,.18),transparent 28%),linear-gradient(145deg,#1b3036,#081419); box-shadow:0 18px 38px -28px #000,var(--surface-shine); cursor:pointer; animation:rise .5s var(--ease) both; animation-delay:var(--d,0s); transition:transform .25s var(--ease),border-color .25s ease,box-shadow .25s ease; }.story-card+.story-card{ margin-top:-194px; }
 .story-card::before{ content:''; position:absolute; z-index:2; inset:0 0 auto; height:2px; background:var(--astrid); }.story-card::after{ content:''; position:absolute; right:-52px; bottom:-65px; width:190px; height:190px; border-radius:50%; border:1px solid rgba(239,227,200,.1); background:repeating-radial-gradient(circle,rgba(239,227,200,.08) 0 1px,transparent 1px 7px),radial-gradient(circle at 50% 50%,transparent 0 13%,rgba(183,154,194,.14) 14% 17%,rgba(5,13,18,.62) 18% 100%); opacity:.65; pointer-events:none; }.story-card>*{ position:relative; z-index:1; }.story-card:hover,.story-card:focus-visible{ transform:translateY(-7px); border-color:var(--astrid); box-shadow:0 24px 48px -28px rgba(0,0,0,.9),var(--surface-shine); outline:none; }.story-card-kicker{ display:block; color:var(--astrid); font-size:10px; font-weight:700; letter-spacing:.15em; text-transform:uppercase; }.story-card>b{ display:-webkit-box; overflow:hidden; max-width:calc(100% - 70px); margin-top:7px; font-family:var(--display); font-size:clamp(23px,3vw,34px); font-weight:600; -webkit-box-orient:vertical; -webkit-line-clamp:2; }.story-card p{ display:-webkit-box; overflow:hidden; max-width:min(62ch,calc(100% - 86px)); margin:12px 0 0; color:var(--parchment-dim); font-size:14px; line-height:1.65; -webkit-box-orient:vertical; -webkit-line-clamp:3; }.story-card-meta{ display:block; max-width:calc(100% - 76px); margin-top:16px; color:var(--parchment-dim); font-size:11px; letter-spacing:.06em; text-transform:uppercase; }.story-card-open{ display:inline-flex; align-items:center; gap:7px; margin-top:18px; color:var(--gold); font-size:12px; font-weight:700; }.story-card-open svg{ width:16px; height:16px; }
 .story-card.is-active{ z-index:100; transform:translate(4px,-16px); border-color:var(--gold); box-shadow:0 30px 56px -28px #000,0 0 0 1px rgba(211,162,76,.18),var(--surface-shine); }.story-card.is-active::before{ background:var(--gold); }.story-card.is-active .story-card-open{ color:var(--parchment); }.story-card.is-dragging{ z-index:101; transform:translateX(var(--drag,0)); transition:none; }
+@media (hover:hover) and (pointer:fine){ .story-card:hover{ z-index:102; } }
 .story{ width:100%; max-width:850px; align-items:stretch; margin:0 auto; }.story-head{ padding:clamp(22px,5vw,44px); border:1px solid rgba(183,154,194,.4); border-radius:16px; background:radial-gradient(circle at 88% 18%,rgba(183,154,194,.17),transparent 28%),var(--surface-strong); box-shadow:var(--surface-shine); }.story-head .path-title{ font-size:clamp(31px,5vw,52px); }.story-intro{ max-width:65ch; margin:16px 0 0; color:var(--parchment); font-size:16px; line-height:1.7; }.story-connections{ display:flex; flex-wrap:wrap; gap:7px; margin-top:20px; }.story-connections span{ padding:5px 9px; color:var(--parchment-dim); border:1px solid rgba(239,227,200,.14); border-radius:18px; background:rgba(239,227,200,.04); font-size:11px; }
 .story-timeline{ display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:1px; margin:24px 0 8px; overflow:hidden; border:1px solid var(--surface-line); border-radius:13px; background:var(--surface-line); }.story-moment{ min-width:0; padding:16px; background:#0d252d; }.story-moment time{ color:var(--gold); font-family:var(--display); font-size:18px; }.story-moment p{ margin:7px 0 0; font-size:12px; line-height:1.5; }.story-moment small{ display:block; margin-top:9px; color:var(--parchment-dim); font-size:9px; line-height:1.4; }.story-moment small a{ color:inherit; }
 .story-sections{ margin-top:8px; }.story-section{ display:grid; grid-template-columns:42px 1fr; gap:18px; padding:28px 0; border-top:1px solid rgba(239,227,200,.13); }.story-section-number{ color:var(--astrid); font-family:var(--display); font-size:15px; letter-spacing:.08em; }.story-section h3{ margin:0 0 12px; color:var(--parchment); font-family:var(--display); font-size:22px; font-weight:600; }.story-section p{ margin:0; color:var(--parchment-dim); font-size:14px; line-height:1.72; }.story-section p+p{ margin-top:10px; }.story-section .story-source{ margin-top:15px; padding-top:10px; color:var(--parchment-dim); border-top:1px dotted rgba(239,227,200,.14); font-size:10px; }.story-source a{ color:var(--parchment-dim); }.story-quiz{ align-self:center; justify-content:center; margin-top:8px; }.story-quiz .topic-icon{ width:19px; height:19px; }
@@ -1261,7 +1241,6 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
   box-shadow:var(--surface-shine);
 }
 .learning-path{ background:radial-gradient(circle at 12% 30%,rgba(211,162,76,.1),transparent 25%),var(--surface-strong); border-color:rgba(211,162,76,.4); }
-.mode[data-id="heim"]{ background:radial-gradient(circle at 85% 50%,rgba(183,154,194,.12),transparent 25%),var(--surface); }
 .place .body[open]{ background:radial-gradient(circle at 100% 0,rgba(211,162,76,.09),transparent 35%),var(--surface-strong); }
 .place.oede .body{ background:rgba(8,20,25,.58); }
 .btn.primary{ color:#13252b; text-shadow:none; border-color:#f1d092; background:linear-gradient(135deg,#e6bd72,#c9923f); box-shadow:0 14px 30px -18px rgba(211,162,76,.8); }
@@ -1270,7 +1249,6 @@ body:has(.welcome:not([hidden])) > :is(.credit,.hud,.stage,.foot){ visibility:hi
 .challenge-btn{ background:radial-gradient(circle at 20% 25%,rgba(211,162,76,.13),transparent 32%),var(--surface-strong); }
 .map{ border-color:var(--surface-line); background:radial-gradient(ellipse at 48% 42%,#15353e 0,#0d272f 48%,#07161c 100%); box-shadow:var(--surface-shine); }
 .map .sea-ring{ fill:#0d2730; }.map .fjord,.map .river{ fill:#153945; }
-.heim{ border-color:var(--surface-line); background:#0d252d; box-shadow:var(--surface-shine); }
 #halls .hall.done .state{ color:var(--green); }#halls .hall:not(.done):not(.shut) .state{ color:var(--gold); }#halls .hall.shut .state{ color:var(--parchment-dim); }
 .duel.draw .duel-tally b{ color:var(--parchment-dim); }
 .foot-control.reset:hover .linklike,.foot-control.reset:hover svg{ color:var(--danger); stroke:var(--danger); }
