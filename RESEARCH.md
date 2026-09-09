@@ -44,6 +44,18 @@ but no claim may enter `data/` unless SIRI independently supports it.
 - [Danmarkshistorien: Lov om offentlig Forsorg](https://danmarkshistorien.lex.dk/Uddrag_af_'Lov_om_offentlig_Forsorg'_vedr%C3%B8rende_s%C3%A6rhj%C3%A6lp,_kommunehj%C3%A6lp_og_fattighj%C3%A6lp,_20._maj_1933)
 - [Danmarkshistorien: Lov om folkepensionen 1956](https://danmarkshistorien.lex.dk/Lov_om_folkepensionen,_2._oktober_1956)
 
+## Rigsfællesskabet: tre dele, én forbindelse
+
+- [Statsministeriet: Rigsfællesskabet](https://www.stm.dk/statsministeriet/rigsfaellesskabet/)
+- [Statsministeriet: Grønland](https://www.stm.dk/statsministeriet/rigsfaellesskabet/groenland/)
+- [Statsministeriet: Færøerne](https://www.stm.dk/statsministeriet/rigsfaellesskabet/faeroeerne/)
+- [Retsinformation: Lov om Grønlands Selvstyre](https://www.retsinformation.dk/eli/lta/2009/473)
+- [Retsinformation: Lov om Færøernes Hjemmestyre](https://www.retsinformation.dk/eli/lta/1948/137)
+- [Retsinformation: Færøske myndigheders overtagelse af sagsområder](https://www.retsinformation.dk/eli/lta/2005/578)
+- [Færøernes landsstyre: Constitutional status](https://www.government.fo/en/foreign-relations/constitutional-status)
+- [Færøernes landsstyre: Home Rule Act](https://www.government.fo/en/the-government/the-home-rule-act)
+- [Udenrigsministeriet: Rigsfællesskabet](https://um.dk/Udenrigspolitik/lande-og-regioner/Rigsfaellesskabet)
+
 ## Fra Harald Blåtand til 1864
 
 - [Nationalmuseet: Jellingstenene](https://en.natmus.dk/historical-knowledge/denmark/prehistoric-period-until-1050-ad/the-viking-age/the-monuments-at-jelling/the-jelling-stone/)

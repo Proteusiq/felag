@@ -57,8 +57,9 @@ export function createExplanations(state, { topicIcon, topicKey, topicLabel }) {
 
   const buildWhy = (question, right) => {
     const topic = topicKey(question);
+    const pages = question.pages ?? (question.page ? [question.page] : []);
     const where = question.chapter
-      ? `Kapitel ${question.chapter}, ${CHAPTERS[question.chapter]}${question.page ? `, side ${question.page}` : ''}.`
+      ? `Kapitel ${question.chapter}, ${CHAPTERS[question.chapter]}${pages.length ? `, ${pages.length === 1 ? 'side' : 'sider'} ${pages.join(', ')}` : ''}.`
       : '';
     const principle = question.section === 'vaerdier'
       ? state.principles.find((item) => item.questions.includes(question.id))
@@ -79,7 +80,7 @@ export function createExplanations(state, { topicIcon, topicKey, topicLabel }) {
         ${question.seen.length > 1
           ? `Stillet <b>${question.seen.length} gange</b> siden 2020: ${question.seen.map(paperLink).join(', ')}.`
           : `Stillet <b>${paperLink(question.seen[0])}</b>.`}
-        ${question.page ? `Slå efter i ${materialLink(question.page)}.` : where}
+        ${pages.length ? `Slå efter i ${pages.length === 1 ? materialLink(pages[0]) : materialSource(pages)}.` : where}
         Åbn den officielle prøve for at se spørgsmålet med de oprindelige svarmuligheder.
       </span>`;
     return why;

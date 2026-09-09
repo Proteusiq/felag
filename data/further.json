@@ -34,6 +34,17 @@
     {"label": "Danmarkshistorien: Lov om offentlig Forsorg", "url": "https://danmarkshistorien.lex.dk/Uddrag_af_'Lov_om_offentlig_Forsorg'_vedr%C3%B8rende_s%C3%A6rhj%C3%A6lp,_kommunehj%C3%A6lp_og_fattighj%C3%A6lp,_20._maj_1933"},
     {"label": "Danmarkshistorien: Lov om folkepensionen 1956", "url": "https://danmarkshistorien.lex.dk/Lov_om_folkepensionen,_2._oktober_1956"}
   ],
+  "rigsfaellesskabet-tre-lande": [
+    {"label": "Statsministeriet: Rigsfællesskabet", "url": "https://www.stm.dk/statsministeriet/rigsfaellesskabet/"},
+    {"label": "Statsministeriet: Grønland", "url": "https://www.stm.dk/statsministeriet/rigsfaellesskabet/groenland/"},
+    {"label": "Statsministeriet: Færøerne", "url": "https://www.stm.dk/statsministeriet/rigsfaellesskabet/faeroeerne/"},
+    {"label": "Retsinformation: Lov om Grønlands Selvstyre", "url": "https://www.retsinformation.dk/eli/lta/2009/473"},
+    {"label": "Retsinformation: Lov om Færøernes Hjemmestyre", "url": "https://www.retsinformation.dk/eli/lta/1948/137"},
+    {"label": "Retsinformation: Færøske myndigheders overtagelse af sagsområder", "url": "https://www.retsinformation.dk/eli/lta/2005/578"},
+    {"label": "Færøernes landsstyre: Constitutional status", "url": "https://www.government.fo/en/foreign-relations/constitutional-status"},
+    {"label": "Færøernes landsstyre: Home Rule Act", "url": "https://www.government.fo/en/the-government/the-home-rule-act"},
+    {"label": "Udenrigsministeriet: Rigsfællesskabet", "url": "https://um.dk/Udenrigspolitik/lande-og-regioner/Rigsfaellesskabet"}
+  ],
   "harald-blaatand-dansk-rige": [
     {"label": "Nationalmuseet: Jellingstenen", "url": "https://en.natmus.dk/historical-knowledge/denmark/prehistoric-period-until-1050-ad/the-viking-age/the-monuments-at-jelling/the-jelling-stone/"},
     {"label": "Kongernes Jelling: Jellingstenene", "url": "https://kongernesjelling.dk/en/explore/the-jelling-stones"},

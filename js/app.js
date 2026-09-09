@@ -1408,6 +1408,7 @@ reading = createReading({
   halls: HALLS,
   icon: ICON,
   materialLink,
+  materialSource,
   go,
   retryHall: (hall) => start(null, hallMode(hall, HALLS.findIndex((item) => item.chapter === hall.chapter))),
 });

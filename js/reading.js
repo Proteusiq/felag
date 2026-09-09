@@ -6,7 +6,7 @@ const PLACES = [
   { from: 0, kind: 'oede', da: 'Ødegård', glyph: `<path d="M3 21h18"/><path d="M6 21v-6l3-2 1 .6M18 21v-5l-2-1.4" stroke-dasharray="2.6 2.2"/><path d="M13 21v-2.5"/>` },
 ];
 
-export function createReading({ state, $, usable, halls, icon, materialLink, go, retryHall }) {
+export function createReading({ state, $, usable, halls, icon, materialLink, materialSource, go, retryHall }) {
   let returnTo = () => {};
   let current = null;
 
@@ -57,7 +57,7 @@ export function createReading({ state, $, usable, halls, icon, materialLink, go,
       <p class="told-a">${question.answer}${missed ? '<em>du missede den</em>' : ''}</p>
       ${explanation ? `<p class="told-why">${explanation}</p>` : ''}
       <p class="told-src">Spurgt: &ldquo;${question.q}&rdquo;
-        &middot; ${question.page ? materialLink(question.page) : ''}
+        &middot; ${question.pages?.length > 1 ? materialSource(question.pages) : question.page ? materialLink(question.page) : ''}
         &middot; ${question.seen.length === 1 ? 'stillet én gang' : `stillet ${question.seen.length} gange`}</p>
     </article>`;
   }

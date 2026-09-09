@@ -41,6 +41,7 @@ export async function loadContent() {
     if (written?.dated) merged.dated = written.dated;
     if (written?.page) merged.page = written.page;
     else if (question.section === 'aktuelt') delete merged.page;
+    if (written?.pages) merged.pages = written.pages;
     const status = currency.get(question.id);
     return status ? { ...merged, status: status.status, currency: status.note } : merged;
   });
