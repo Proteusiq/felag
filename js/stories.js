@@ -108,10 +108,17 @@ export function deck(container, onOpen, onStatus) {
 export function content(story, materialSource, topicIcon) {
   const pages = [...new Set(story.sections.flatMap((section) => section.pages)
     .concat(story.moments.flatMap((moment) => moment.pages)))].sort((a, b) => a - b);
-  const further = story.further?.length ? `<div class="story-further">
+  const groups = new Map();
+  for (const item of story.further ?? []) {
+    const divider = item.label.indexOf(': ');
+    const source = divider < 0 ? item.label : item.label.slice(0, divider);
+    const label = divider < 0 ? item.label : item.label.slice(divider + 2);
+    groups.set(source, [...(groups.get(source) ?? []), { ...item, label }]);
+  }
+  const further = groups.size ? `<div class="story-further">
     <h3>Læs videre</h3>
     <p>Frivillig baggrund fra museer og myndigheder. SIRI er fortsat kilden til spørgsmål, svar og forklaringer.</p>
-    <ul>${story.further.map((source) => `<li><a href="${source.url}" target="_blank" rel="noopener">${source.label}</a></li>`).join('')}</ul>
+    <ul>${[...groups].map(([source, links]) => `<li><b>${source}</b><span>${links.map((link) => `<a href="${link.url}" target="_blank" rel="noopener">${link.label}</a>`).join('')}</span></li>`).join('')}</ul>
   </div>` : '';
 
   return {

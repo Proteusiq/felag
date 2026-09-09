@@ -7,8 +7,12 @@ but no claim may enter `data/` unless SIRI independently supports it.
 
 ## Matador: Korsbæk 1929-47
 
-No external bibliography was recorded for the first story. Its shipped claims
-were reviewed directly against SIRI's material.
+- [Det Danske Filminstitut: Matador](https://www.dfi.dk/viden-om-film/filmdatabasen/film/matador-0)
+- [Det Danske Filminstitut: Erik Balling](https://www.dfi.dk/viden-om-film/filmdatabasen/person/erik-balling)
+- [Det Danske Filminstitut: Lise Nørgaard](https://www.dfi.dk/viden-om-film/filmdatabasen/person/lise-norgaard)
+- [DR: Se Matador og kom med bag om serien](https://www.dr.dk/drtv/matador)
+- [Forfatterweb: Lise Nørgaard](https://forfatterweb.dk/oversigt/zlisen)
+- [Nota: Matador](https://nota.dk/bibliotek/tema/matador)
 
 ## Fra Harald Blåtand til 1864
 

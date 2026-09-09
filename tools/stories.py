@@ -61,6 +61,8 @@ def main() -> int:
         urls = [link.get("url") for link in links]
         if not links or any(not label for label in labels):
             faults.append(f"{story_id}: invalid further-reading labels")
+        if any(": " not in label for label in labels):
+            faults.append(f"{story_id}: further-reading label has no institution")
         if any(not url or not url.startswith("https://") for url in urls):
             faults.append(f"{story_id}: invalid further-reading URL")
         if len(labels) != len(set(labels)) or len(urls) != len(set(urls)):

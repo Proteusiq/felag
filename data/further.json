@@ -1,4 +1,12 @@
 {
+  "matador-korsbaek": [
+    {"label": "Det Danske Filminstitut: Matador", "url": "https://www.dfi.dk/viden-om-film/filmdatabasen/film/matador-0"},
+    {"label": "Det Danske Filminstitut: Erik Balling", "url": "https://www.dfi.dk/viden-om-film/filmdatabasen/person/erik-balling"},
+    {"label": "Det Danske Filminstitut: Lise Nørgaard", "url": "https://www.dfi.dk/viden-om-film/filmdatabasen/person/lise-norgaard"},
+    {"label": "DR: Se Matador og kom med bag om serien", "url": "https://www.dr.dk/drtv/matador"},
+    {"label": "Forfatterweb: Lise Nørgaard", "url": "https://forfatterweb.dk/oversigt/zlisen"},
+    {"label": "Nota: Matador", "url": "https://nota.dk/bibliotek/tema/matador"}
+  ],
   "harald-blaatand-dansk-rige": [
     {"label": "Nationalmuseet: Jellingstenen", "url": "https://en.natmus.dk/historical-knowledge/denmark/prehistoric-period-until-1050-ad/the-viking-age/the-monuments-at-jelling/the-jelling-stone/"},
     {"label": "Kongernes Jelling: Jellingstenene", "url": "https://kongernesjelling.dk/en/explore/the-jelling-stones"},
