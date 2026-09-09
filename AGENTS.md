@@ -21,8 +21,8 @@ Break any of these and the project stops being what it claims to be.
 3. **No dependencies in the site.** `js/` is plain ES modules. Tools may use
    uv scripts with inline PEP 723 dependencies.
 4. **Generated data is generated; written data is written.** `tools/content.py`
-   owns `questions.jsonl`, `eras.jsonl`, `sagas.jsonl` and `sources.json`, and
-   rewrites them freely. It must never write `explanations.jsonl`,
+   owns `questions.jsonl`, `eras.jsonl`, `sagas.jsonl`, `sources.json` and the
+   explicitly accepted `material.json` stamp. It must never write `explanations.jsonl`,
    `currency.jsonl`, `kinship.jsonl`, `principles.jsonl`, `stories.jsonl` or
    `further.json` —
    those are human judgement, joined by id.
@@ -61,7 +61,7 @@ commit body so the next session can disagree with it on the evidence.
 SIRI adds a paper roughly twice a year. The whole sequence:
 
 ```sh
-uv run tools/content.py all        # fetch new PDFs, rebuild the bank
+uv run tools/content.py all --force # fetch new PDFs, rebuild the bank
 uv run tools/kinship.py --propose  # new near-duplicate pairs to rule on
 uv run tools/kinship.py            # check kinship.jsonl is still whole
 uv run tools/stories.py            # check authored stories and citations
@@ -70,6 +70,11 @@ uv run tools/stories.py            # check authored stories and citations
 `content.py` exits non-zero if parsing regressed, and reports questions whose id
 changed — a reworded stem detaches its explanation, its currency note and its
 kinship verdict in silence, which is the failure mode to watch for.
+
+If SIRI replaced the læremateriale, that first command stops before extraction.
+Re-read `explanations.jsonl`, `stories.jsonl`, the topic boundaries in
+`js/icons.js` and `currency.jsonl`; then run `uv run tools/content.py stamp`,
+commit `data/material.json`, and rerun the sequence.
 
 Then, by hand: write explanations for the uncovered questions, and rule on the
 proposed pairs.

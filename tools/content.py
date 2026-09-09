@@ -12,6 +12,8 @@ used; nothing is invented.
     uv run tools/content.py fetch      download source PDFs into data/raw
     uv run tools/content.py extract    parse them into data/questions.jsonl
     uv run tools/content.py all        both
+    uv run tools/content.py verify     check the material against its reviewed stamp
+    uv run tools/content.py stamp      accept the downloaded material after review
 
 Design notes that are easy to get wrong:
 
@@ -203,8 +205,62 @@ def papers() -> list[Path]:
 # ---------------------------------------------------------------------------
 
 MATERIAL = RAW / "laeremateriale-til-indfoedsretsproeven.pdf"
+MATERIAL_STAMP = Path("data/material.json")
 ERAS = Path("data/eras.jsonl")
 SAGAS = Path("data/sagas.jsonl")
+
+
+def material_fingerprint() -> dict[str, int | str]:
+    with pymupdf.open(MATERIAL) as document:
+        pages = document.page_count
+    return {
+        "pages": pages,
+        "sha256": hashlib.sha256(MATERIAL.read_bytes()).hexdigest(),
+    }
+
+
+def verify_material() -> int:
+    if not MATERIAL.exists():
+        print("no læremateriale in data/raw; run `fetch` first", file=sys.stderr)
+        return 1
+    try:
+        expected = json.loads(MATERIAL_STAMP.read_text("utf-8"))
+    except (FileNotFoundError, json.JSONDecodeError):
+        print(f"missing or invalid reviewed stamp: {MATERIAL_STAMP}", file=sys.stderr)
+        return 1
+    if not isinstance(expected, dict):
+        print(f"invalid reviewed stamp: {MATERIAL_STAMP}", file=sys.stderr)
+        return 1
+
+    current = material_fingerprint()
+    if current == expected:
+        print(f"læremateriale: {current['pages']} pages, "
+              f"sha256 {current['sha256'][:16]} (reviewed)")
+        return 0
+
+    print(
+        "læremateriale reissued: "
+        f"{expected.get('pages', '?')} pages / {str(expected.get('sha256', '?'))[:16]} "
+        f"-> {current['pages']} pages / {current['sha256'][:16]}.\n"
+        "Stop and re-read data/explanations.jsonl, data/stories.jsonl, "
+        "js/icons.js topic boundaries, and data/currency.jsonl before this ships.\n"
+        "After that review, run `uv run tools/content.py stamp` and commit "
+        "data/material.json.",
+        file=sys.stderr,
+    )
+    return 1
+
+
+def stamp_material() -> int:
+    if not MATERIAL.exists():
+        print("no læremateriale in data/raw; run `fetch --force` first", file=sys.stderr)
+        return 1
+    current = material_fingerprint()
+    MATERIAL_STAMP.write_text(
+        json.dumps(current, indent=1, sort_keys=True) + "\n", encoding="utf-8")
+    print(f"recorded reviewed læremateriale: {current['pages']} pages, "
+          f"sha256 {current['sha256'][:16]}")
+    return 0
 
 # The material lays out its own hierarchy in type, and reading the type is exact
 # where a regex over shouted text is a guess:
@@ -750,7 +806,7 @@ def fetch(force: bool = False) -> int:
         encoding="utf-8")
 
     print(f"{len(links)} linked, {downloaded} downloaded, {len(papers())} exams on disk")
-    return 0
+    return verify_material()
 
 
 def build() -> tuple[list[Entry], list[str]]:
@@ -827,6 +883,8 @@ def extract() -> int:
     if not MATERIAL.exists():
         print("no læremateriale in data/raw; run `fetch` first", file=sys.stderr)
         return 1
+    if verify_material():
+        return 1
 
     entries, rejected = build()
     if rejected:
@@ -869,7 +927,7 @@ def extract() -> int:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("command", choices=("fetch", "extract", "all"))
+    parser.add_argument("command", choices=("fetch", "extract", "all", "verify", "stamp"))
     parser.add_argument("--force", action="store_true", help="re-download existing PDFs")
     args = parser.parse_args()
 
@@ -877,6 +935,10 @@ def main() -> int:
         return fetch(args.force)
     if args.command == "extract":
         return extract()
+    if args.command == "verify":
+        return verify_material()
+    if args.command == "stamp":
+        return stamp_material()
     return fetch(args.force) or extract()
 
 

@@ -6,7 +6,7 @@
 
 [![Open the site](https://img.shields.io/badge/Begynd%20vandringen-proteusiq.github.io%2Ffelag-d3a24c?style=for-the-badge)](https://proteusiq.github.io/felag/)
 
-[![Version](https://img.shields.io/badge/version-0.0.51-d3a24c?style=flat-square)](https://github.com/Proteusiq/felag/releases)
+[![Version](https://img.shields.io/badge/version-0.0.52-d3a24c?style=flat-square)](https://github.com/Proteusiq/felag/releases)
 [![Questions](https://img.shields.io/badge/spørgsmål-508-223448?style=flat-square)](data/questions.jsonl)
 [![Papers](https://img.shields.io/badge/prøver-13%20(2020–2026)-223448?style=flat-square)](https://danskogproever.dk/borger/indfoedsretsproeve-statsborgerskab/forberedelse-til-indfoedsretsproeven/)
 [![Price](https://img.shields.io/badge/pris-0%20kr-8fae8c?style=flat-square)](#)
@@ -262,9 +262,11 @@ Requires [uv](https://docs.astral.sh/uv/). The script declares its own
 dependencies inline, after PEP 723, so there is nothing to install beforehand.
 
 ```sh
-uv run tools/content.py all      # fetch the papers, then read them
+uv run tools/content.py all --force # fetch fresh PDFs, then read them
 uv run tools/content.py fetch    # fetch only
 uv run tools/content.py extract  # read only
+uv run tools/content.py verify   # compare the material with its reviewed stamp
+uv run tools/content.py stamp    # accept a reissue after human review
 
 uv run tools/kinship.py           # check data/kinship.jsonl is whole
 uv run tools/kinship.py --propose # print pairs nobody has ruled on yet
@@ -275,8 +277,9 @@ uv run tools/stories.py           # check every story, page and question id
 rule for ruling on the pairs `--propose` turns up.
 
 The source PDFs come to rest in `data/raw/` and are **never committed**. They
-weigh 29MB, they are not ours, and they can always be fetched again. What is
-kept is what was won from them.
+weigh 29MB, they are not ours, and they can always be fetched again. The current
+læremateriale's hash and page count are committed in `data/material.json`, so a
+silent reissue stops before hand-written citations can drift.
 
 `.github/workflows/content.yml` sails this course each month and raises a pull
 request whenever SIRI lands a new paper. It never writes
@@ -312,6 +315,7 @@ data/sagas.jsonl         the material cut into readable stretches, derived
 data/kinship.jsonl       questions that teach one fact, written by hand
 data/stories.jsonl       connected learning stories, written and cited by hand
 data/further.json        optional institutional reading, joined by story id
+data/material.json       reviewed hash and page count for the læremateriale
 data/questions.jsonl     won from the papers, never edited by hand
 data/explanations.jsonl  written by hand, joined by id
 RESEARCH.md              reviewer bibliography; never authority for an answer

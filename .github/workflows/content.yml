@@ -21,14 +21,13 @@ jobs:
         with:
           enable-cache: true
 
-      # PDFs are downloaded fresh each run and never committed; the extracted
-      # bank is the artefact. The script exits non-zero if any question fails
-      # to parse, so a regression stops here instead of silently shipping a
-      # smaller bank than last month.
+      # Force the download so a reissued PDF cannot hide behind a warm cache.
+      # The committed material stamp stops the run before extraction when SIRI
+      # replaces the book and its hand-written citations need human review.
       - name: Fetch and extract
         run: |
           set -o pipefail
-          uv run tools/content.py all | tee summary.txt
+          uv run tools/content.py all --force | tee summary.txt
 
       - name: Check reading groups
         run: |
