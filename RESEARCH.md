@@ -34,6 +34,16 @@ but no claim may enter `data/` unless SIRI independently supports it.
 - [Danmarkshistorien: Kvindelig valgret 1849-1915](https://danmarkshistorien.lex.dk/Kvindelig_valgret_1849-1915)
 - [Danmarkshistorien: Danmarks Riges Grundlov af 5. juni 1953](https://danmarkshistorien.lex.dk/Danmarks_Riges_Grundlov_af_5._juni_1953)
 
+## Kanslergade: fra krise til velfærd
+
+- [Danmarkshistorien: Kanslergadeforliget 1933](https://danmarkshistorien.lex.dk/Kanslergadeforliget_1933)
+- [Danmarkshistorien: Socialreformen af 1933](https://danmarkshistorien.lex.dk/Socialreformen_af_1933)
+- [Danmarkshistorien: Myterne om Kanslergadeforliget](https://danmarkshistorien.lex.dk/Myterne_om_Kanslergadeforliget)
+- [Danmarkshistorien: Thorvald Stauning 1873-1942](https://danmarkshistorien.lex.dk/Thorvald_Stauning,_1873-1942)
+- [Danmarkshistorien: Folketingsdebatten 30. januar 1933](https://danmarkshistorien.lex.dk/Kanslergadeforliget_-_Folketingsdebatten_30._januar_1933)
+- [Danmarkshistorien: Lov om offentlig Forsorg](https://danmarkshistorien.lex.dk/Uddrag_af_'Lov_om_offentlig_Forsorg'_vedr%C3%B8rende_s%C3%A6rhj%C3%A6lp,_kommunehj%C3%A6lp_og_fattighj%C3%A6lp,_20._maj_1933)
+- [Danmarkshistorien: Lov om folkepensionen 1956](https://danmarkshistorien.lex.dk/Lov_om_folkepensionen,_2._oktober_1956)
+
 ## Fra Harald Blåtand til 1864
 
 - [Nationalmuseet: Jellingstenene](https://en.natmus.dk/historical-knowledge/denmark/prehistoric-period-until-1050-ad/the-viking-age/the-monuments-at-jelling/the-jelling-stone/)

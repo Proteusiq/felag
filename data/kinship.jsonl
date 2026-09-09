@@ -25,7 +25,7 @@
 {"by": "exact", "questions": ["2b4bd3cdf9", "4f157ceaea"], "seen": ["2022-11#33", "2024-05#28"]}
 {"by": "judged", "questions": ["2c98f0cadb", "9f83d78e85"], "seen": ["2024-05#4", "2026-06#15"]}
 {"by": "judged", "questions": ["2c9fa1caef", "ff66d861e2"], "seen": ["2021-11#6", "2023-11#32"]}
-{"by": "exact", "questions": ["2cf2c15e30", "cdbcdaf70d"], "seen": ["2023-11#25", "2026-06#14"]}
+{"by": "judged", "questions": ["2cf2c15e30", "cdbcdaf70d", "3bbaef2d94"], "seen": ["2020-11#10", "2023-11#25", "2026-06#14"]}
 {"by": "judged", "questions": ["340b58db73", "dece3199f9"], "seen": ["2021-11#30", "2023-05#17"]}
 {"by": "judged", "questions": ["38ed765672", "b503fb28b8"], "seen": ["2021-11#21", "2024-05#16"]}
 {"by": "judged", "questions": ["390e35e85f", "416f8e5fa1"], "seen": ["2022-06#15", "2024-05#26"]}
@@ -95,3 +95,4 @@
 {"by": "judged", "questions": ["f52d0c11b6", "cf6e4ae0e7"], "seen": ["2020-11#12", "2026-06#32"]}
 {"by": "judged", "questions": ["700c2c0422", "fcb54bde6e"], "seen": ["2021-06#27", "2022-11#31", "2025-11#30"]}
 {"by": "judged", "questions": ["9eca5e6499", "838a85738d"], "seen": ["2020-06#5", "2021-11#28", "2025-11#17"]}
+{"by": "judged", "questions": ["463278710f", "c5723f70d1", "fd054af9aa"], "seen": ["2021-06#34", "2022-11#3", "2025-05#2"]}
