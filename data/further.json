@@ -1,0 +1,44 @@
+{
+  "harald-blaatand-dansk-rige": [
+    {"label": "Nationalmuseet: Jellingstenen", "url": "https://en.natmus.dk/historical-knowledge/denmark/prehistoric-period-until-1050-ad/the-viking-age/the-monuments-at-jelling/the-jelling-stone/"},
+    {"label": "Kongernes Jelling: Jellingstenene", "url": "https://kongernesjelling.dk/en/explore/the-jelling-stones"},
+    {"label": "UNESCO: Jelling", "url": "https://whc.unesco.org/en/list/697/"},
+    {"label": "Nationalmuseet: Vikingetidens ringborge", "url": "https://en.natmus.dk/viking-age-ring-fortresses/"},
+    {"label": "UNESCO: Viking-Age Ring Fortresses", "url": "https://whc.unesco.org/en/list/1660/"},
+    {"label": "Nationalmuseet: Overgangen til kristendommen", "url": "https://en.natmus.dk/historical-knowledge/denmark/prehistoric-period-until-1050-ad/the-viking-age/religion-magic-death-and-rituals/the-transition-to-christianity/"}
+  ],
+  "guldalderen-fire-stemmer": [
+    {"label": "SMK: Guldalderen", "url": "https://www.smk.dk/article/guldalderen/"},
+    {"label": "SMK: C.W. Eckersberg", "url": "https://www.smk.dk/artist_profile/c-w-eckersberg/"},
+    {"label": "Thorvaldsens Museum: Bertel Thorvaldsen", "url": "https://www.thorvaldsensmuseum.dk/formidling/bertel-thorvaldsen-en-billedhuggers-form-pa-verden"},
+    {"label": "Thorvaldsens Museum: Mennesket og kunsten", "url": "https://www.thorvaldsensmuseum.dk/udstillinger/thorvaldsen-vaerker-dage"},
+    {"label": "H.C. Andersen Centret: Liv og værk", "url": "https://hcandersen.dk/om-hc-andersen/"},
+    {"label": "Københavns Universitet: Søren Kierkegaard", "url": "https://teol.ku.dk/skc/english/about-soeren-kierkegaard/the-global-dane-soeren-kierkegaard-teologian-philosopher-author/"}
+  ],
+  "danmark-i-europa-forbehold": [
+    {"label": "Folketingets EU-Oplysning: De danske forbehold", "url": "https://www.eu.dk/da/danmark-i-eu/de-danske-forbehold"},
+    {"label": "Folketingets EU-Oplysning: Folkeafstemninger", "url": "https://www.eu.dk/da/danmark-i-eu/indflydelse-i-eu/folkeafstemninger"},
+    {"label": "Valgmyndigheden: Folkeafstemninger", "url": "https://www.valg.im.dk/noegletal/folkeafstemninger"},
+    {"label": "Valgmyndigheden: Tidligere folkeafstemninger", "url": "https://www.valg.im.dk/noegletal/folkeafstemninger/tidligere-folkeafstemninger"},
+    {"label": "Valgmyndigheden: Forsvarsforbeholdet 2022", "url": "https://www.valg.im.dk/valgmyndigheder/folkeafstemning-om-afskaffelse-af-forsvarsforbeholdet-2022"},
+    {"label": "Den Europæiske Union: Danmark", "url": "https://european-union.europa.eu/principles-countries-history/eu-countries/denmark_en"},
+    {"label": "Europa-Kommissionen: Denmark and the euro", "url": "https://economy-finance.ec.europa.eu/euro/eu-countries-and-euro/denmark-and-euro_en"}
+  ],
+  "skagen-lyset-mellem-to-have": [
+    {"label": "Lex: Skagensmalerne", "url": "https://lex.dk/Skagensmalerne"},
+    {"label": "Lex: Anna Ancher", "url": "https://lex.dk/Anna_Ancher"},
+    {"label": "Lex: P.S. Krøyer", "url": "https://lex.dk/P.S._Kr%C3%B8yer"},
+    {"label": "VisitDenmark: Grenen", "url": "https://www.visitdenmark.dk/danmark/explore/grenen-i-skagen-gdk640520"},
+    {"label": "VisitDenmark: Skagens Museum", "url": "https://www.visitdenmark.dk/danmark/explore/skagens-museum-gdk600081"},
+    {"label": "SMK: Anna Ancher", "url": "https://www.smk.dk/article/anna-ancher/"}
+  ],
+  "dansk-film-efter-matador": [
+    {"label": "Det Danske Filminstitut: Dansk filmhistorie 1980-1989", "url": "https://www.dfi.dk/viden-om-film/filmhistorie/dansk-filmhistorie-1980-1989"},
+    {"label": "Det Danske Filminstitut: Dansk filmhistorie 1990-1999", "url": "https://www.dfi.dk/viden-om-film/filmhistorie/dansk-filmhistorie-1990-1999"},
+    {"label": "Det Danske Filminstitut: Babettes gæstebud", "url": "https://www.dfi.dk/viden-om-film/filmdatabasen/film/babettes-gaestebud"},
+    {"label": "Det Danske Filminstitut: Pelle Erobreren", "url": "https://www.dfi.dk/viden-om-film/filmdatabasen/film/pelle-erobreren"},
+    {"label": "Det Danske Filminstitut: Idioterne", "url": "https://www.dfi.dk/viden-om-film/filmdatabasen/film/idioterne"},
+    {"label": "Det Danske Filminstitut: Hævnen", "url": "https://www.dfi.dk/viden-om-film/filmdatabasen/film/haevnen"},
+    {"label": "Det Danske Filminstitut: Druk", "url": "https://www.dfi.dk/viden-om-film/filmdatabasen/film/druk"}
+  ]
+}

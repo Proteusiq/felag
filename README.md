@@ -6,7 +6,7 @@
 
 [![Open the site](https://img.shields.io/badge/Begynd%20vandringen-proteusiq.github.io%2Ffelag-d3a24c?style=for-the-badge)](https://proteusiq.github.io/felag/)
 
-[![Version](https://img.shields.io/badge/version-0.0.46-d3a24c?style=flat-square)](https://github.com/Proteusiq/felag/releases)
+[![Version](https://img.shields.io/badge/version-0.0.47-d3a24c?style=flat-square)](https://github.com/Proteusiq/felag/releases)
 [![Questions](https://img.shields.io/badge/spørgsmål-508-223448?style=flat-square)](data/questions.jsonl)
 [![Papers](https://img.shields.io/badge/prøver-13%20(2020–2026)-223448?style=flat-square)](https://danskogproever.dk/borger/indfoedsretsproeve-statsborgerskab/forberedelse-til-indfoedsretsproeven/)
 [![Price](https://img.shields.io/badge/pris-0%20kr-8fae8c?style=flat-square)](#)
@@ -318,12 +318,14 @@ js/sound.js              synthesised answer cues
 vendor/three.*.min.js    three.js 0.180.0, vendored so no CDN is ever asked
 tools/content.py         uv script: fetch, read, ground in the material
 tools/kinship.py         propose and check kinship; never writes it
-tools/stories.py         check authored stories and their citations
+tools/stories.py         check authored stories, citations and further reading
 data/sagas.jsonl         the material cut into readable stretches, derived
 data/kinship.jsonl       questions that teach one fact, written by hand
 data/stories.jsonl       connected learning stories, written and cited by hand
+data/further.json        optional institutional reading, joined by story id
 data/questions.jsonl     won from the papers, never edited by hand
 data/explanations.jsonl  written by hand, joined by id
+RESEARCH.md              reviewer bibliography; never authority for an answer
 assets/fonts/            Metamorphous for the carving, Atkinson for the reading
 favicon.ico              Holger, at the path browsers ask for by name
 llms.txt                 for assistants that answer these questions now

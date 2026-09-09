@@ -1,12 +1,12 @@
 const FILES = [
   'questions', 'explanations', 'currency', 'principles', 'eras', 'sagas',
-  'stories', 'kinship', 'sources',
+  'stories', 'further', 'kinship', 'sources',
 ];
 
 const lines = (text) => text.split('\n').filter(Boolean).map((line) => JSON.parse(line));
 
 async function grab(name) {
-  const extension = name === 'sources' ? 'json' : 'jsonl';
+  const extension = ['further', 'sources'].includes(name) ? 'json' : 'jsonl';
   const path = `./data/${name}.${extension}`;
   const response = await fetch(path);
   if (!response.ok) throw new Error(`Mangler ${path}`);
@@ -22,7 +22,11 @@ export async function loadContent() {
   const principles = lines(data.principles);
   const eras = lines(data.eras);
   const sagas = lines(data.sagas);
-  const stories = lines(data.stories);
+  const further = JSON.parse(data.further);
+  const stories = lines(data.stories).map((story) => ({
+    ...story,
+    further: further[story.id] ?? [],
+  }));
   const kin = new Map();
   for (const group of lines(data.kinship)) {
     for (const id of group.questions ?? []) kin.set(id, group.questions);

@@ -108,6 +108,11 @@ export function deck(container, onOpen, onStatus) {
 export function content(story, materialSource, topicIcon) {
   const pages = [...new Set(story.sections.flatMap((section) => section.pages)
     .concat(story.moments.flatMap((moment) => moment.pages)))].sort((a, b) => a - b);
+  const further = story.further?.length ? `<div class="story-further">
+    <h3>Læs videre</h3>
+    <p>Frivillig baggrund fra museer og myndigheder. SIRI er fortsat kilden til spørgsmål, svar og forklaringer.</p>
+    <ul>${story.further.map((source) => `<li><a href="${source.url}" target="_blank" rel="noopener">${source.label}</a></li>`).join('')}</ul>
+  </div>` : '';
 
   return {
     connections: story.connections.map((connection) => `<span>${connection}</span>`).join(''),
@@ -120,7 +125,7 @@ export function content(story, materialSource, topicIcon) {
       <div><h3>${section.title}</h3>${section.body.map((paragraph) => `<p>${paragraph}</p>`).join('')}
         <p class="story-source">${materialSource(section.pages)}</p></div>
     </section>`).join(''),
-    sources: `<h3>Kilder til fortællingen</h3><p>${materialSource(pages)}</p>`,
+    sources: `<h3>Kilder til fortællingen</h3><p>${materialSource(pages)}</p>${further}`,
     quiz: `${topicIcon('book')}Prøv det, du har lært · ${story.questions.length} spørgsmål`,
   };
 }

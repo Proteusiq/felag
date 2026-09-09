@@ -23,7 +23,8 @@ Break any of these and the project stops being what it claims to be.
 4. **Generated data is generated; written data is written.** `tools/content.py`
    owns `questions.jsonl`, `eras.jsonl`, `sagas.jsonl` and `sources.json`, and
    rewrites them freely. It must never write `explanations.jsonl`,
-   `currency.jsonl`, `kinship.jsonl`, `principles.jsonl` or `stories.jsonl` —
+   `currency.jsonl`, `kinship.jsonl`, `principles.jsonl`, `stories.jsonl` or
+   `further.json` —
    those are human judgement, joined by id.
 5. **Reading is never gated.** The six halls lock to pace drilling. Sagaerne is
    open from day one, including for locked halls.

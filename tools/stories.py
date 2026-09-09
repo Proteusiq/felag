@@ -12,6 +12,7 @@ from pathlib import Path
 
 BANK = Path("data/questions.jsonl")
 STORIES = Path("data/stories.jsonl")
+FURTHER = Path("data/further.json")
 MATERIAL_PAGES = 246
 
 
@@ -22,6 +23,7 @@ def rows(path: Path) -> list[dict]:
 def main() -> int:
     questions = {question["id"] for question in rows(BANK)}
     stories = rows(STORIES)
+    further = json.loads(FURTHER.read_text("utf-8"))
     faults: list[str] = []
     seen: set[str] = set()
 
@@ -45,10 +47,30 @@ def main() -> int:
                 if not pages or any(not 1 <= page <= MATERIAL_PAGES for page in pages):
                     faults.append(f"{story_id}: {kind} {index} has invalid pages {pages}")
 
+    for story_id, links in further.items():
+        if story_id not in seen:
+            faults.append(f"further reading has unknown story id: {story_id}")
+            continue
+        if not isinstance(links, list):
+            faults.append(f"{story_id}: further reading is not a list")
+            continue
+        if any(not isinstance(link, dict) for link in links):
+            faults.append(f"{story_id}: invalid further-reading record")
+            continue
+        labels = [link.get("label") for link in links]
+        urls = [link.get("url") for link in links]
+        if not links or any(not label for label in labels):
+            faults.append(f"{story_id}: invalid further-reading labels")
+        if any(not url or not url.startswith("https://") for url in urls):
+            faults.append(f"{story_id}: invalid further-reading URL")
+        if len(labels) != len(set(labels)) or len(urls) != len(set(urls)):
+            faults.append(f"{story_id}: duplicate further-reading link")
+
     if faults:
         print("\n".join(faults))
         return 1
-    print(f"{len(stories)} stories, {sum(len(story['sections']) for story in stories)} cited sections, no faults")
+    link_count = sum(len(links) for links in further.values())
+    print(f"{len(stories)} stories, {sum(len(story['sections']) for story in stories)} cited sections, {link_count} further-reading links, no faults")
     return 0
 
 
