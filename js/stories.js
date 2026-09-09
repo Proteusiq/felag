@@ -68,20 +68,31 @@ export function deck(container, onOpen, onStatus) {
   container.addEventListener('pointerdown', (event) => {
     const card = event.target.closest('.story-card');
     if (!card || event.button !== 0) return;
-    pointer = { card, x: event.clientX };
-    card.classList.add('is-dragging');
+    pointer = { card, x: event.clientX, y: event.clientY, dragging: false };
   });
   container.addEventListener('pointermove', (event) => {
     if (!pointer) return;
-    const distance = event.clientX - pointer.x;
-    pointer.card.style.setProperty('--drag', `${Math.max(-24, Math.min(24, distance * .18))}px`);
+    const x = event.clientX - pointer.x;
+    const y = event.clientY - pointer.y;
+    if (!pointer.dragging) {
+      // A vertical page scroll starts with the same pointerdown as a card swipe.
+      if (Math.abs(y) > Math.abs(x)) {
+        pointer = null;
+        return;
+      }
+      if (Math.abs(x) < 8) return;
+      pointer.dragging = true;
+      pointer.card.classList.add('is-dragging');
+    }
+    pointer.card.style.setProperty('--drag', `${Math.max(-24, Math.min(24, x * .18))}px`);
   });
   const release = (event) => {
     if (!pointer) return;
-    const { card, x } = pointer;
+    const { card, x, dragging } = pointer;
     pointer = null;
     card.classList.remove('is-dragging');
     card.style.removeProperty('--drag');
+    if (!dragging) return;
     const distance = event.clientX - x;
     if (Math.abs(distance) < 45) return;
     suppressClick = true;
