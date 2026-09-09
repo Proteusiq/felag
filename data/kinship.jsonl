@@ -3,7 +3,7 @@
 {"by": "exact", "questions": ["028f8b4850", "91305d978d"], "seen": ["2024-11#17", "2026-06#8"]}
 {"by": "judged", "questions": ["051f51753c", "981b86a3a9", "b560110bdd"], "seen": ["2020-11#24", "2022-06#32", "2023-11#35", "2024-11#31"]}
 {"by": "judged", "questions": ["0735282020", "68e81318cb", "b63dc05859"], "seen": ["2022-11#9", "2025-05#27", "2026-06#24"]}
-{"by": "judged", "questions": ["080bca08df", "1734ebb81a"], "seen": ["2020-11#9", "2021-06#20", "2022-06#14", "2025-05#1"]}
+{"by": "judged", "questions": ["080bca08df", "1734ebb81a", "3eb6160783"], "seen": ["2020-11#9", "2021-06#20", "2022-06#14", "2023-11#33", "2025-05#1", "2025-11#20"]}
 {"by": "judged", "questions": ["08eefb4baa", "dde32d96c9", "f5dac8e597"], "seen": ["2021-11#29", "2023-05#27", "2025-05#33"]}
 {"by": "judged", "questions": ["0b89d057e3", "3c1ad5cb7f", "407435b6bf"], "seen": ["2020-11#30", "2023-05#3", "2025-11#4"]}
 {"by": "judged", "questions": ["0d7b855bc0", "8fa7d91d38"], "seen": ["2023-05#33", "2025-05#21"]}
@@ -16,7 +16,7 @@
 {"by": "judged", "questions": ["16b8fb6dc7", "874478990b", "813734e472"], "seen": ["2020-06#4", "2022-06#1", "2025-05#20"]}
 {"by": "judged", "questions": ["1958fd3272", "c54ea08847"], "seen": ["2020-11#5", "2022-11#26", "2025-05#6"]}
 {"by": "judged", "questions": ["1a56f35efe", "2d3a4cce08", "8ac993e911", "9a403f999c"], "seen": ["2020-06#3", "2021-11#7", "2023-05#35", "2026-06#7"]}
-{"by": "judged", "questions": ["1bb1c9b52c", "36f6ee57c8", "59d9af87ec", "da92c62c70"], "seen": ["2020-11#1", "2022-11#27", "2024-05#1", "2026-06#30"]}
+{"by": "judged", "questions": ["1bb1c9b52c", "36f6ee57c8", "59d9af87ec", "da92c62c70", "0d19471d19"], "seen": ["2020-11#1", "2022-11#27", "2024-05#1", "2024-11#5", "2026-06#30"], "why": "Alle fem spørger til den samme begivenhed: Grundloven blev indført i 1849."}
 {"by": "judged", "questions": ["1dd914486d", "1df97b374d", "2fbb669cff"], "seen": ["2021-11#22", "2024-05#23", "2025-11#31"]}
 {"by": "exact", "questions": ["2284e1d225", "58cf22d172"], "seen": ["2021-11#18", "2024-05#20"]}
 {"by": "exact", "questions": ["2469b0035b", "b8f15047a6"], "seen": ["2024-11#33", "2026-06#4"]}
@@ -93,3 +93,5 @@
 {"apart": ["45503284a4", "b898c8a4b7"], "why": "Arbejdere stemte Socialdemokratiet, landmænd Venstre. To grupper, to partier."}
 {"by": "judged", "questions": ["f484a2c0a8", "f797f4e217"], "seen": ["2022-06#28", "2024-05#17"]}
 {"by": "judged", "questions": ["f52d0c11b6", "cf6e4ae0e7"], "seen": ["2020-11#12", "2026-06#32"]}
+{"by": "judged", "questions": ["700c2c0422", "fcb54bde6e"], "seen": ["2021-06#27", "2022-11#31", "2025-11#30"]}
+{"by": "judged", "questions": ["9eca5e6499", "838a85738d"], "seen": ["2020-06#5", "2021-11#28", "2025-11#17"]}

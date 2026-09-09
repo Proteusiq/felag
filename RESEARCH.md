@@ -24,6 +24,16 @@ but no claim may enter `data/` unless SIRI independently supports it.
 - [Danmarkshistorien: Oprettelsen af Frihedsrådet](https://danmarkshistorien.lex.dk/Oprettelsen_af_Frihedsr%C3%A5det_i_'Frit_Danmark',_oktober_1943)
 - [Danmarkshistorien: Befrielsen i maj 1945](https://danmarkshistorien.lex.dk/Befrielsen_i_maj_1945)
 
+## Fra enevælde til folkestyre
+
+- [Danmarkshistorien: Enevældens indførelse 1660-1661](https://danmarkshistorien.lex.dk/Enev%C3%A6ldens_indf%C3%B8relse_1660-1661)
+- [Danmarkshistorien: Junigrundloven 1849 og demokratiet](https://danmarkshistorien.lex.dk/Junigrundloven_1849_og_demokratiet)
+- [Danmarkshistorien: Junigrundloven af 5. juni 1849](https://danmarkshistorien.lex.dk/Junigrundloven_Danmarks_Riges_Grundlov,_5._juni_1849)
+- [Danmarkshistorien: Forfatningskampen 1866-1901](https://danmarkshistorien.lex.dk/Forfatningskampen,_1866-1901)
+- [Danmarkshistorien: Systemskiftet 1901](https://danmarkshistorien.lex.dk/Systemskiftet_1901)
+- [Danmarkshistorien: Kvindelig valgret 1849-1915](https://danmarkshistorien.lex.dk/Kvindelig_valgret_1849-1915)
+- [Danmarkshistorien: Danmarks Riges Grundlov af 5. juni 1953](https://danmarkshistorien.lex.dk/Danmarks_Riges_Grundlov_af_5._juni_1953)
+
 ## Fra Harald Blåtand til 1864
 
 - [Nationalmuseet: Jellingstenene](https://en.natmus.dk/historical-knowledge/denmark/prehistoric-period-until-1050-ad/the-viking-age/the-monuments-at-jelling/the-jelling-stone/)

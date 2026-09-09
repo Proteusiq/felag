@@ -165,9 +165,9 @@ def check(bank: dict, groups: list[dict]) -> int:
                 faults.append(f"{member} appears in groups {seen[member]} and {n}")
             else:
                 seen[member] = n
-        if len(members) > RUNAWAY:
+        if len(members) > RUNAWAY and not group.get("why"):
             faults.append(f"group {n} has {len(members)} members; "
-                          f"kinship is transitive, so check it has not walked")
+                          f"kinship is transitive, so check it has not walked or explain why")
 
     for fault in faults:
         print(f"  {fault}", file=sys.stderr)
