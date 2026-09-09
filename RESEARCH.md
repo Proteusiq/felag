@@ -14,6 +14,16 @@ but no claim may enter `data/` unless SIRI independently supports it.
 - [Forfatterweb: Lise Nørgaard](https://forfatterweb.dk/oversigt/zlisen)
 - [Nota: Matador](https://nota.dk/bibliotek/tema/matador)
 
+## Danmark besat: samarbejde og modstand
+
+- [Frihedsmuseet: Besættelsen](https://www.frihedsmuseet.dk/viden/besaettelsen)
+- [Danmarkshistorien: Besættelsen den 9. april 1940](https://danmarkshistorien.lex.dk/Bes%C3%A6ttelsen_den_9._april_1940)
+- [Danmarkshistorien: Forhandlings- og samarbejdspolitikken](https://danmarkshistorien.lex.dk/Forhandlings-_og_samarbejdspolitikken_under_bes%C3%A6ttelsen,_1940-1945)
+- [Danmarkshistorien: Augustoprøret 29. august 1943](https://danmarkshistorien.lex.dk/Augustopr%C3%B8ret_29._august_1943)
+- [Danmarkshistorien: Jødeaktionen og evakueringen](https://danmarkshistorien.lex.dk/J%C3%B8deaktionen_og_evakueringen_af_danske_j%C3%B8der_i_oktober_1943)
+- [Danmarkshistorien: Oprettelsen af Frihedsrådet](https://danmarkshistorien.lex.dk/Oprettelsen_af_Frihedsr%C3%A5det_i_'Frit_Danmark',_oktober_1943)
+- [Danmarkshistorien: Befrielsen i maj 1945](https://danmarkshistorien.lex.dk/Befrielsen_i_maj_1945)
+
 ## Fra Harald Blåtand til 1864
 
 - [Nationalmuseet: Jellingstenene](https://en.natmus.dk/historical-knowledge/denmark/prehistoric-period-until-1050-ad/the-viking-age/the-monuments-at-jelling/the-jelling-stone/)
