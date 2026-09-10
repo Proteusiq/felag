@@ -56,6 +56,38 @@ but no claim may enter `data/` unless SIRI independently supports it.
 - [Færøernes landsstyre: Home Rule Act](https://www.government.fo/en/the-government/the-home-rule-act)
 - [Udenrigsministeriet: Rigsfællesskabet](https://um.dk/Udenrigspolitik/lande-og-regioner/Rigsfaellesskabet)
 
+## Kvinders vej ind i det offentlige Danmark
+
+- [Danmarkshistorien: Kvindelig valgret 1849-1915](https://danmarkshistorien.lex.dk/Kvindelig_valgret_1849-1915)
+- [Danmarkshistorien: Danske kvinders adresse 5. juni 1915](https://danmarkshistorien.lex.dk/Danske_kvinders_adresse_til_regering_og_rigsdag_den_5._juni_1915)
+- [Danmarkshistorien: Nina Bang](https://danmarkshistorien.lex.dk/Nina_Bang,_1866-1928)
+- [Danmarkshistorien: Nina Bang om lige adgang til arbejdsmarkedet](https://danmarkshistorien.lex.dk/Nina_Bangs_indl%C3%A6g_i_Landstinget_vedr._forslag_til_lov_om_kvinders_lige_adgang_til_arbejdsmarkedet_1919)
+- [Danmarkshistorien: Kvindernes Internationale Kampdag](https://danmarkshistorien.lex.dk/Kvindernes_Internationale_Kampdag_den_8._marts,_1910-)
+- [Danmarkshistorien: Dansk Kvindesamfund](https://danmarkshistorien.lex.dk/Dansk_Kvindesamfund_1871-)
+- [Danmarkshistorien: Rødstrømperne og den nye kvindebevægelse](https://danmarkshistorien.lex.dk/R%C3%B8dstr%C3%B8mperne_og_den_nye_kvindebev%C3%A6gelse,_ca._1970-1985)
+- [Danmarkshistorien: Abortloven 1973](https://danmarkshistorien.lex.dk/Abortloven_Lov_om_svangerskabsafbrydelse,_13._juni_1973)
+- [Danmarkshistorien: Ligelønsloven 1976](https://danmarkshistorien.lex.dk/Ligel%C3%B8nsloven_4._februar_1976)
+- [Danmarks Statistik: Ligestilling](https://www.dst.dk/da/Statistik/temaer/ligestilling)
+- [Lex: Helle Thorning-Schmidt](https://lex.dk/Helle_Thorning-Schmidt)
+- [Statsministeriet: Regeringen Helle Thorning-Schmidt I](https://www.stm.dk/regeringen/regeringer-siden-1848/regeringen-helle-thorning-schmidt-i/)
+
+## Den danske model: aftaler frem for lov
+
+- [Lex: Den danske model](https://lex.dk/den_danske_model)
+- [Danmarkshistorien: Storlockout og Septemberforlig 1899](https://danmarkshistorien.lex.dk/Storlockout_og_Septemberforlig_1899)
+- [Danmarkshistorien: Septemberforliget 5. september 1899](https://danmarkshistorien.lex.dk/Septemberforliget,_5._september_1899)
+- [FH: Den danske model](https://fho.dk/blog/faq/den-danske-model/)
+- [Forligsinstitutionen: Om Forligsinstitutionen](https://www.forligsinstitutionen.dk/om-forligsinstitutionen)
+- [Forligsinstitutionen: Mæglingsproceduren](https://www.forligsinstitutionen.dk/om-forligsinstitutionen/beskrivelse-af-forligsmandens-fremgangsmaade-i-forbindelse-med-maegling-mv)
+- [Retsinformation: Lov om mægling i arbejdsstridigheder](https://www.retsinformation.dk/eli/lta/2025/1290)
+- [Eurofound: Collective bargaining in Denmark](https://www.eurofound.europa.eu/en/countries/denmark/collective-bargaining)
+- [Arbejdsretten: Arbejdsrettens opgaver](https://arbejdsretten.dk/arbejdsretten)
+- [Workindenmark: The Danish labour market](https://workindenmark.dk/working-in-denmark/the-danish-labour-market)
+- [Workindenmark: Terms of employment](https://workindenmark.dk/working-in-denmark/terms-of-employment)
+- [Workindenmark: Trade unions](https://workindenmark.dk/working-in-denmark/terms-of-employment/trade-unions)
+- [Workindenmark: Unemployment insurance](https://workindenmark.dk/working-in-denmark/terms-of-employment/unemployment-insurance)
+- [Lex: Flexicurity](https://lex.dk/flexicurity)
+
 ## Fra Harald Blåtand til 1864
 
 - [Nationalmuseet: Jellingstenene](https://en.natmus.dk/historical-knowledge/denmark/prehistoric-period-until-1050-ad/the-viking-age/the-monuments-at-jelling/the-jelling-stone/)

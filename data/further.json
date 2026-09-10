@@ -45,6 +45,36 @@
     {"label": "Færøernes landsstyre: Home Rule Act", "url": "https://www.government.fo/en/the-government/the-home-rule-act"},
     {"label": "Udenrigsministeriet: Rigsfællesskabet", "url": "https://um.dk/Udenrigspolitik/lande-og-regioner/Rigsfaellesskabet"}
   ],
+  "kvinders-vej-offentlige-danmark": [
+    {"label": "Danmarkshistorien: Kvindelig valgret 1849-1915", "url": "https://danmarkshistorien.lex.dk/Kvindelig_valgret_1849-1915"},
+    {"label": "Danmarkshistorien: Danske kvinders adresse 5. juni 1915", "url": "https://danmarkshistorien.lex.dk/Danske_kvinders_adresse_til_regering_og_rigsdag_den_5._juni_1915"},
+    {"label": "Danmarkshistorien: Nina Bang", "url": "https://danmarkshistorien.lex.dk/Nina_Bang,_1866-1928"},
+    {"label": "Danmarkshistorien: Nina Bang om lige adgang til arbejdsmarkedet", "url": "https://danmarkshistorien.lex.dk/Nina_Bangs_indl%C3%A6g_i_Landstinget_vedr._forslag_til_lov_om_kvinders_lige_adgang_til_arbejdsmarkedet_1919"},
+    {"label": "Danmarkshistorien: Kvindernes Internationale Kampdag", "url": "https://danmarkshistorien.lex.dk/Kvindernes_Internationale_Kampdag_den_8._marts,_1910-"},
+    {"label": "Danmarkshistorien: Dansk Kvindesamfund", "url": "https://danmarkshistorien.lex.dk/Dansk_Kvindesamfund_1871-"},
+    {"label": "Danmarkshistorien: Rødstrømperne og den nye kvindebevægelse", "url": "https://danmarkshistorien.lex.dk/R%C3%B8dstr%C3%B8mperne_og_den_nye_kvindebev%C3%A6gelse,_ca._1970-1985"},
+    {"label": "Danmarkshistorien: Abortloven 1973", "url": "https://danmarkshistorien.lex.dk/Abortloven_Lov_om_svangerskabsafbrydelse,_13._juni_1973"},
+    {"label": "Danmarkshistorien: Ligelønsloven 1976", "url": "https://danmarkshistorien.lex.dk/Ligel%C3%B8nsloven_4._februar_1976"},
+    {"label": "Danmarks Statistik: Ligestilling", "url": "https://www.dst.dk/da/Statistik/temaer/ligestilling"},
+    {"label": "Lex: Helle Thorning-Schmidt", "url": "https://lex.dk/Helle_Thorning-Schmidt"},
+    {"label": "Statsministeriet: Regeringen Helle Thorning-Schmidt I", "url": "https://www.stm.dk/regeringen/regeringer-siden-1848/regeringen-helle-thorning-schmidt-i/"}
+  ],
+  "den-danske-model-aftaler": [
+    {"label": "Lex: Den danske model", "url": "https://lex.dk/den_danske_model"},
+    {"label": "Danmarkshistorien: Storlockout og Septemberforlig 1899", "url": "https://danmarkshistorien.lex.dk/Storlockout_og_Septemberforlig_1899"},
+    {"label": "Danmarkshistorien: Septemberforliget 5. september 1899", "url": "https://danmarkshistorien.lex.dk/Septemberforliget,_5._september_1899"},
+    {"label": "FH: Den danske model", "url": "https://fho.dk/blog/faq/den-danske-model/"},
+    {"label": "Forligsinstitutionen: Om Forligsinstitutionen", "url": "https://www.forligsinstitutionen.dk/om-forligsinstitutionen"},
+    {"label": "Forligsinstitutionen: Mæglingsproceduren", "url": "https://www.forligsinstitutionen.dk/om-forligsinstitutionen/beskrivelse-af-forligsmandens-fremgangsmaade-i-forbindelse-med-maegling-mv"},
+    {"label": "Retsinformation: Lov om mægling i arbejdsstridigheder", "url": "https://www.retsinformation.dk/eli/lta/2025/1290"},
+    {"label": "Eurofound: Collective bargaining in Denmark", "url": "https://www.eurofound.europa.eu/en/countries/denmark/collective-bargaining"},
+    {"label": "Arbejdsretten: Arbejdsrettens opgaver", "url": "https://arbejdsretten.dk/arbejdsretten"},
+    {"label": "Workindenmark: The Danish labour market", "url": "https://workindenmark.dk/working-in-denmark/the-danish-labour-market"},
+    {"label": "Workindenmark: Terms of employment", "url": "https://workindenmark.dk/working-in-denmark/terms-of-employment"},
+    {"label": "Workindenmark: Trade unions", "url": "https://workindenmark.dk/working-in-denmark/terms-of-employment/trade-unions"},
+    {"label": "Workindenmark: Unemployment insurance", "url": "https://workindenmark.dk/working-in-denmark/terms-of-employment/unemployment-insurance"},
+    {"label": "Lex: Flexicurity", "url": "https://lex.dk/flexicurity"}
+  ],
   "harald-blaatand-dansk-rige": [
     {"label": "Nationalmuseet: Jellingstenen", "url": "https://en.natmus.dk/historical-knowledge/denmark/prehistoric-period-until-1050-ad/the-viking-age/the-monuments-at-jelling/the-jelling-stone/"},
     {"label": "Kongernes Jelling: Jellingstenene", "url": "https://kongernesjelling.dk/en/explore/the-jelling-stones"},
